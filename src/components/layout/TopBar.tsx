@@ -8,6 +8,7 @@ const titles: Record<string, { title: string; subtitle: string }> = {
   '/prompt-lab': { title: 'Prompt Lab', subtitle: 'Constructor de prompts jurídicos profesionales' },
   '/flashcards': { title: 'Flashcards IA', subtitle: '30 cartas para dominar la IA' },
   '/toolkit': { title: 'Toolkit IA', subtitle: 'Guías rápidas y flujos multi-IA' },
+  '/dossier': { title: 'Dossier DIAT 2026', subtitle: 'Programa editorial premium · Facultad de Derecho PUCV' },
 };
 
 export function TopBar() {

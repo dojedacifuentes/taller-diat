@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, Rocket, Zap, Layers, Wrench } from 'lucide-react';
+import { Home, Rocket, Zap, Layers, Wrench, BookOpen } from 'lucide-react';
 
 const nav = [
   { href: '/', icon: Home, label: 'Inicio' },
@@ -10,6 +10,7 @@ const nav = [
   { href: '/prompt-lab', icon: Zap, label: 'Prompt Lab' },
   { href: '/flashcards', icon: Rocket, label: 'Flashcards' },
   { href: '/toolkit', icon: Wrench, label: 'Toolkit IA' },
+  { href: '/dossier', icon: BookOpen, label: 'Dossier' },
 ];
 
 export function Sidebar() {
