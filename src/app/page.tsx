@@ -1,274 +1,325 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import {
-  CalendarDays, Cpu, BarChart3, Users, ShieldCheck,
-  ArrowRight, CheckCircle2, Circle, Clock, Zap,
-  BookOpen, Target, TrendingUp,
-} from 'lucide-react';
+import { ArrowRight, Zap, Layers, Rocket, Wrench, CheckCircle2, Circle } from 'lucide-react';
 import { useCountdown } from '@/hooks/useCountdown';
-import { AnimatedCounter } from '@/components/common/AnimatedCounter';
 import { modules } from '@/data/modules';
-import { adminStats } from '@/data/stats';
 
-const NEXT_MODULE_DATE = '2026-09-18T09:00:00';
+const MODULE1_DATE = '2026-09-04T09:00:00';
 
-const quickLinks = [
-  { href: '/timeline', icon: CalendarDays, label: 'Ver Timeline', desc: 'Módulos Sep. 2026' },
-  { href: '/herramientas', icon: Cpu, label: 'Herramientas IA', desc: '7 plataformas' },
-  { href: '/admin', icon: BarChart3, label: 'Panel Admin', desc: 'Métricas en vivo' },
-  { href: '/equipo', icon: Users, label: 'Equipo', desc: '10 integrantes' },
-  { href: '/autoridad', icon: ShieldCheck, label: 'Autoridades', desc: 'Impacto institucional' },
+const reasons = [
+  {
+    emoji: '🗣️',
+    title: 'Hablarás el idioma de las máquinas',
+    desc: 'Prompting estructurado, técnicas avanzadas, control de outputs. La IA hará lo que tú quieras.',
+    color: 'border-cyan-500/25 bg-cyan-500/5',
+    accent: 'text-cyan-400',
+  },
+  {
+    emoji: '⚡',
+    title: 'Producirás documentos en minutos',
+    desc: 'Contratos, demandas, dictámenes, memorandos. Lo que tardaba horas, en minutos con calidad profesional.',
+    color: 'border-indigo-500/25 bg-indigo-500/5',
+    accent: 'text-indigo-400',
+  },
+  {
+    emoji: '🚀',
+    title: 'Estarás donde va el derecho',
+    desc: 'Harvey AI, Clio, Thomson Reuters AI. El ecosistema legaltech explota. Tú llegas preparado.',
+    color: 'border-purple-500/25 bg-purple-500/5',
+    accent: 'text-purple-400',
+  },
 ];
 
-const kpis = [
-  { label: 'Inscritos', value: adminStats.inscribed, suffix: '', icon: Users, color: 'cyan' },
-  { label: 'Asistencia', value: adminStats.attendanceRate, suffix: '%', icon: TrendingUp, color: 'emerald' },
-  { label: 'Progreso', value: adminStats.progressAverage, suffix: '%', icon: Target, color: 'indigo' },
-  { label: 'Evidencias', value: adminStats.evidencesSubmitted, suffix: '', icon: BookOpen, color: 'purple' },
+const stats = [
+  { value: '27', label: 'horas de formación' },
+  { value: '3', label: 'módulos especializados' },
+  { value: '7', label: 'plataformas IA' },
+  { value: 'Sep', label: '2026 · Valparaíso' },
 ];
 
-const colorMap: Record<string, { text: string; bg: string; border: string }> = {
-  cyan: { text: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
-  emerald: { text: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-  indigo: { text: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-  purple: { text: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
-};
+const features = [
+  { icon: Layers, href: '/modulos', label: 'Ver los 3 módulos', desc: 'La ruta completa de aprendizaje' },
+  { icon: Zap, href: '/prompt-lab', label: 'Construye tu prompt', desc: 'Generador + descarga PDF' },
+  { icon: Rocket, href: '/flashcards', label: 'Aprende con flashcards', desc: '30 cartas de IA jurídica' },
+  { icon: Wrench, href: '/toolkit', label: 'Toolkit multi-IA', desc: 'Flujos y guías rápidas' },
+];
 
-function CountdownUnit({ value, label }: { value: number; label: string }) {
+function CountdownBlock({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl border border-cyan-500/20 bg-cyan-500/5 flex items-center justify-center">
-        <span className="text-2xl sm:text-3xl font-bold text-cyan-300 mono tabular-nums">
-          {String(value).padStart(2, '0')}
-        </span>
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border border-cyan-500/30 bg-cyan-500/8 flex items-center justify-center glow-cyan">
+          <span className="text-2xl sm:text-3xl font-bold text-cyan-200 mono tabular-nums">
+            {String(value).padStart(2, '0')}
+          </span>
+        </div>
+        <div className="absolute inset-0 rounded-2xl border border-cyan-400/10 animate-pulse" />
       </div>
-      <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] text-zinc-500 uppercase tracking-widest mono">{label}</span>
     </div>
   );
 }
 
-export default function HomePage() {
-  const countdown = useCountdown(NEXT_MODULE_DATE);
-
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.07 } },
-  } as const;
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-  } as const;
+export default function LandingPage() {
+  const cd = useCountdown(MODULE1_DATE);
 
   return (
-    <div className="px-4 lg:px-8 py-6 lg:py-8 space-y-6 max-w-6xl mx-auto">
+    <div className="max-w-5xl mx-auto px-4 lg:px-8 py-8 lg:py-12 space-y-16">
 
-      {/* HERO */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative rounded-2xl overflow-hidden border border-white/[0.08] bg-[oklch(0.09_0.017_250/0.7)] backdrop-blur-sm"
+      {/* ── HERO ─────────────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="text-center space-y-8"
       >
-        <div className="absolute inset-0 grid-bg-fine opacity-40" />
-        <div
-          className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 70% 80% at 50% -10%, oklch(0.71 0.17 200 / 0.08) 0%, transparent 70%)' }}
-        />
-        <div className="relative px-6 sm:px-8 lg:px-12 py-10 lg:py-14">
-          <motion.div variants={item} className="flex items-center gap-2 mb-5">
-            <div className="w-1 h-5 rounded-full bg-cyan-400" />
-            <span className="text-xs text-zinc-400 uppercase tracking-widest mono">
-              Pontificia Universidad Católica de Valparaíso · Facultad de Derecho
-            </span>
-          </motion.div>
-          <motion.div variants={item}>
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-                DIAT
-              </h1>
-              <span
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-transparent bg-clip-text"
-                style={{ backgroundImage: 'linear-gradient(135deg, oklch(0.71 0.17 200) 0%, oklch(0.55 0.22 264) 100%)' }}
-              >
-                Prompting Hub
-              </span>
-            </div>
-          </motion.div>
-          <motion.p variants={item} className="mt-4 text-base sm:text-lg text-zinc-400 max-w-2xl leading-relaxed">
-            Programa de{' '}
-            <span className="text-zinc-200 font-medium">Derecho, Inteligencia Artificial y Tecnología</span>.
-            Taller universitario de IA jurídica y prompting avanzado para estudiantes y profesionales del derecho.
-          </motion.p>
-          <motion.div variants={item} className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/8 text-xs text-cyan-400 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              Módulo 2 — En curso
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-zinc-400">
-              <CalendarDays className="w-3 h-3" />
-              Septiembre 2026
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-zinc-400">
-              <Zap className="w-3 h-3" />
-              27 horas · 3 módulos
-            </span>
-          </motion.div>
-        </div>
-      </motion.div>
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex justify-center"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/8 text-xs text-red-400 font-semibold mono tracking-widest uppercase">
+            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+            Inscripciones abiertas · PUCV · Sep 2026
+          </span>
+        </motion.div>
 
-      {/* KPI ROW */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3"
-      >
-        {kpis.map(({ label, value, suffix, icon: Icon, color }) => {
-          const c = colorMap[color];
-          return (
-            <motion.div
-              key={label}
-              variants={item}
-              className={`rounded-xl border ${c.border} ${c.bg} p-4 backdrop-blur-sm`}
+        {/* Main headline */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+        >
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+            <span className="text-white">El Derecho que no</span>{' '}
+            <br className="hidden sm:block" />
+            <span
+              className="text-transparent bg-clip-text"
+              style={{ backgroundImage: 'linear-gradient(135deg, oklch(0.71 0.17 200) 0%, oklch(0.55 0.22 264) 100%)' }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-xs text-zinc-500 font-medium">{label}</span>
-                <Icon className={`w-4 h-4 ${c.text}`} />
-              </div>
-              <div className={`text-3xl font-bold ${c.text} mono`}>
-                <AnimatedCounter value={value} suffix={suffix} />
-              </div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-
-      {/* COUNTDOWN + MODULES */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="lg:col-span-2 rounded-xl border border-white/[0.08] bg-[oklch(0.09_0.017_250/0.6)] backdrop-blur-sm p-6"
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-cyan-400" />
-            <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Próximo módulo</span>
-          </div>
-          <div className="text-sm font-semibold text-white mb-5">Módulo 3 · 18 Sep 2026</div>
-          {countdown.isExpired ? (
-            <div className="text-cyan-400 font-semibold">¡En curso ahora!</div>
-          ) : (
-            <div className="flex items-end gap-2">
-              <CountdownUnit value={countdown.days} label="días" />
-              <span className="text-zinc-600 text-2xl font-bold pb-5">:</span>
-              <CountdownUnit value={countdown.hours} label="hrs" />
-              <span className="text-zinc-600 text-2xl font-bold pb-5">:</span>
-              <CountdownUnit value={countdown.minutes} label="min" />
-              <span className="text-zinc-600 text-2xl font-bold pb-5">:</span>
-              <CountdownUnit value={countdown.seconds} label="seg" />
-            </div>
-          )}
-          <div className="mt-5 pt-4 border-t border-white/[0.06]">
-            <div className="text-xs text-zinc-500 mb-2">Progreso general del programa</div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: '62%' }}
-                  transition={{ delay: 0.8, duration: 1, ease: 'easeOut' }}
-                />
-              </div>
-              <span className="text-xs text-zinc-400 mono font-medium">62%</span>
-            </div>
-          </div>
+              entiende IA,
+            </span>{' '}
+            <br className="hidden sm:block" />
+            <span className="text-white">no puede defenderlo.</span>
+          </h1>
+          <p className="mt-4 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+            27 horas. 3 módulos. 7 herramientas. Una sola pregunta:{' '}
+            <span className="text-zinc-200 font-medium">¿cuándo te inscribes?</span>
+          </p>
+          <p className="mt-2 text-sm text-zinc-600 italic">
+            (No, la IA no va a quitarte el trabajo. Un abogado que usa IA, sí.)
+          </p>
         </motion.div>
 
+        {/* Countdown */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="lg:col-span-3 rounded-xl border border-white/[0.08] bg-[oklch(0.09_0.017_250/0.6)] backdrop-blur-sm p-6"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.35, duration: 0.5 }}
+          className="space-y-4"
         >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-semibold text-white">Módulos del Programa</span>
-            <Link href="/timeline" className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
-              Ver timeline <ArrowRight className="w-3 h-3" />
-            </Link>
+          <div className="text-xs text-zinc-500 uppercase tracking-widest mono">
+            Comienza en
           </div>
-          <div className="space-y-3">
-            {modules.map((mod) => (
-              <div
-                key={mod.id}
-                className={`flex items-start gap-4 p-3 rounded-lg border transition-colors ${
-                  mod.status === 'active'
-                    ? 'border-cyan-500/25 bg-cyan-500/5'
-                    : mod.status === 'completed'
-                    ? 'border-emerald-500/15 bg-emerald-500/3'
-                    : 'border-white/[0.05] bg-white/[0.02]'
-                }`}
-              >
-                <div className="shrink-0 mt-0.5">
-                  {mod.status === 'completed' ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  ) : mod.status === 'active' ? (
-                    <div className="w-5 h-5 rounded-full border-2 border-cyan-400 flex items-center justify-center">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                    </div>
-                  ) : (
-                    <Circle className="w-5 h-5 text-zinc-600" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-zinc-500 mono">M{mod.id}</span>
-                    <span className={`text-sm font-medium ${
-                      mod.status === 'active' ? 'text-cyan-300' :
-                      mod.status === 'completed' ? 'text-zinc-200' : 'text-zinc-500'
-                    }`}>
-                      {mod.title}
-                    </span>
-                  </div>
-                  <div className="text-xs text-zinc-600 mt-0.5">{mod.date}</div>
-                </div>
-                {mod.status !== 'pending' && (
-                  <div className="text-xs text-zinc-500 mono shrink-0">{mod.participants} p.</div>
-                )}
-              </div>
-            ))}
+          <div className="flex items-end justify-center gap-3 sm:gap-4">
+            <CountdownBlock value={cd.days} label="días" />
+            <span className="text-zinc-600 text-3xl font-bold pb-7">:</span>
+            <CountdownBlock value={cd.hours} label="horas" />
+            <span className="text-zinc-600 text-3xl font-bold pb-7">:</span>
+            <CountdownBlock value={cd.minutes} label="min" />
+            <span className="text-zinc-600 text-3xl font-bold pb-7">:</span>
+            <CountdownBlock value={cd.seconds} label="seg" />
           </div>
+          <div className="text-xs text-zinc-600 mono">Módulo 1 · 4 de septiembre 2026 · 09:00 hrs</div>
         </motion.div>
-      </div>
 
-      {/* QUICK LINKS */}
-      <motion.div
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3"
+        >
+          <Link href="/modulos">
+            <motion.button
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors glow-cyan"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              Ver el programa completo
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </Link>
+          <Link href="/prompt-lab">
+            <motion.button
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm text-zinc-300 border border-white/10 hover:border-white/20 hover:bg-white/[0.04] transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Zap className="w-4 h-4 text-cyan-400" />
+              Probar el Prompt Lab
+            </motion.button>
+          </Link>
+        </motion.div>
+      </motion.section>
+
+      {/* ── STATS STRIP ──────────────────────────── */}
+      <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
+        transition={{ delay: 0.6 }}
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
       >
-        <div className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Acceso rápido</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {quickLinks.map(({ href, icon: Icon, label, desc }) => (
+        {stats.map(({ value, label }) => (
+          <div key={label} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 text-center">
+            <div className="text-2xl font-bold text-white mono">{value}</div>
+            <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
+          </div>
+        ))}
+      </motion.section>
+
+      {/* ── WHY ATTEND ───────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="space-y-5"
+      >
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white">¿Por qué DIAT?</h2>
+          <p className="text-sm text-zinc-500 mt-1">Porque el futuro del derecho se construye ahora, no "cuando haya tiempo".</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {reasons.map(({ emoji, title, desc, color, accent }, i) => (
+            <motion.div
+              key={title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className={`rounded-xl border p-5 ${color}`}
+            >
+              <div className="text-3xl mb-3">{emoji}</div>
+              <h3 className={`font-semibold text-sm mb-2 ${accent}`}>{title}</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">{desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ── MODULES PREVIEW ──────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="space-y-5"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Los 3 módulos</h2>
+          <Link href="/modulos" className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
+            Ver detalle <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <div className="space-y-3">
+          {modules.map((mod, i) => (
+            <motion.div
+              key={mod.id}
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                mod.status === 'active' ? 'border-cyan-500/30 bg-cyan-500/6' :
+                mod.status === 'completed' ? 'border-emerald-500/20 bg-emerald-500/4' :
+                'border-white/[0.06] bg-white/[0.02]'
+              }`}
+            >
+              <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-bold mono text-sm shrink-0 ${
+                mod.status === 'active' ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300' :
+                mod.status === 'completed' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
+                'border-white/10 bg-white/[0.04] text-zinc-500'
+              }`}>
+                {mod.id}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-white">{mod.title}</div>
+                <div className="text-xs text-zinc-500 mt-0.5">{mod.date} · {mod.duration}</div>
+              </div>
+              <div className="shrink-0">
+                {mod.status === 'completed' ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> :
+                 mod.status === 'active' ? <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse block" /> :
+                 <Circle className="w-5 h-5 text-zinc-600" />}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ── FEATURES GRID ────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="space-y-5"
+      >
+        <h2 className="text-2xl font-bold text-white text-center">Explora la plataforma</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {features.map(({ icon: Icon, href, label, desc }) => (
             <Link key={href} href={href}>
               <motion.div
-                className="group rounded-xl border border-white/[0.06] bg-[oklch(0.09_0.017_250/0.5)] hover:border-cyan-500/25 hover:bg-cyan-500/5 transition-all duration-200 p-4 flex flex-col gap-3"
+                className="group flex items-center gap-4 p-4 rounded-xl border border-white/[0.07] bg-white/[0.02] hover:border-cyan-500/25 hover:bg-cyan-500/5 transition-all"
                 whileHover={{ y: -2 }}
-                transition={{ duration: 0.15 }}
               >
-                <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] group-hover:border-cyan-500/30 group-hover:bg-cyan-500/8 flex items-center justify-center transition-all">
-                  <Icon className="w-4 h-4 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
+                <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] group-hover:border-cyan-500/30 group-hover:bg-cyan-500/10 flex items-center justify-center transition-all shrink-0">
+                  <Icon className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">{label}</div>
+                  <div className="font-semibold text-sm text-zinc-200 group-hover:text-white transition-colors">{label}</div>
                   <div className="text-xs text-zinc-600">{desc}</div>
                 </div>
+                <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-cyan-500 ml-auto transition-colors" />
               </motion.div>
             </Link>
           ))}
         </div>
-      </motion.div>
+      </motion.section>
+
+      {/* ── BOTTOM CTA ───────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="relative rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/8 to-indigo-500/5 overflow-hidden p-8 text-center"
+      >
+        <div className="absolute inset-0 grid-bg-fine opacity-30" />
+        <div className="relative space-y-4">
+          <div className="text-2xl font-bold text-white">
+            ¿Sigues leyendo?
+          </div>
+          <p className="text-zinc-400 text-sm max-w-md mx-auto">
+            Probablemente ya estás convencido. El Programa DIAT de la Facultad de Derecho PUCV te espera en septiembre.
+          </p>
+          <p className="text-xs text-zinc-600 italic">
+            "El futuro llega para todos. La diferencia es quién llega preparado."
+          </p>
+          <Link href="/modulos">
+            <motion.button
+              className="mt-2 flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              Ver programa completo <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </Link>
+        </div>
+      </motion.section>
+
     </div>
   );
 }

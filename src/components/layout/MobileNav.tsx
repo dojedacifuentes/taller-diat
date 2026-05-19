@@ -2,27 +2,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import {
-  LayoutDashboard,
-  CalendarDays,
-  Cpu,
-  BarChart3,
-  Users,
-  ShieldCheck,
-} from 'lucide-react';
+import { Home, Rocket, Zap, Layers, Wrench } from 'lucide-react';
 
 const nav = [
-  { href: '/', icon: LayoutDashboard, label: 'Inicio' },
-  { href: '/timeline', icon: CalendarDays, label: 'Timeline' },
-  { href: '/herramientas', icon: Cpu, label: 'Herramientas' },
-  { href: '/admin', icon: BarChart3, label: 'Admin' },
-  { href: '/equipo', icon: Users, label: 'Equipo' },
-  { href: '/autoridad', icon: ShieldCheck, label: 'Autoridad' },
+  { href: '/', icon: Home, label: 'Inicio' },
+  { href: '/modulos', icon: Layers, label: 'Módulos' },
+  { href: '/prompt-lab', icon: Zap, label: 'Lab' },
+  { href: '/flashcards', icon: Rocket, label: 'Cards' },
+  { href: '/toolkit', icon: Wrench, label: 'Toolkit' },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
-
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[oklch(0.08_0.016_250/0.95)] backdrop-blur-xl">
       <div className="flex items-center">
@@ -31,9 +22,7 @@ export function MobileNav() {
           return (
             <Link key={href} href={href} className="flex-1">
               <motion.div
-                className={`flex flex-col items-center gap-1 py-3 px-1 ${
-                  active ? 'text-cyan-400' : 'text-zinc-500'
-                }`}
+                className={`flex flex-col items-center gap-1 py-3 px-1 ${active ? 'text-cyan-400' : 'text-zinc-500'}`}
                 whileTap={{ scale: 0.9 }}
               >
                 <div className="relative">
