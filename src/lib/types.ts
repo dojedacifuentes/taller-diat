@@ -46,6 +46,7 @@ export type TeamRole =
   | 'Evidencias'
   | 'Soporte Técnico'
   | 'Relator'
+  | 'Integrante'
   | 'Participante';
 
 export interface TeamMember {

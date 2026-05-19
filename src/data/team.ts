@@ -1,124 +1,66 @@
 import type { TeamMember } from '@/lib/types';
 
-export const teamMembers: TeamMember[] = [
-  // ── Autoridades institucionales ──────────────────
+// ── Equipo Ejecutor — Integrantes del Programa DIAT ────────────────────────
+export const equipoEjecutor = [
   {
-    id: 'tm-00',
-    name: 'Eduardo Aldunate Lizana',
-    role: 'Director',
-    status: 'active',
-    initials: 'EAL',
+    id: 'ee-01',
+    name: 'Diego Ojeda Cifuentes',
+    rol: 'Subdirector de los Talleres',
+    calidad: 'Egresado Derecho PUCV',
+    initials: 'DO',
     color: 'cyan',
-    // No email exposed for institutional authorities
   },
   {
-    id: 'tm-01',
-    name: 'Dr. Adolfo Silva Walbaum',
-    role: 'Subdirector',
-    status: 'active',
-    initials: 'ASW',
+    id: 'ee-02',
+    name: 'Paola Menéndez Pastorelli',
+    rol: 'Integrante',
+    calidad: 'Egresada Derecho PUCV',
+    initials: 'PM',
     color: 'indigo',
-    // No email exposed for institutional authorities
   },
   {
-    id: 'tm-02',
-    name: 'Diego Hernán Ojeda Cifuentes',
-    role: 'Coordinación',
-    status: 'active',
-    initials: 'DOC',
-    color: 'blue',
-  },
-  // ── Equipo operativo ─────────────────────────────
-  {
-    id: 'tm-03',
-    name: 'Catalina Herrera',
-    role: 'Coordinación',
-    status: 'active',
-    moduleId: 2,
-    email: 'c.herrera@pucv.cl',
-    initials: 'CH',
+    id: 'ee-03',
+    name: 'Héctor Marilao Ramírez',
+    rol: 'Integrante',
+    calidad: 'Egresado Derecho PUCV',
+    initials: 'HM',
     color: 'blue',
   },
   {
-    id: 'tm-04',
-    name: 'Diego Saavedra',
-    role: 'Difusión',
-    status: 'active',
-    email: 'd.saavedra@pucv.cl',
-    initials: 'DS',
+    id: 'ee-04',
+    name: 'Nareth Gaete Tapia',
+    rol: 'Integrante',
+    calidad: 'Estudiante Derecho PUCV',
+    initials: 'NG',
     color: 'purple',
   },
   {
-    id: 'tm-05',
-    name: 'Isidora Vega',
-    role: 'Evidencias',
-    status: 'active',
-    moduleId: 2,
-    email: 'i.vega@pucv.cl',
-    initials: 'IV',
+    id: 'ee-05',
+    name: 'Constanza Martínez Astorga',
+    rol: 'Integrante',
+    calidad: 'Estudiante Derecho PUCV',
+    initials: 'CM',
     color: 'emerald',
   },
   {
-    id: 'tm-06',
-    name: 'Tomás Navarro',
-    role: 'Soporte Técnico',
-    status: 'active',
-    email: 't.navarro@pucv.cl',
-    initials: 'TN',
+    id: 'ee-06',
+    name: 'María Inés Díaz Valdés',
+    rol: 'Integrante',
+    calidad: 'Estudiante Derecho PUCV',
+    initials: 'MD',
     color: 'teal',
   },
-  {
-    id: 'tm-07',
-    name: 'Prof. Andrea Castillo',
-    role: 'Relator',
-    status: 'active',
-    moduleId: 1,
-    email: 'a.castillo@pucv.cl',
-    initials: 'AC',
-    color: 'cyan',
-  },
-  {
-    id: 'tm-08',
-    name: 'Prof. Matías Rojas',
-    role: 'Relator',
-    status: 'active',
-    moduleId: 2,
-    email: 'm.rojas@pucv.cl',
-    initials: 'MR',
-    color: 'indigo',
-  },
-  {
-    id: 'tm-09',
-    name: 'Dr. Pablo Gutiérrez',
-    role: 'Relator',
-    status: 'standby',
-    moduleId: 3,
-    email: 'p.gutierrez@pucv.cl',
-    initials: 'PG',
-    color: 'blue',
-  },
-  {
-    id: 'tm-10',
-    name: 'Fernanda Lagos',
-    role: 'Coordinación',
-    status: 'standby',
-    moduleId: 3,
-    email: 'f.lagos@pucv.cl',
-    initials: 'FL',
-    color: 'purple',
-  },
-];
+] as const;
 
-export const roleHierarchy: Record<string, number> = {
-  'Director': 0,
-  'Subdirector': 1,
-  'Coordinación': 2,
-  'Difusión': 2,
-  'Evidencias': 2,
-  'Soporte Técnico': 2,
-  'Relator': 3,
-  'Participante': 4,
-};
+// ── teamMembers legacy — kept for type compatibility with pages that import it
+export const teamMembers: TeamMember[] = equipoEjecutor.map((m, i) => ({
+  id: m.id,
+  name: m.name,
+  role: i === 0 ? 'Subdirector' : 'Integrante',
+  status: 'active' as const,
+  initials: m.initials,
+  color: m.color,
+}));
 
 export const roleColors: Record<string, string> = {
   'Director': 'text-cyan-400 border-cyan-400/30 bg-cyan-400/10',
@@ -128,7 +70,14 @@ export const roleColors: Record<string, string> = {
   'Evidencias': 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10',
   'Soporte Técnico': 'text-teal-400 border-teal-400/30 bg-teal-400/10',
   'Relator': 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10',
-  'Participante': 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10',
+  'Integrante': 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10',
+  'Participante': 'text-zinc-500 border-zinc-500/30 bg-zinc-500/10',
+};
+
+export const roleHierarchy: Record<string, number> = {
+  'Director': 0, 'Subdirector': 1, 'Coordinación': 2,
+  'Difusión': 2, 'Evidencias': 2, 'Soporte Técnico': 2,
+  'Relator': 3, 'Integrante': 4, 'Participante': 5,
 };
 
 export const memberAvatarColors: Record<string, string> = {

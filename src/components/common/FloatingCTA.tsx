@@ -1,114 +1,131 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, X, Calendar, ArrowRight } from 'lucide-react';
+import { Mail, X, Calendar, Copy, Check } from 'lucide-react';
 
+const EMAIL = 'programadiat@pucv.cl';
 const MAILTO =
-  'mailto:programadiat@pucv.cl' +
+  'mailto:' + EMAIL +
   '?subject=Inter%C3%A9s%20en%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20DIAT' +
   '&body=Hola%20Programa%20DIAT%3A%0A%0AQuisiera%20reservar%20un%20cupo%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20avanzado%20que%20se%20realizar%C3%A1%20durante%20septiembre.%0A%0ANombre%3A%0ACarrera%20%2F%20profesi%C3%B3n%3A%0ACorreo%3A%0ATel%C3%A9fono%20opcional%3A%0AComentarios%3A%0A%0AMuchas%20gracias.';
 
 export function FloatingCTA() {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // Show after 2 seconds
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 2000);
+    const t = setTimeout(() => setVisible(true), 2200);
     return () => clearTimeout(t);
   }, []);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback: select & execCommand
+      const el = document.createElement('textarea');
+      el.value = EMAIL;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (dismissed) return null;
 
   return (
     <>
-      {/* Desktop: floating right side */}
+      {/* ── Desktop floating card (right side) ── */}
       <AnimatePresence>
         {visible && (
           <motion.div
             initial={{ opacity: 0, x: 80 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 80 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-            className="hidden lg:flex fixed right-6 bottom-8 z-50 flex-col items-end gap-2"
+            transition={{ type: 'spring', damping: 22, stiffness: 200 }}
+            className="hidden lg:block fixed right-6 bottom-8 z-50 w-72"
           >
-            {/* Expanded card */}
-            <AnimatePresence>
-              {expanded && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 12, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-72 rounded-2xl border border-cyan-500/30 bg-[oklch(0.09_0.02_250)] shadow-2xl shadow-cyan-500/10 p-5 space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="text-sm font-bold text-white leading-tight">
-                        Reserva tu cupo
-                      </div>
-                      <div className="text-[11px] text-zinc-500 mt-0.5">
-                        Taller IA Jurídica · Septiembre 2026
-                      </div>
+            <div className="rounded-2xl border border-cyan-500/30 bg-[oklch(0.09_0.02_250/0.97)] shadow-2xl shadow-cyan-500/10 backdrop-blur-xl overflow-hidden">
+              {/* Top accent line */}
+              <div className="h-0.5 bg-gradient-to-r from-cyan-500 via-indigo-500 to-transparent" />
+
+              <div className="p-4 space-y-3">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      <span className="text-[10px] mono font-bold text-cyan-400 uppercase tracking-widest">
+                        Cupos disponibles
+                      </span>
                     </div>
-                    <button
-                      onClick={() => setExpanded(false)}
-                      className="text-zinc-600 hover:text-zinc-400 transition-colors ml-2"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    <div className="text-sm font-bold text-white mt-0.5">
+                      Reserva tu lugar en DIAT 2026
+                    </div>
                   </div>
-
-                  <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-                    <Calendar className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                    <span>8 · 15 · 22 Septiembre 2026</span>
-                  </div>
-
-                  <div className="text-[11px] text-zinc-500 leading-relaxed">
-                    Programa DIAT · Facultad de Derecho PUCV · 3 módulos presenciales · 6 horas · Certificación institucional
-                  </div>
-
-                  <a
-                    href={MAILTO}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-colors"
+                  <button
+                    onClick={() => setDismissed(true)}
+                    className="text-zinc-600 hover:text-zinc-400 transition-colors -mt-0.5 -mr-0.5 p-1"
                   >
-                    <Mail className="w-3.5 h-3.5" />
-                    Enviar solicitud de cupo
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
-                  <div className="text-[9px] text-zinc-700 text-center">
-                    Cupos limitados · Fechas tentativas · Septiembre 2026
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                {/* Date */}
+                <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+                  <Calendar className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                  8 · 15 · 22 Septiembre 2026 · Fechas tentativas
+                </div>
 
-            {/* Trigger button */}
-            <motion.button
-              onClick={() => setExpanded(v => !v)}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-2.5 px-4 py-3 rounded-2xl border border-cyan-500/40 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 font-bold text-sm shadow-lg shadow-cyan-500/10 transition-colors backdrop-blur-sm"
-            >
-              <Mail className="w-4 h-4" />
-              Reservar cupo
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            </motion.button>
+                {/* Primary CTA — direct mailto, works even without email client visible fallback */}
+                <a
+                  href={MAILTO}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 active:bg-cyan-300 text-black text-sm font-bold transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Abrir correo de reserva
+                </a>
 
-            {/* Dismiss */}
-            <button
-              onClick={() => setDismissed(true)}
-              className="text-[10px] text-zinc-700 hover:text-zinc-500 transition-colors"
-            >
-              No gracias
-            </button>
+                {/* Fallback: visible email + copy */}
+                <div className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 flex items-center gap-2">
+                  <span className="text-[11px] text-zinc-400 flex-1 truncate mono">
+                    {EMAIL}
+                  </span>
+                  <button
+                    onClick={copyEmail}
+                    className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-cyan-400 transition-colors shrink-0"
+                    title="Copiar dirección"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-400" />
+                        <span className="text-emerald-400">Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="text-[9px] text-zinc-700 text-center">
+                  Facultad de Derecho PUCV · Cupos limitados
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mobile: bottom bar */}
+      {/* ── Mobile bottom bar ── */}
       <AnimatePresence>
         {visible && (
           <motion.div
@@ -116,26 +133,36 @@ export function FloatingCTA() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
             transition={{ type: 'spring', damping: 22, stiffness: 180 }}
-            className="lg:hidden fixed bottom-[72px] left-0 right-0 z-50 px-4 pb-1"
+            className="lg:hidden fixed bottom-[72px] left-0 right-0 z-50 px-3 pb-1"
           >
-            <div className="flex items-center gap-2 rounded-2xl border border-cyan-500/30 bg-[oklch(0.09_0.02_250/0.95)] backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/40">
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-white truncate">Reserva tu cupo — Sep 2026</div>
-                <div className="text-[10px] text-zinc-500 truncate">DIAT · Facultad de Derecho PUCV · Cupos limitados</div>
+            <div className="rounded-2xl border border-cyan-500/30 bg-[oklch(0.09_0.02_250/0.97)] backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/50 overflow-hidden">
+              <div className="h-px bg-gradient-to-r from-cyan-500 via-indigo-500 to-transparent -mx-4 mb-3" />
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-white truncate">Reserva tu cupo — DIAT 2026</div>
+                  <div className="text-[10px] text-zinc-500 truncate">Facultad de Derecho PUCV · Cupos limitados</div>
+                </div>
+                <a
+                  href={MAILTO}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-colors shrink-0"
+                >
+                  <Mail className="w-3 h-3" />
+                  Reservar
+                </a>
+                <button
+                  onClick={copyEmail}
+                  className="flex items-center justify-center w-8 h-8 rounded-xl border border-white/10 bg-white/[0.04] text-zinc-500 hover:text-cyan-400 transition-colors shrink-0"
+                  title="Copiar email"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={() => setDismissed(true)}
+                  className="text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <a
-                href={MAILTO}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-colors shrink-0"
-              >
-                <Mail className="w-3 h-3" />
-                Inscribirse
-              </a>
-              <button
-                onClick={() => setDismissed(true)}
-                className="text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
           </motion.div>
         )}
