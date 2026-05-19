@@ -1,16 +1,17 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, Copy, Check, RotateCcw, Download,
-  Zap, Shield, Brain, BookOpen, ArrowRight,
+  Zap, Shield, Brain, BookOpen,
 } from 'lucide-react';
 import {
-  purposes, areas, depthLevels, targetAIs, enhancements, outputFormats, profiles,
-  generatePrompt,
+  purposes, areas, depthLevels, targetAIs,
+  generatePrompt, autoSelectProfile, autoSelectFormat,
   type PromptPurpose, type PromptArea, type DepthLevel, type TargetAI,
 } from '@/data/promptBuilder';
 import { generatePromptPDF } from '@/lib/pdfGenerators';
+import { downloadBlob } from '@/lib/utils';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type FlowStep = 'objetivo' | 'area' | 'profundidad' | 'modelo' | 'generating' | 'resultado';
@@ -20,28 +21,6 @@ interface FlowSel {
   area: PromptArea | null;
   profundidad: DepthLevel | null;
   modelo: TargetAI | null;
-}
-
-// ── Auto-mappings ──────────────────────────────────────────────────────────────
-const profileMap: Record<string, string> = {
-  estudiar: 'estudiante', examen: 'estudiante',
-  redactar: 'abogado', sentencia: 'abogado', contrato: 'abogado',
-  audiencia: 'abogado', estrategia: 'abogado',
-  doctrina: 'academico', comparar: 'academico', agente: 'academico',
-};
-
-function autoProfile(purpose: PromptPurpose) {
-  return profiles.find(p => p.id === (profileMap[purpose.id] || 'abogado'))!;
-}
-
-function autoFormat(purpose: PromptPurpose, depth: DepthLevel) {
-  if (purpose.id === 'examen')    return outputFormats.find(f => f.id === 'preguntas')!;
-  if (purpose.id === 'redactar')  return outputFormats.find(f => f.id === 'minuta')!;
-  if (purpose.id === 'agente')    return outputFormats.find(f => f.id === 'system_prompt')!;
-  if (purpose.id === 'estrategia' || purpose.id === 'audiencia')
-                                  return outputFormats.find(f => f.id === 'checklist')!;
-  if (depth.id === 'academico')   return outputFormats.find(f => f.id === 'informe')!;
-  return outputFormats.find(f => f.id === 'esquema')!;
 }
 
 // ── Generating phases ──────────────────────────────────────────────────────────
@@ -55,15 +34,14 @@ const GEN_PHASES = [
 ];
 
 // ── Step config ────────────────────────────────────────────────────────────────
-const STEP_ORDER: FlowStep[] = ['objetivo', 'area', 'profundidad', 'modelo', 'generating', 'resultado'];
-
 const BREADCRUMB = [
-  { key: 'objetivo',   label: 'OBJETIVO' },
-  { key: 'area',       label: 'ÁREA' },
-  { key: 'profundidad',label: 'PROFUNDIDAD' },
-  { key: 'modelo',     label: 'MODELO' },
-  { key: 'generating', label: 'GENERAR' },
+  { key: 'objetivo',    label: 'OBJETIVO' },
+  { key: 'area',        label: 'ÁREA' },
+  { key: 'profundidad', label: 'PROFUNDIDAD' },
+  { key: 'modelo',      label: 'MODELO' },
+  { key: 'generating',  label: 'GENERAR' },
 ];
+const STEP_ORDER: FlowStep[] = [...BREADCRUMB.map(b => b.key as FlowStep), 'resultado'];
 
 // ── Card component ─────────────────────────────────────────────────────────────
 interface CardProps {
@@ -89,6 +67,9 @@ function FlowCard({ emoji, label, description, selected, onClick, accent = 'cyan
   };
   const textMap: Record<string, string> = {
     cyan: 'text-cyan-400', indigo: 'text-indigo-400', purple: 'text-purple-400',
+  };
+  const bgMap: Record<string, string> = {
+    cyan: 'bg-cyan-500', indigo: 'bg-indigo-500', purple: 'bg-purple-500',
   };
 
   return (
@@ -131,9 +112,7 @@ function FlowCard({ emoji, label, description, selected, onClick, accent = 'cyan
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className={`shrink-0 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
-              accent === 'cyan' ? 'bg-cyan-500' : accent === 'indigo' ? 'bg-indigo-500' : 'bg-purple-500'
-            }`}
+            className={`shrink-0 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center ${bgMap[accent]}`}
           >
             <Check className="w-2.5 h-2.5 text-black" />
           </motion.div>
@@ -259,6 +238,9 @@ export default function PromptLabPage() {
   const [promptResult, setPromptResult] = useState('');
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  // Ref so the generating interval can read the latest sel without stale closure
+  const selRef = useRef(sel);
+  useEffect(() => { selRef.current = sel; });
 
   // ── Step navigation ──────────────────────────────────────────────────────────
   const goTo = useCallback((next: FlowStep) => {
@@ -292,39 +274,40 @@ export default function PromptLabPage() {
     if (step !== 'generating') return;
     setGenPhase(0);
     let phase = 0;
+    let doneTimer: ReturnType<typeof setTimeout>;
     const id = setInterval(() => {
       phase++;
       setGenPhase(phase);
       if (phase >= GEN_PHASES.length - 1) {
         clearInterval(id);
-        // Build prompt
-        const profile = autoProfile(sel.objetivo!);
-        const format  = autoFormat(sel.objetivo!, sel.profundidad!);
+        const s = selRef.current;
+        const profile = autoSelectProfile(s.objetivo!);
+        const format  = autoSelectFormat(s.objetivo!, s.profundidad!);
         const result  = generatePrompt(
-          profile, sel.objetivo!, sel.area!, sel.profundidad!, sel.modelo!,
+          profile, s.objetivo!, s.area!, s.profundidad!, s.modelo!,
           format, ['antihallu', 'sources'], '',
         );
         setPromptResult(result);
-        setTimeout(() => setStep('resultado'), 500);
+        doneTimer = setTimeout(() => setStep('resultado'), 500);
       }
     }, 400);
-    return () => clearInterval(id);
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { clearInterval(id); clearTimeout(doneTimer); };
+  }, [step]);
 
   // ── Live preview ─────────────────────────────────────────────────────────────
-  const buildPreview = () => {
+  const promptPreview = useMemo(() => {
     if (!sel.objetivo) return '';
     const parts: string[] = [];
     parts.push(`ROL DETECTADO: ${sel.objetivo.label}`);
-    if (sel.area)       parts.push(`ÁREA: ${sel.area.label}`);
-    if (sel.profundidad)parts.push(`NIVEL: ${sel.profundidad.label} — ${sel.profundidad.description}`);
-    if (sel.modelo)     parts.push(`IA: ${sel.modelo.label}`);
+    if (sel.area)        parts.push(`ÁREA: ${sel.area.label}`);
+    if (sel.profundidad) parts.push(`NIVEL: ${sel.profundidad.label} — ${sel.profundidad.description}`);
+    if (sel.modelo)      parts.push(`IA: ${sel.modelo.label}`);
     parts.push('');
     parts.push('Actúa como asistente jurídico experto...');
-    if (sel.area) parts.push(`Especializado en ${sel.area.label}...`);
+    if (sel.area)        parts.push(`Especializado en ${sel.area.label}...`);
     if (sel.profundidad) parts.push(`Profundidad: ${sel.profundidad.description}...`);
     return parts.join('\n');
-  };
+  }, [sel]);
 
   // ── Copy ─────────────────────────────────────────────────────────────────────
   const copyPrompt = async () => {
@@ -337,25 +320,22 @@ export default function PromptLabPage() {
   const downloadPDF = async () => {
     if (!sel.objetivo || !sel.area || !sel.profundidad || !sel.modelo) return;
     setDownloading(true);
-    await generatePromptPDF({
-      objetivo: sel.objetivo.label,
-      area: sel.area.label,
-      profundidad: `${sel.profundidad.label} — ${sel.profundidad.description}`,
-      modelo: sel.modelo.label,
-      promptText: promptResult,
-      modelTip: sel.modelo.optimizationTip,
-    });
-    setTimeout(() => setDownloading(false), 1200);
+    try {
+      await generatePromptPDF({
+        objetivo: sel.objetivo.label,
+        area: sel.area.label,
+        profundidad: `${sel.profundidad.label} — ${sel.profundidad.description}`,
+        modelo: sel.modelo.label,
+        promptText: promptResult,
+        modelTip: sel.modelo.optimizationTip,
+      });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   // ── Download TXT ─────────────────────────────────────────────────────────────
-  const downloadTxt = () => {
-    const blob = new Blob([promptResult], { type: 'text/plain;charset=utf-8' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = 'prompt-juridico-diat.txt'; a.click();
-    URL.revokeObjectURL(url);
-  };
+  const downloadTxt = () => downloadBlob(promptResult, 'prompt-juridico-diat.txt');
 
   // ── Breadcrumb index ─────────────────────────────────────────────────────────
   const stepIdx = STEP_ORDER.indexOf(step);
@@ -804,7 +784,7 @@ export default function PromptLabPage() {
         {/* Right: DNA panel (hidden on mobile, hidden in generating/resultado) */}
         {!['generating', 'resultado'].includes(step) && (
           <div className="hidden lg:flex lg:w-72 xl:w-80 shrink-0 flex-col overflow-hidden">
-            <DNAPanel sel={sel} promptPreview={buildPreview()} />
+            <DNAPanel sel={sel} promptPreview={promptPreview} />
           </div>
         )}
 

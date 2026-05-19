@@ -3,6 +3,7 @@
 // Called from client components on click — no 'use client' needed here
 // ─────────────────────────────────────────────────────────────────────────────
 import type { Module } from '@/lib/types';
+import type { jsPDF as JsPDFClass } from 'jspdf';
 
 // ─── Local types ─────────────────────────────────────────────────────────────
 type EquipoMember = {
@@ -39,41 +40,46 @@ const C = {
   muted:   [30, 41,  59]  as [number,number,number],   // #1e293b
 };
 
-// ─── jsPDF lazy import (browser only) ────────────────────────────────────────
-async function getJsPDF() {
-  const { jsPDF } = await import('jspdf');
-  return jsPDF;
+// ─── Layout constants (A4 portrait, mm) ──────────────────────────────────────
+const PW = 210;   // page width
+const PH = 297;   // page height
+const ML = 20;    // left margin
+const MR = 190;   // right margin endpoint
+
+// ─── jsPDF lazy import — cached singleton ────────────────────────────────────
+// Cached after first call so multiple downloads in a session avoid re-resolving the import.
+let _jsPDFCache: typeof JsPDFClass | null = null;
+async function getJsPDF(): Promise<typeof JsPDFClass> {
+  if (!_jsPDFCache) {
+    _jsPDFCache = (await import('jspdf')).jsPDF;
+  }
+  return _jsPDFCache;
 }
+
+// ─── Local doc type alias ─────────────────────────────────────────────────────
+type JsPDFDoc = InstanceType<typeof JsPDFClass>;
 
 // ─── Drawing helpers ──────────────────────────────────────────────────────────
-function fillPage(doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>, color = C.bg) {
+function fillPage(doc: JsPDFDoc, color = C.bg) {
   doc.setFillColor(...color);
-  doc.rect(0, 0, 210, 297, 'F');
+  doc.rect(0, 0, PW, PH, 'F');
 }
 
-function accentBar(doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>, y = 0, h = 1.5) {
+function accentBar(doc: JsPDFDoc, y = 0, h = 1.5) {
   // Cyan→Indigo gradient approximated as two rects
   doc.setFillColor(...C.cyan);
-  doc.rect(0, y, 105, h, 'F');
+  doc.rect(0, y, PW / 2, h, 'F');
   doc.setFillColor(...C.indigo);
-  doc.rect(105, y, 105, h, 'F');
+  doc.rect(PW / 2, y, PW / 2, h, 'F');
 }
 
-function hLine(
-  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
-  x1: number, x2: number, y: number,
-  color = C.muted, width = 0.2,
-) {
+function hLine(doc: JsPDFDoc, x1: number, x2: number, y: number, color = C.muted, width = 0.2) {
   doc.setDrawColor(...color);
   doc.setLineWidth(width);
   doc.line(x1, y, x2, y);
 }
 
-function badge(
-  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
-  text: string, x: number, y: number,
-  bgColor = C.bgCard, textColor = C.cyanL,
-) {
+function badge(doc: JsPDFDoc, text: string, x: number, y: number, bgColor = C.bgCard, textColor = C.cyanL) {
   const w = text.length * 1.7 + 8;
   doc.setFillColor(...bgColor);
   doc.roundedRect(x, y - 4, w, 6, 1.5, 1.5, 'F');
@@ -86,20 +92,43 @@ function badge(
   doc.text(text, x + w / 2, y - 0.3, { align: 'center' });
 }
 
-function sectionLabel(
-  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
-  label: string, x: number, y: number,
-  color = C.cyan,
-) {
+function sectionLabel(doc: JsPDFDoc, label: string, x: number, y: number, color = C.cyan) {
   doc.setFont('courier', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(...color);
   doc.text(label.toUpperCase(), x, y);
-  hLine(doc, x, 190, y + 1.5, color, 0.15);
+  hLine(doc, x, MR, y + 1.5, color, 0.15);
+}
+
+/** Standard dark page header: fillPage + accentBar + badges + bold title + hLine. */
+function pageHeader(
+  doc: JsPDFDoc,
+  badges: { text: string; x: number }[],
+  title: string,
+  lineColor: [number, number, number] = C.cyan,
+) {
+  fillPage(doc);
+  accentBar(doc);
+  badges.forEach(b => badge(doc, b.text, b.x, 18));
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...C.white);
+  doc.text(title, ML, 32);
+  hLine(doc, ML, MR, 36, lineColor, 0.3);
+}
+
+/** Standard dark page footer with left label and optional right page-number. */
+function pageFooter(doc: JsPDFDoc, leftText: string, rightText = '') {
+  hLine(doc, ML, MR, 278, C.muted);
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.grayD);
+  doc.text(leftText, ML, 285);
+  if (rightText) doc.text(rightText, MR, 285, { align: 'right' });
 }
 
 function wrapText(
-  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
+  doc: JsPDFDoc,
   text: string, x: number, y: number,
   maxWidth: number, lineHeight: number,
   size: number, color: [number,number,number],
@@ -126,7 +155,6 @@ export async function generateDossierPDF(
 ): Promise<void> {
   const JsPDF = await getJsPDF();
   const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = 210;
 
   // ── PAGE 1: COVER ──────────────────────────────────────────────────────────
   fillPage(doc);
@@ -135,8 +163,8 @@ export async function generateDossierPDF(
   doc.setDrawColor(6, 182, 212, 0.03);
   doc.setLineWidth(0.1);
   for (let i = 0; i < 30; i++) {
-    doc.line(0, i * 10, 210, i * 10);
-    doc.line(i * 7, 0, i * 7, 297);
+    doc.line(0, i * 10, PW, i * 10);
+    doc.line(i * 7, 0, i * 7, PH);
   }
 
   // Top accent bar
@@ -164,7 +192,7 @@ export async function generateDossierPDF(
   doc.text('Septiembre 2026 · Valparaíso, Chile', 20, 112);
 
   // Divider
-  hLine(doc, 20, 190, 122, C.cyan, 0.4);
+  hLine(doc, ML, MR, 122, C.cyan, 0.4);
 
   // Subtitle
   doc.setFont('helvetica', 'bold');
@@ -211,26 +239,16 @@ export async function generateDossierPDF(
   });
 
   // Bottom
-  hLine(doc, 20, 190, 260, C.muted);
+  hLine(doc, ML, MR, 260, C.muted);
   doc.setFont('courier', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...C.grayD);
-  doc.text('DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · Todos los derechos reservados', 20, 268);
-  doc.text('© 2026 Programa DIAT · Valparaíso, Chile', 20, 275);
+  doc.text('DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · Todos los derechos reservados', ML, 268);
+  doc.text('© 2026 Programa DIAT · Valparaíso, Chile', ML, 275);
 
   // ── PAGE 2: CONTEXTO Y ESTADÍSTICAS ────────────────────────────────────────
   doc.addPage();
-  fillPage(doc);
-  accentBar(doc);
-
-  badge(doc, 'CONTEXTO', 20, 18);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...C.white);
-  doc.text('¿Por qué aprender IA jurídica ahora?', 20, 32);
-
-  hLine(doc, 20, 190, 36, C.cyan, 0.3);
+  pageHeader(doc, [{ text: 'CONTEXTO', x: ML }], '¿Por qué aprender IA jurídica ahora?');
 
   let y2 = 46;
   const contextParas = [
@@ -284,16 +302,7 @@ export async function generateDossierPDF(
 
   // ── PAGE 3: COMPETENCIAS ───────────────────────────────────────────────────
   doc.addPage();
-  fillPage(doc);
-  accentBar(doc);
-
-  badge(doc, 'COMPETENCIAS', 20, 18);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...C.white);
-  doc.text('9 competencias que desarrollarás', 20, 32);
-  hLine(doc, 20, 190, 36, C.indigo, 0.3);
+  pageHeader(doc, [{ text: 'COMPETENCIAS', x: ML }], '9 competencias que desarrollarás', C.indigo);
 
   const competencias = [
     { n: '01', title: 'Prompting jurídico de precisión', desc: 'Diseñar instrucciones complejas que producen outputs jurídicos fiables, reproducibles y profesionales.' },
@@ -353,7 +362,7 @@ export async function generateDossierPDF(
     const mc = modColors[i];
     // Top accent bar in module color
     doc.setFillColor(...mc);
-    doc.rect(0, 0, 210, 2, 'F');
+    doc.rect(0, 0, PW, 2, 'F');
 
     badge(doc, modLabels[i], 20, 18);
     badge(doc, mod.displayDate || `Sesión ${i + 1}`, 74, 18);
@@ -369,7 +378,7 @@ export async function generateDossierPDF(
     doc.setTextColor(...C.gray);
     doc.text(mod.subtitle || '', 20, 42);
 
-    hLine(doc, 20, 190, 46, mc, 0.4);
+    hLine(doc, ML, MR, 46, mc, 0.4);
 
     // Objectives
     let my = 54;
@@ -457,26 +466,12 @@ export async function generateDossierPDF(
     }
 
     // Footer
-    hLine(doc, 20, 190, 278, C.muted);
-    doc.setFont('courier', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.grayD);
-    doc.text(`${modLabels[i]} · Programa DIAT 2026 · Facultad de Derecho PUCV`, 20, 285);
-    doc.text(`${i + 1 + 3}`, 190, 285, { align: 'right' });
+    pageFooter(doc, `${modLabels[i]} · Programa DIAT 2026 · Facultad de Derecho PUCV`, `${i + 4}`);
   });
 
   // ── PAGE 7: TOOLKIT ────────────────────────────────────────────────────────
   doc.addPage();
-  fillPage(doc);
-  accentBar(doc);
-
-  badge(doc, 'TOOLKIT IA', 20, 18);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...C.white);
-  doc.text('Herramientas del ecosistema legaltech', 20, 32);
-  hLine(doc, 20, 190, 36, C.cyan, 0.3);
+  pageHeader(doc, [{ text: 'TOOLKIT IA', x: ML }], 'Herramientas del ecosistema legaltech');
 
   const tools = [
     { name: 'Claude', maker: 'Anthropic', role: 'Análisis profundo · Documentos extensos · Agentes jurídicos', ideal: 'Contratos, informes, system prompts', color: C.cyanL },
@@ -535,16 +530,7 @@ export async function generateDossierPDF(
 
   // ── PAGE 8: EQUIPO + CIERRE ────────────────────────────────────────────────
   doc.addPage();
-  fillPage(doc);
-  accentBar(doc);
-
-  badge(doc, 'EQUIPO EJECUTOR', 20, 18);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...C.white);
-  doc.text('Equipo Programa DIAT 2026', 20, 32);
-  hLine(doc, 20, 190, 36, C.purple, 0.3);
+  pageHeader(doc, [{ text: 'EQUIPO EJECUTOR', x: ML }], 'Equipo Programa DIAT 2026', C.purple);
 
   // Autoridades
   sectionLabel(doc, 'AUTORIDADES', 20, 44);
@@ -608,7 +594,7 @@ export async function generateDossierPDF(
 
   // Registration CTA
   ey = Math.max(ey, 200);
-  hLine(doc, 20, 190, ey, C.cyan, 0.3);
+  hLine(doc, ML, MR, ey, C.cyan, 0.3);
   ey += 10;
 
   doc.setFillColor(...C.bgCard);
@@ -629,12 +615,7 @@ export async function generateDossierPDF(
   doc.text('Contacto: programadiat@pucv.cl · Facultad de Derecho PUCV', 105, ey + 28, { align: 'center' });
 
   // Footer
-  hLine(doc, 20, 190, 278, C.muted);
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(...C.grayD);
-  doc.text('DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · © 2026', 20, 285);
-  doc.text('8', 190, 285, { align: 'right' });
+  pageFooter(doc, 'DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · © 2026', '8');
 
   // Save
   doc.save('DIAT-Prompting-Hub-2026.pdf');
@@ -663,7 +644,7 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
   doc.setTextColor(...C.cyanL);
   doc.text('LexPrompt Architect · Facultad de Derecho PUCV', 20, 48);
 
-  hLine(doc, 20, 190, 54, C.cyan, 0.4);
+  hLine(doc, ML, MR, 54, C.cyan, 0.4);
 
   // DNA config table
   sectionLabel(doc, 'PROMPT DNA — CONFIGURACIÓN', 20, 64);
@@ -767,14 +748,12 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
   doc.addPage();
   fillPage(doc);
   accentBar(doc);
-
-  badge(doc, 'USO PROFESIONAL', 20, 18);
-
+  badge(doc, 'USO PROFESIONAL', ML, 18);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
   doc.setTextColor(...C.white);
-  doc.text('Recomendaciones de uso', 20, 32);
-  hLine(doc, 20, 190, 36, C.purple, 0.3);
+  doc.text('Recomendaciones de uso', ML, 32);
+  hLine(doc, ML, MR, 36, C.purple, 0.3);
 
   if (cfg.modelTip) {
     sectionLabel(doc, `OPTIMIZACIÓN PARA ${cfg.modelo.toUpperCase()}`, 20, 44);
@@ -805,12 +784,12 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
   });
 
   // DIAT branding
-  hLine(doc, 20, 190, 260, C.muted);
+  hLine(doc, ML, MR, 260, C.muted);
   doc.setFont('courier', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...C.grayD);
-  doc.text('LexPrompt Architect v2.0 · Programa DIAT · Facultad de Derecho PUCV', 20, 268);
-  doc.text('© 2026 · Herramienta pedagógica — Verificar outputs con fuentes primarias', 20, 274);
+  doc.text('LexPrompt Architect v2.0 · Programa DIAT · Facultad de Derecho PUCV', ML, 268);
+  doc.text('© 2026 · Herramienta pedagógica — Verificar outputs con fuentes primarias', ML, 274);
 
   // Save
   doc.save('prompt-juridico-diat.pdf');
@@ -841,7 +820,7 @@ export async function generateGuiaJuridicaPDF(): Promise<void> {
   doc.setTextColor(...C.cyanL);
   doc.text('Prompts, Funciones y Workflows para Abogados', 20, 80);
 
-  hLine(doc, 20, 190, 86, C.cyan, 0.4);
+  hLine(doc, ML, MR, 86, C.cyan, 0.4);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
@@ -1003,11 +982,7 @@ export async function generateGuiaJuridicaPDF(): Promise<void> {
   });
 
   // Footer
-  hLine(doc, 20, 190, 278, C.muted);
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(...C.grayD);
-  doc.text('Guía de Usos Jurídicos con IA · Programa DIAT 2026 · Facultad de Derecho PUCV', 20, 285);
+  pageFooter(doc, 'Guía de Usos Jurídicos con IA · Programa DIAT 2026 · Facultad de Derecho PUCV');
 
   doc.save('guia-juridica-ia-diat.pdf');
 }

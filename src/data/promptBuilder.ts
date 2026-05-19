@@ -322,6 +322,30 @@ Si la consulta es ambigua, incompleta o carece de información suficiente para u
   },
 ];
 
+// ─── AUTO-SELECTION HELPERS ──────────────────────────────────────────────────
+// Derive a sensible profile and output format from purpose+depth without
+// requiring the user to explicitly choose them in the wizard flow.
+
+const _purposeToProfile: Record<string, string> = {
+  estudiar: 'estudiante', examen: 'estudiante',
+  redactar: 'abogado', sentencia: 'abogado', contrato: 'abogado',
+  audiencia: 'abogado', estrategia: 'abogado',
+  doctrina: 'academico', comparar: 'academico', agente: 'academico',
+};
+
+export function autoSelectProfile(purpose: PromptPurpose): PromptProfile {
+  return profiles.find(p => p.id === (_purposeToProfile[purpose.id] ?? 'abogado'))!;
+}
+
+export function autoSelectFormat(purpose: PromptPurpose, depth: DepthLevel): OutputFormat {
+  if (purpose.id === 'examen')                                  return outputFormats.find(f => f.id === 'preguntas')!;
+  if (purpose.id === 'redactar')                                return outputFormats.find(f => f.id === 'minuta')!;
+  if (purpose.id === 'agente')                                  return outputFormats.find(f => f.id === 'system_prompt')!;
+  if (purpose.id === 'estrategia' || purpose.id === 'audiencia') return outputFormats.find(f => f.id === 'checklist')!;
+  if (depth.id === 'academico')                                 return outputFormats.find(f => f.id === 'informe')!;
+  return outputFormats.find(f => f.id === 'esquema')!;
+}
+
 // ─── GENERATE PROMPT ─────────────────────────────────────────────────────────
 
 export function generatePrompt(
