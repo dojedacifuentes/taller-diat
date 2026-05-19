@@ -1,9 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared PDF generators — called from client components on click
-// No 'use client' needed here (pure functions, no React)
+// Shared PDF generators — jsPDF direct download (no print dialog)
+// Called from client components on click — no 'use client' needed here
 // ─────────────────────────────────────────────────────────────────────────────
 import type { Module } from '@/lib/types';
 
+// ─── Local types ─────────────────────────────────────────────────────────────
 type EquipoMember = {
   readonly id: string;
   readonly name: string;
@@ -13,1042 +14,1000 @@ type EquipoMember = {
   readonly color: string;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DOSSIER PDF — Premium editorial document (13 sections)
-// ─────────────────────────────────────────────────────────────────────────────
-export function generateDossierPDF(
-  mods: Module[],
-  equipo: readonly EquipoMember[],
-): void {
-  const win = window.open('', '_blank');
-  if (!win) return;
-
-  const modAccent = ['#06b6d4', '#818cf8', '#a855f7'];
-  const modBg = ['rgba(6,182,212,.1)', 'rgba(129,140,248,.1)', 'rgba(168,85,247,.1)'];
-  const modBorder = ['rgba(6,182,212,.25)', 'rgba(129,140,248,.25)', 'rgba(168,85,247,.25)'];
-  const modLabel = ['MÓDULO 01', 'MÓDULO 02', 'MÓDULO 03'];
-
-  const modulePages = mods.map((mod, i) => `
-<div class="page page-dark" style="padding:0">
-  <div style="height:4px;background:linear-gradient(90deg,${modAccent[i]},${modAccent[i]}44,transparent)"></div>
-  <div style="padding:44px 52px 36px">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px">
-      <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.2em;color:${modAccent[i]};margin-bottom:8px">${modLabel[i]} · ${mod.displayDate} · ${mod.duration.toUpperCase()}</div>
-        <h2 style="font-size:28px;font-weight:800;color:#f8fafc;line-height:1.1;letter-spacing:-.02em;margin-bottom:8px">${mod.title}</h2>
-        <p style="font-size:13px;color:#64748b;font-style:italic">${mod.subtitle}</p>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:900;color:${modAccent[i]};opacity:.15;line-height:1">0${mod.id}</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:28px">
-      <div>
-        <div class="col-label" style="color:${modAccent[i]}">Objetivos de aprendizaje</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          ${mod.objectives.map((o, j) => `
-          <div style="display:flex;gap:12px;align-items:flex-start">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:${modAccent[i]};margin-top:3px;flex-shrink:0">0${j + 1}</div>
-            <p style="font-size:12px;color:#94a3b8;line-height:1.6">${o}</p>
-          </div>`).join('')}
-        </div>
-      </div>
-      <div>
-        <div class="col-label" style="color:${modAccent[i]}">Contenidos del módulo</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${mod.contents.map(c => `
-          <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:8px;background:${modBg[i]};border:1px solid ${modBorder[i]}">
-            <span style="font-size:12px;color:#94a3b8;line-height:1.5">◦ ${c}</span>
-          </div>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)">
-      <div style="padding:16px;border-radius:10px;background:${modBg[i]};border:1px solid ${modBorder[i]}">
-        <div class="col-label" style="color:${modAccent[i]};margin-bottom:8px">Actividad central</div>
-        <p style="font-size:11px;color:#94a3b8;line-height:1.6">${mod.activity}</p>
-      </div>
-      <div style="padding:16px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07)">
-        <div class="col-label" style="margin-bottom:8px">Entregable</div>
-        <p style="font-size:11px;color:#94a3b8;line-height:1.6">${mod.deliverable}</p>
-      </div>
-      <div style="padding:16px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07)">
-        <div class="col-label" style="margin-bottom:10px">Herramientas</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${mod.tools.map(t => `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;border:1px solid ${modBorder[i]};background:${modBg[i]};color:${modAccent[i]}">${t}</span>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div style="margin-top:24px">
-      <div class="col-label" style="margin-bottom:12px">Timeline de la sesión</div>
-      <div style="display:flex;gap:0;position:relative">
-        <div style="position:absolute;top:14px;left:0;right:0;height:1px;background:rgba(255,255,255,.06)"></div>
-        ${mod.timeline.map((block, j) => `
-        <div style="flex:1;position:relative;padding:0 4px">
-          <div style="width:8px;height:8px;border-radius:50%;background:${modAccent[i]};margin:0 auto 8px;opacity:${j === 0 ? '1' : '.5'}"></div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;color:${modAccent[i]};text-align:center;margin-bottom:4px">${block.time}</div>
-          <div style="font-size:9px;font-weight:600;color:#cbd5e1;text-align:center;line-height:1.4">${block.topic}</div>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>
-</div>`).join('');
-
-  const equipoHTML = equipo.map(m => `
-<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)">
-  <div style="width:38px;height:38px;border-radius:9px;border:1px solid rgba(6,182,212,.3);background:rgba(6,182,212,.1);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#67e8f9;flex-shrink:0">${m.initials}</div>
-  <div>
-    <div style="font-size:12px;font-weight:700;color:#e2e8f0">${m.name}</div>
-    <div style="font-size:10px;color:#64748b;margin-top:1px">${m.calidad}${m.id === 'ee-01' ? ' · Subdirector de los Talleres' : ''}</div>
-  </div>
-</div>`).join('');
-
-  win.document.write(`<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DIAT Prompting Hub — Dossier 2026</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { size: A4 portrait; margin: 0; }
-    html { font-size: 14px; }
-    body {
-      font-family: 'Space Grotesk', system-ui, sans-serif;
-      background: #080c14;
-      color: #cbd5e1;
-      width: 210mm;
-      margin: 0 auto;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .page {
-      width: 210mm;
-      min-height: 297mm;
-      page-break-after: always;
-      position: relative;
-      overflow: hidden;
-      padding: 44px 52px;
-    }
-    .page:last-child { page-break-after: auto; }
-    .page-dark { background: #070b12; color: #cbd5e1; }
-    .page-darker { background: #04060c; color: #cbd5e1; }
-    .page-mid { background: #0a0f1c; color: #cbd5e1; }
-    .grid-overlay::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-      background-size: 32px 32px;
-      pointer-events: none;
-    }
-    .scan-overlay::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 6px);
-      pointer-events: none;
-    }
-    .col-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px; font-weight: 700;
-      letter-spacing: .18em; text-transform: uppercase;
-      color: #334155; margin-bottom: 12px;
-    }
-    .section-eyebrow {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; font-weight: 700;
-      letter-spacing: .2em; text-transform: uppercase;
-      color: #06b6d4; margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: 30px; font-weight: 800;
-      color: #f8fafc; letter-spacing: -.025em;
-      line-height: 1.1; margin-bottom: 16px;
-    }
-    .body-text { font-size: 13px; color: #94a3b8; line-height: 1.75; }
-    .pullquote {
-      font-size: 18px; font-weight: 700;
-      color: #e2e8f0; line-height: 1.45;
-      letter-spacing: -.01em;
-      border-left: 3px solid #06b6d4;
-      padding-left: 20px;
-    }
-    .stat-card {
-      padding: 22px; border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-    }
-    .stat-number {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 44px; font-weight: 900;
-      line-height: 1; margin-bottom: 6px;
-    }
-    .stat-label { font-size: 12px; color: #64748b; line-height: 1.4; }
-    .stat-source {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 8px; color: #1e293b;
-      margin-top: 10px; letter-spacing: .08em;
-    }
-    table { border-collapse: collapse; width: 100%; }
-    thead tr { background: rgba(6,182,212,.08); border-bottom: 1px solid rgba(6,182,212,.2); }
-    thead th {
-      padding: 10px 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 8.5px; font-weight: 700;
-      letter-spacing: .12em; text-transform: uppercase;
-      color: #67e8f9; text-align: left;
-    }
-    tbody tr { border-bottom: 1px solid rgba(255,255,255,.04); }
-    tbody td { padding: 10px 12px; font-size: 11px; color: #94a3b8; vertical-align: top; line-height: 1.5; }
-    .td-name { font-weight: 700; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
-    .td-free-yes  { color: #6ee7b7; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
-    .td-free-partial { color: #fcd34d; font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
-    .risk-card { padding: 16px 18px; border-radius: 10px; border-left: 3px solid; }
-    .risk-high { border-color: #f87171; background: rgba(248,113,113,.06); }
-    .risk-med  { border-color: #fbbf24; background: rgba(251,191,36,.06); }
-    .risk-low  { border-color: #94a3b8; background: rgba(148,163,184,.04); }
-    .risk-title { font-size: 12px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
-    .risk-desc  { font-size: 11px; color: #64748b; line-height: 1.5; }
-    .risk-badge {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 8px; font-weight: 700;
-      letter-spacing: .1em; padding: 2px 7px;
-      border-radius: 3px; margin-bottom: 6px;
-    }
-    .rb-high { background: rgba(248,113,113,.15); color: #fca5a5; }
-    .rb-med  { background: rgba(251,191,36,.15);  color: #fde68a; }
-    .rb-low  { background: rgba(148,163,184,.12); color: #94a3b8; }
-    .accent-rule {
-      height: 1px;
-      background: linear-gradient(90deg, #06b6d4, #6366f188, transparent);
-      margin: 24px 0;
-    }
-    @media print {
-      body { background: #070b12; }
-      .page { page-break-after: always; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- PAGE 1: COVER -->
-<div class="page page-darker grid-overlay scan-overlay" style="padding:0;display:flex;flex-direction:column">
-  <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:300px;background:radial-gradient(ellipse,rgba(6,182,212,.12),transparent 70%);pointer-events:none"></div>
-  <div style="position:absolute;top:40%;right:-60px;width:280px;height:280px;background:radial-gradient(ellipse,rgba(99,102,241,.08),transparent 70%);pointer-events:none"></div>
-  <div style="padding:28px 52px 0;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1">
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-family:'JetBrains Mono',monospace;font-weight:900;font-size:11px;letter-spacing:.15em;padding:5px 12px;border-radius:6px;border:1px solid rgba(6,182,212,.4);background:rgba(6,182,212,.1);color:#67e8f9">DIAT</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:5px 12px;border-radius:6px;border:1px solid rgba(129,140,248,.3);background:rgba(129,140,248,.08);color:#a5b4fc">FD · PUCV</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:5px 12px;border-radius:6px;border:1px solid rgba(168,85,247,.3);background:rgba(168,85,247,.08);color:#d8b4fe">VCM</span>
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e293b">2026.1 · ES · DOSSIER</div>
-  </div>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 60px;position:relative;z-index:1">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.3em;color:#334155;text-transform:uppercase;margin-bottom:28px">
-      Programa de Formación Aplicada · Septiembre 2026
-    </div>
-    <h1 style="font-size:58px;font-weight:900;color:#f8fafc;letter-spacing:-.04em;line-height:1;margin-bottom:16px">
-      DIAT<br><span style="color:#06b6d4">Prompting</span><br>Hub
-    </h1>
-    <p style="font-size:15px;font-weight:500;color:#64748b;line-height:1.6;max-width:400px;margin-bottom:36px">
-      IA Jurídica Aplicada, Prompt Engineering y<br>Nuevas Competencias Digitales para el Derecho
-    </p>
-    <div style="max-width:440px;padding:20px 28px;border-radius:12px;border:1px solid rgba(6,182,212,.15);background:rgba(6,182,212,.04)">
-      <p style="font-size:14px;font-weight:600;color:#e2e8f0;line-height:1.55;font-style:italic">
-        "La próxima ventaja competitiva del abogado<br>será metodológica."
-      </p>
-    </div>
-  </div>
-  <div style="padding:0 52px 28px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1">
-    <div>
-      <div style="font-size:11px;font-weight:600;color:#475569">Facultad de Derecho</div>
-      <div style="font-size:11px;color:#334155">Pontificia Universidad Católica de Valparaíso</div>
-    </div>
-    <div style="text-align:right">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#334155">Septiembre 2026</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e293b">Fechas tentativas</div>
-    </div>
-  </div>
-  <div style="height:3px;background:linear-gradient(90deg,transparent,#06b6d4,#6366f1,transparent)"></div>
-</div>
-
-
-<!-- PAGE 2: CONTEXTO EDITORIAL -->
-<div class="page page-dark">
-  <div class="section-eyebrow">01 · Contexto</div>
-  <h2 class="section-title">El Derecho en la Era<br>de la Inteligencia Artificial</h2>
-  <div class="accent-rule"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-bottom:28px">
-    <div>
-      <p class="body-text" style="margin-bottom:16px">
-        La inteligencia artificial generativa no es una tendencia emergente en el sector jurídico:
-        es una transformación estructural que ya está ocurriendo. Los modelos de lenguaje de
-        gran escala (LLMs) como Claude, GPT-4 y Gemini están redefiniendo la forma en que
-        se redactan contratos, se analiza jurisprudencia y se construyen argumentarios legales.
-      </p>
-      <p class="body-text">
-        El ejercicio profesional del derecho enfrenta hoy una bifurcación histórica.
-        Por un lado, abogados que integran estas herramientas con criterio metodológico,
-        supervisión crítica y competencias digitales avanzadas. Por otro, profesionales
-        que las ignoran, delegando ventaja competitiva a quienes sí las dominan.
-      </p>
-    </div>
-    <div>
-      <div class="pullquote" style="margin-bottom:20px">
-        "No se trata de automatizar el derecho.<br>Se trata de amplificar el criterio jurídico."
-      </div>
-      <p class="body-text">
-        El <strong style="color:#e2e8f0">Programa DIAT</strong> de la Facultad de Derecho PUCV
-        nace con una convicción: la adopción responsable de IA en el derecho exige formación
-        rigurosa, pensamiento crítico y comprensión profunda de los flujos de trabajo.
-        No basta con saber usar ChatGPT. Se necesita entender cómo construir prompts,
-        diseñar workflows verificables y proteger la confidencialidad profesional.
-      </p>
-    </div>
-  </div>
-  <div style="padding:20px 24px;border-radius:12px;border:1px solid rgba(6,182,212,.15);background:rgba(6,182,212,.05);margin-bottom:20px">
-    <p class="body-text">
-      <strong style="color:#67e8f9">Prompt Engineering Jurídico</strong> es la disciplina que permite
-      comunicarse efectivamente con modelos de IA para obtener outputs que cumplan los estándares
-      del ejercicio legal: precisión normativa, verificabilidad de fuentes, confidencialidad de datos
-      y ausencia de alucinaciones. El DIAT Prompting Hub es la primera plataforma de formación
-      en esta disciplina desarrollada específicamente para el contexto jurídico chileno.
-    </p>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-    ${[
-      { icon: '⚖️', label: 'Razonamiento jurídico asistido', desc: 'IA como co-redactor supervisado con criterio profesional' },
-      { icon: '🔍', label: 'Investigación verificable', desc: 'Síntesis de jurisprudencia y doctrina con fuentes trazables' },
-      { icon: '🛡️', label: 'Ciberseguridad profesional', desc: 'Protocolos para proteger datos de clientes en entornos IA' },
-    ].map(c => `
-    <div style="padding:18px;border-radius:10px;border:1px solid rgba(6,182,212,.15);background:rgba(6,182,212,.05)">
-      <div style="font-size:18px;margin-bottom:10px">${c.icon}</div>
-      <div style="font-size:11.5px;font-weight:700;color:#e2e8f0;margin-bottom:5px">${c.label}</div>
-      <div style="font-size:10.5px;color:#64748b;line-height:1.5">${c.desc}</div>
-    </div>`).join('')}
-  </div>
-</div>
-
-
-<!-- PAGE 3: STATS -->
-<div class="page page-mid">
-  <div class="section-eyebrow">02 · Diagnóstico</div>
-  <h2 class="section-title">¿Por qué este programa?</h2>
-  <p class="body-text" style="max-width:580px;margin-bottom:28px">
-    Los datos globales son contundentes. La adopción de IA en el sector jurídico es acelerada,
-    desigual y frecuentemente acrítica. El riesgo no es la IA en sí: es la brecha entre
-    quienes la usan con metodología y quienes la usan sin ella.
-  </p>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">
-    ${[
-      { num: '69%', color: '#06b6d4', label: 'de abogados considera la IA transformativa en su área', src: 'Thomson Reuters · Future of Professionals 2024' },
-      { num: '23%', color: '#818cf8', label: 'de tareas legales son automatizables con IA generativa', src: 'McKinsey Global Institute 2023' },
-      { num: '4h', color: '#a855f7', label: 'promedio semanal ahorradas con uso adecuado de IA', src: 'State of Legal Tech 2024' },
-      { num: '$1.2B', color: '#10b981', label: 'de inversión global en legaltech en 2023', src: 'Stanford AI Index 2024' },
-    ].map(s => `
-    <div class="stat-card">
-      <div class="stat-number" style="color:${s.color}">${s.num}</div>
-      <div class="stat-label">${s.label}</div>
-      <div class="stat-source">${s.src}</div>
-    </div>`).join('')}
-  </div>
-  <div class="accent-rule"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
-    <div>
-      <p class="body-text" style="margin-bottom:16px">
-        Según el <strong style="color:#e2e8f0">WEF Future of Jobs Report 2023</strong>,
-        los roles jurídicos están entre los más afectados por la automatización parcial,
-        especialmente en tareas de investigación, redacción y revisión documental.
-        No obstante, la demanda por abogados con capacidades tecnológicas avanzadas
-        se proyecta un <strong style="color:#06b6d4">34% al alza</strong> para 2027.
-      </p>
-      <p class="body-text">
-        El <strong style="color:#e2e8f0">Stanford AI Index 2024</strong> reporta que las
-        industrias con mayor adopción de herramientas de IA generativa incluyen servicios
-        legales, finanzas y consultoría. Chile no es la excepción: grandes estudios
-        jurídicos ya han incorporado asistentes de IA en flujos internos.
-      </p>
-    </div>
-    <div>
-      <div class="col-label" style="margin-bottom:14px">Adopción de IA en sectores jurídicos</div>
-      ${[
-        { label: 'Grandes estudios (20+ abogados)', pct: 71 },
-        { label: 'Estudios medianos', pct: 48 },
-        { label: 'Abogados independientes', pct: 29 },
-        { label: 'Sector público jurídico', pct: 18 },
-      ].map(b => `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-          <span style="font-size:11px;color:#94a3b8">${b.label}</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#06b6d4">${b.pct}%</span>
-        </div>
-        <div style="height:4px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden">
-          <div style="height:100%;width:${b.pct}%;background:linear-gradient(90deg,#06b6d4,#6366f1);border-radius:2px"></div>
-        </div>
-      </div>`).join('')}
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#1e293b;margin-top:10px">Fuente: LexisNexis Legal Tech Report 2024 · Datos aproximados</div>
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE 4: COMPETENCIAS -->
-<div class="page page-dark">
-  <div class="section-eyebrow">03 · Competencias</div>
-  <h2 class="section-title">Nuevas Competencias<br>del Abogado Digital</h2>
-  <p class="body-text" style="max-width:560px;margin-bottom:28px">
-    El DIAT Prompting Hub entrena un conjunto específico de competencias que el mercado
-    jurídico demanda y que los planes de estudio tradicionales aún no contemplan.
-  </p>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-    ${[
-      { icon: '⚡', title: 'Prompt Engineering Jurídico', desc: 'Construcción de prompts estructurados, verificables y optimizados para cada modelo de IA', color: 'rgba(6,182,212,.1)', border: 'rgba(6,182,212,.2)' },
-      { icon: '🧠', title: 'Verificación de Outputs IA', desc: 'Protocolos sistemáticos para detectar alucinaciones y validar respuestas ante el estándar profesional', color: 'rgba(129,140,248,.1)', border: 'rgba(129,140,248,.2)' },
-      { icon: '🔄', title: 'Diseño de Workflows Legales', desc: 'Arquitectura de flujos multi-IA para producción de documentos jurídicos de alto nivel', color: 'rgba(168,85,247,.1)', border: 'rgba(168,85,247,.2)' },
-      { icon: '🛡️', title: 'Ciberseguridad Jurídica', desc: 'Anonimización de datos, manejo de información sensible y evaluación de riesgos en plataformas IA', color: 'rgba(16,185,129,.1)', border: 'rgba(16,185,129,.2)' },
-      { icon: '⚖️', title: 'Gobernanza IA', desc: 'Marco regulatorio aplicable, responsabilidad profesional y ética en el uso de IA para el derecho', color: 'rgba(234,179,8,.1)', border: 'rgba(234,179,8,.2)' },
-      { icon: '🤖', title: 'Diseño de Agentes Jurídicos', desc: 'System prompts de producción, Claude Projects y GPTs especializados para tareas legales', color: 'rgba(6,182,212,.1)', border: 'rgba(6,182,212,.2)' },
-      { icon: '💼', title: 'LegalTech Aplicado', desc: 'Evaluación y uso de plataformas especializadas: Harvey AI, Clio, Thomson Reuters AI', color: 'rgba(129,140,248,.1)', border: 'rgba(129,140,248,.2)' },
-      { icon: '📊', title: 'Automatización Profesional', desc: 'Identificación de tareas automatizables y diseño de soluciones IA para el ejercicio cotidiano', color: 'rgba(168,85,247,.1)', border: 'rgba(168,85,247,.2)' },
-      { icon: '🔎', title: 'Research Jurídico Verificable', desc: 'Investigación con IA que cita fuentes trazables: pjud.cl, bcn.cl, jurisprudencia real', color: 'rgba(16,185,129,.1)', border: 'rgba(16,185,129,.2)' },
-    ].map(c => `
-    <div style="padding:16px;border-radius:10px;border:1px solid ${c.border};background:${c.color}">
-      <div style="font-size:18px;margin-bottom:8px">${c.icon}</div>
-      <div style="font-size:11.5px;font-weight:700;color:#e2e8f0;margin-bottom:5px;line-height:1.3">${c.title}</div>
-      <div style="font-size:10px;color:#64748b;line-height:1.5">${c.desc}</div>
-    </div>`).join('')}
-  </div>
-</div>
-
-
-<!-- MODULES (dynamic) -->
-${modulePages}
-
-
-<!-- PAGE: PROMPT LAB -->
-<div class="page page-dark">
-  <div class="section-eyebrow">07 · Herramienta</div>
-  <h2 class="section-title">LexPrompt Architect</h2>
-  <p class="body-text" style="max-width:560px;margin-bottom:24px">
-    El DIAT Prompting Hub incluye una herramienta interactiva de construcción de prompts
-    jurídicos profesionales. 7 pasos guiados, 8 capas de protección, exportación multi-formato.
-    <strong style="color:#e2e8f0">Ingeniería jurídica aplicada a IA.</strong>
-  </p>
-  <div class="accent-rule"></div>
-  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:28px">
-    ${[
-      { n:'01', label:'Perfil', icon:'🎓', desc:'Estudiante · Abogado · Académico' },
-      { n:'02', label:'Finalidad', icon:'📝', desc:'Redactar · Analizar · Litigar' },
-      { n:'03', label:'Área', icon:'⚖️', desc:'Civil · Penal · Laboral · Tech' },
-      { n:'04', label:'Profundidad', icon:'📊', desc:'Rápido → Litigación avanzada' },
-      { n:'05', label:'IA Objetivo', icon:'🤖', desc:'Claude · ChatGPT · Gemini' },
-      { n:'06', label:'Formato', icon:'🗂️', desc:'Informe · Checklist · Tabla' },
-      { n:'07', label:'Protecciones', icon:'🛡️', desc:'Anti-alucinaciones · Ciberseg' },
-    ].map(s => `
-    <div style="padding:12px 10px;border-radius:10px;border:1px solid rgba(6,182,212,.2);background:rgba(6,182,212,.06);text-align:center">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#334155;margin-bottom:6px">${s.n}</div>
-      <div style="font-size:16px;margin-bottom:6px">${s.icon}</div>
-      <div style="font-size:10.5px;font-weight:700;color:#e2e8f0;margin-bottom:3px">${s.label}</div>
-      <div style="font-size:9px;color:#475569;line-height:1.4">${s.desc}</div>
-    </div>`).join('')}
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
-    ${[
-      { fmt:'PDF Dark', desc:'Documento técnico con branding institucional', icon:'📄' },
-      { fmt:'TXT / MD', desc:'Texto plano para uso directo en plataformas', icon:'📋' },
-      { fmt:'System Prompt', desc:'Exportar como instrucción de sistema para Claude/GPT', icon:'🤖' },
-      { fmt:'Claude Project', desc:'Config lista para Claude Projects', icon:'⚡' },
-    ].map(f => `
-    <div style="padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)">
-      <div style="font-size:18px;margin-bottom:8px">${f.icon}</div>
-      <div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:4px">${f.fmt}</div>
-      <div style="font-size:10px;color:#64748b;line-height:1.4">${f.desc}</div>
-    </div>`).join('')}
-  </div>
-  <div>
-    <div class="col-label">Capas de protección integradas</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${['🛡️ Anti-alucinaciones','🔒 Ciberseguridad','📚 Fuentes verificables','🚫 Confidencialidad','📋 Verificación normativa','📐 Control de formato','🎯 Límite de scope','❓ Clarificación previa'].map(l => `
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid rgba(129,140,248,.3);background:rgba(129,140,248,.08);color:#a5b4fc">${l}</span>`).join('')}
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE: TOOLKIT -->
-<div class="page page-mid" style="padding:40px 40px">
-  <div class="section-eyebrow">08 · Herramientas</div>
-  <h2 class="section-title" style="font-size:26px">Toolkit IA Jurídica</h2>
-  <p class="body-text" style="margin-bottom:20px">Comparativa de las plataformas del programa.</p>
-  <table>
-    <thead>
-      <tr>
-        <th style="width:90px">Plataforma</th>
-        <th>Mejor para</th>
-        <th>Limitación clave</th>
-        <th>Uso jurídico principal</th>
-        <th style="width:70px">Acceso</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${[
-        { name:'Claude', tag:'Anthropic', best:'Documentos extensos, análisis legal profundo, razonamiento complejo con 200k tokens', limit:'Sin búsqueda web en tiempo real', use:'Contratos, análisis de expedientes, redacción de recursos', free:'Freemium' },
-        { name:'ChatGPT', tag:'OpenAI', best:'Borradores rápidos, GPTs personalizados, plugins de terceros', limit:'Contexto limitado, alucinaciones frecuentes en leyes', use:'Redacción inicial, brainstorming jurídico, workflows con plugins', free:'Freemium' },
-        { name:'Gemini', tag:'Google', best:'PDFs adjuntos sin copiar, integración nativa con Drive, Docs y Sheets', limit:'Razonamiento jurídico muy técnico', use:'Análisis de documentos PDF, resúmenes ejecutivos con Drive', free:'Freemium' },
-        { name:'NotebookLM', tag:'Google', best:'Investigar exclusivamente dentro de tus propios documentos subidos', limit:'Solo responde sobre tus fuentes, no genera libremente', use:'Síntesis de doctrina, análisis de sentencias propias', free:'Gratuito' },
-        { name:'Perplexity', tag:'Perplexity AI', best:'Búsqueda con fuentes citables y verificables, datos legislativos actuales', limit:'No redacta documentos ni hace análisis profundo', use:'Búsqueda de legislación, normativa reciente, referencias', free:'Freemium' },
-        { name:'Harvey AI', tag:'Harvey', best:'Asistente legal especializado: investigación, redacción y due diligence', limit:'Acceso enterprise, costo elevado', use:'Grandes estudios: revisión contractual, M&A, litigación', free:'Enterprise' },
-        { name:'Thomson Reuters AI', tag:'Thomson Reuters', best:'Base de datos jurídica con IA integrada, jurisprudencia verificada', limit:'Suscripción profesional requerida', use:'Investigación legal verificada, análisis de precedentes', free:'Pago' },
-      ].map(t => `
-      <tr>
-        <td><div class="td-name">${t.name}</div><div style="font-size:9px;color:#334155;font-family:'JetBrains Mono',monospace;margin-top:2px">${t.tag}</div></td>
-        <td>${t.best}</td>
-        <td>${t.limit}</td>
-        <td>${t.use}</td>
-        <td><span class="${t.free === 'Gratuito' ? 'td-free-yes' : 'td-free-partial'}">${t.free}</span></td>
-      </tr>`).join('')}
-    </tbody>
-  </table>
-</div>
-
-
-<!-- PAGE: WORKFLOWS -->
-<div class="page page-dark">
-  <div class="section-eyebrow">09 · Metodología</div>
-  <h2 class="section-title">Workflows Jurídicos con IA</h2>
-  <p class="body-text" style="max-width:560px;margin-bottom:28px">
-    La formación DIAT entrega flujos de trabajo probados que transforman tareas
-    de horas en procesos de minutos, sin sacrificar rigor profesional.
-  </p>
-  ${[
-    {
-      title: 'Flujo de Investigación Jurídica', sub: 'Para cualquier área desde cero',
-      time: '30–45 min', replaces: '4–6 horas de trabajo manual', color: '#06b6d4',
-      steps: [
-        { tool:'Perplexity', action:'Legislación y jurisprudencia actual con fuentes citadas' },
-        { tool:'NotebookLM', action:'Corpus propio: sube sentencias, pregúntale directamente' },
-        { tool:'Claude', action:'Síntesis final verificada y redacción del documento' },
-      ],
-    },
-    {
-      title: 'Flujo para Litigación', sub: 'Preparación de audiencias y recursos',
-      time: '60–90 min', replaces: '1 día completo de preparación', color: '#818cf8',
-      steps: [
-        { tool:'Gemini', action:'Sube el expediente PDF y extrae hechos clave automáticamente' },
-        { tool:'Claude', action:'Análisis estratégico y construcción del argumentario' },
-        { tool:'ChatGPT', action:'Genera el escrito en el formato del tribunal requerido' },
-      ],
-    },
-    {
-      title: 'Flujo para Contratos', sub: 'Redacción y revisión contractual',
-      time: '20–40 min', replaces: '2–3 horas de redacción', color: '#a855f7',
-      steps: [
-        { tool:'Claude', action:'Redacta el contrato con cláusulas esenciales del área' },
-        { tool:'ChatGPT', action:'Identifica riesgos y cláusulas faltantes o ambiguas' },
-        { tool:'Claude', action:'Integra observaciones y genera la versión definitiva' },
-      ],
-    },
-  ].map(wf => `
-  <div style="margin-bottom:20px;padding:18px 22px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div>
-        <div style="font-size:13px;font-weight:700;color:${wf.color};margin-bottom:3px">${wf.title}</div>
-        <div style="font-size:11px;color:#475569">${wf.sub}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#94a3b8">⏱ ${wf.time}</div>
-        <div style="font-size:9.5px;color:#334155">Reemplaza: ${wf.replaces}</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:4px">
-      ${wf.steps.map((s, j) => `
-        <div style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid ${wf.color}33;background:${wf.color}0a">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${wf.color};margin-bottom:4px">${s.tool}</div>
-          <div style="font-size:10px;color:#64748b;line-height:1.4">${s.action}</div>
-        </div>
-        ${j < wf.steps.length - 1 ? '<div style="font-size:14px;color:#1e293b;flex-shrink:0">→</div>' : ''}`).join('')}
-    </div>
-  </div>`).join('')}
-</div>
-
-
-<!-- PAGE: RISKS -->
-<div class="page page-mid">
-  <div class="section-eyebrow">10 · Rigor Académico</div>
-  <h2 class="section-title">Riesgos y Desafíos<br>del Uso de IA en el Derecho</h2>
-  <p class="body-text" style="max-width:560px;margin-bottom:28px">
-    Una formación responsable exige transparencia sobre los límites y riesgos reales.
-    El DIAT Prompting Hub los integra como contenido formativo central.
-  </p>
-  <div class="accent-rule"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    ${[
-      { title:'Alucinaciones y Errores Factuales', desc:'Los LLMs inventan jurisprudencia, artículos y datos con total confianza. Sin verificación sistemática, el output puede ser jurídicamente peligroso.', sev:'CRÍTICO', cls:'risk-high', bcls:'rb-high' },
-      { title:'Confidencialidad Profesional', desc:'Subir datos de clientes a plataformas públicas de IA puede violar el secreto profesional y la legislación de protección de datos personales.', sev:'CRÍTICO', cls:'risk-high', bcls:'rb-high' },
-      { title:'Dependencia Tecnológica', desc:'La delegación excesiva en IA puede atrofiar competencias de razonamiento jurídico fundamentales para el ejercicio profesional independiente.', sev:'ALTO', cls:'risk-med', bcls:'rb-med' },
-      { title:'Sesgos en Outputs', desc:'Los modelos entrenados con datos históricos pueden reproducir sesgos jurídicos o geográficos que no corresponden al sistema legal chileno.', sev:'ALTO', cls:'risk-med', bcls:'rb-med' },
-      { title:'Marco Regulatorio IA', desc:'La regulación de IA generativa está en construcción a nivel global. El abogado debe monitorear la evolución normativa que afecta su praxis profesional.', sev:'MEDIO', cls:'risk-low', bcls:'rb-low' },
-      { title:'Responsabilidad Profesional', desc:'El uso de IA no transfiere responsabilidad al sistema. El abogado sigue siendo responsable de todo output que presente como propio ante clientes y tribunales.', sev:'CRÍTICO', cls:'risk-high', bcls:'rb-high' },
-    ].map(r => `
-    <div class="risk-card ${r.cls}">
-      <span class="risk-badge ${r.bcls}">${r.sev}</span>
-      <div class="risk-title">${r.title}</div>
-      <div class="risk-desc">${r.desc}</div>
-    </div>`).join('')}
-  </div>
-</div>
-
-
-<!-- PAGE: OUTCOMES -->
-<div class="page page-dark">
-  <div class="section-eyebrow">11 · Resultados</div>
-  <h2 class="section-title">Lo que el participante<br>podrá hacer al terminar</h2>
-  <div class="accent-rule" style="margin-bottom:28px"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px">
-    ${[
-      { out:'Construir prompts jurídicos avanzados con 7 capas de estructura y protección', icon:'⚡' },
-      { out:'Diseñar workflows multi-IA para producción documental verificable', icon:'🔄' },
-      { out:'Usar IA con criterio profesional: supervisión, verificación y trazabilidad', icon:'🧠' },
-      { out:'Analizar documentos extensos con Claude: contratos, expedientes, sentencias', icon:'📄' },
-      { out:'Proteger la confidencialidad del cliente en entornos de IA generativa', icon:'🛡️' },
-      { out:'Crear agentes jurídicos personalizados con system prompts de producción', icon:'🤖' },
-      { out:'Comprender el marco regulatorio de IA y su impacto en responsabilidad profesional', icon:'⚖️' },
-      { out:'Evaluar el ecosistema legaltech global y aplicar criterio de adopción profesional', icon:'💼' },
-    ].map(o => `
-    <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)">
-      <div style="font-size:18px;flex-shrink:0">${o.icon}</div>
-      <p style="font-size:12px;color:#94a3b8;line-height:1.5">${o.out}</p>
-    </div>`).join('')}
-  </div>
-  <div style="padding:20px 24px;border-radius:12px;border:1px solid rgba(6,182,212,.2);background:rgba(6,182,212,.06)">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="font-size:28px;flex-shrink:0">🎓</div>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#67e8f9;margin-bottom:4px">Certificación Institucional PUCV</div>
-        <p style="font-size:11.5px;color:#94a3b8;line-height:1.6">
-          Los participantes que completen los 3 módulos presenciales reciben certificación
-          institucional emitida por la Facultad de Derecho de la Pontificia Universidad
-          Católica de Valparaíso, con apoyo de Vinculación con el Medio.
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE: REGISTRATION + TEAM -->
-<div class="page page-darker grid-overlay">
-  <div style="height:2px;background:linear-gradient(90deg,#06b6d4,#6366f144,transparent);margin:-44px -52px 40px;width:calc(100% + 104px)"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
-    <div>
-      <div class="section-eyebrow">12 · Inscripción</div>
-      <h2 style="font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-.02em;margin-bottom:16px;line-height:1.2">
-        Reserva de cupos<br>e información
-      </h2>
-      <p class="body-text" style="margin-bottom:20px">
-        Los cupos son limitados. El programa está dirigido a estudiantes de derecho,
-        egresados, abogados en ejercicio y académicos de la Facultad.
-      </p>
-      <div style="padding:20px;border-radius:12px;border:1px solid rgba(6,182,212,.25);background:rgba(6,182,212,.06);margin-bottom:16px">
-        <div class="col-label" style="margin-bottom:8px">Contacto oficial</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#67e8f9">programadiat@pucv.cl</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
-        ${['● Módulo 1 · 8 Septiembre 2026','● Módulo 2 · 15 Septiembre 2026','● Módulo 3 · 22 Septiembre 2026'].map((d, i) => `
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#94a3b8">
-          <div style="width:8px;height:8px;border-radius:50%;background:${modAccent[i]};flex-shrink:0"></div>
-          ${d}
-        </div>`).join('')}
-      </div>
-      <div style="padding:12px 16px;border-radius:8px;border:1px solid rgba(234,179,8,.2);background:rgba(234,179,8,.05)">
-        <p style="font-size:10.5px;color:#ca8a04;line-height:1.5">⚠ Fechas tentativas sujetas a ajustes institucionales.</p>
-      </div>
-    </div>
-    <div>
-      <div class="section-eyebrow">13 · Equipo</div>
-      <h2 style="font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-.02em;margin-bottom:16px;line-height:1.2">
-        Dirección institucional<br>y equipo ejecutor
-      </h2>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-        ${[
-          { name:'Eduardo Aldunate Lizana', title:'Director · Escuela de Derecho PUCV', color:'#67e8f9' },
-          { name:'Dr. Adolfo Silva Walbaum', title:'Director · Programa DIAT · Director del Taller', color:'#a5b4fc' },
-          { name:'Diego Ojeda Cifuentes', title:'Subdirector de los Talleres · Coordinador Operativo', color:'#7dd3fc' },
-        ].map(a => `
-        <div style="padding:12px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)">
-          <div style="font-size:12px;font-weight:700;color:#e2e8f0">${a.name}</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:${a.color};margin-top:2px">${a.title}</div>
-        </div>`).join('')}
-      </div>
-      <div class="col-label">Integrantes Programa DIAT</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        ${equipo.map(m => `
-        <div style="padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)">
-          <div style="font-size:11px;font-weight:600;color:#cbd5e1">${m.name}</div>
-          <div style="font-size:9px;color:#475569;margin-top:1px">${m.calidad}</div>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE: BACK COVER -->
-<div class="page page-darker grid-overlay scan-overlay" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:radial-gradient(ellipse,rgba(6,182,212,.08),transparent 70%);pointer-events:none"></div>
-  <div style="position:relative;z-index:1">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:72px;font-weight:900;color:rgba(6,182,212,.15);letter-spacing:.1em;line-height:1;margin-bottom:20px">DIAT</div>
-    <div style="margin-bottom:24px">
-      <div style="font-size:16px;font-weight:800;color:#f8fafc;margin-bottom:6px">Programa DIAT 2026</div>
-      <div style="font-size:12px;color:#475569">IA Jurídica Aplicada · Facultad de Derecho PUCV</div>
-    </div>
-    <div style="font-size:13px;font-style:italic;color:#334155;max-width:360px;margin:0 auto 28px">
-      "Construye criterio antes de automatizar."
-    </div>
-    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:4px 10px;border-radius:5px;border:1px solid rgba(6,182,212,.3);background:rgba(6,182,212,.08);color:#67e8f9">DIAT</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid rgba(129,140,248,.3);background:rgba(129,140,248,.08);color:#a5b4fc">FD · PUCV</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid rgba(168,85,247,.3);background:rgba(168,85,247,.08);color:#d8b4fe">VCM</span>
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e293b">
-      programadiat@pucv.cl · Septiembre 2026 · Valparaíso, Chile
-    </div>
-  </div>
-  <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#06b6d4,#6366f1,transparent)"></div>
-</div>
-
-</body>
-</html>`);
-
-  win.document.close();
-  setTimeout(() => win.print(), 900);
+export interface PromptConfig {
+  objetivo: string;
+  area: string;
+  profundidad: string;
+  modelo: string;
+  promptText: string;
+  modelTip?: string;
 }
 
+// ─── Color palette ────────────────────────────────────────────────────────────
+const C = {
+  bg:      [7,  11,  18]  as [number,number,number],   // #070b12
+  bgCard:  [12, 18,  30]  as [number,number,number],   // #0c121e
+  bgLight: [18, 26,  46]  as [number,number,number],   // #121a2e
+  white:   [248,250, 252] as [number,number,number],   // #f8fafc
+  cyan:    [6,  182, 212] as [number,number,number],   // #06b6d4
+  cyanL:   [34, 211, 238] as [number,number,number],   // #22d3ee
+  indigo:  [129,140, 248] as [number,number,number],   // #818cf8
+  purple:  [168,85,  247] as [number,number,number],   // #a855f7
+  gray:    [100,116, 139] as [number,number,number],   // #64748b
+  grayL:   [148,163, 184] as [number,number,number],   // #94a3b8
+  grayD:   [51, 65,  85]  as [number,number,number],   // #334155
+  muted:   [30, 41,  59]  as [number,number,number],   // #1e293b
+};
+
+// ─── jsPDF lazy import (browser only) ────────────────────────────────────────
+async function getJsPDF() {
+  const { jsPDF } = await import('jspdf');
+  return jsPDF;
+}
+
+// ─── Drawing helpers ──────────────────────────────────────────────────────────
+function fillPage(doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>, color = C.bg) {
+  doc.setFillColor(...color);
+  doc.rect(0, 0, 210, 297, 'F');
+}
+
+function accentBar(doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>, y = 0, h = 1.5) {
+  // Cyan→Indigo gradient approximated as two rects
+  doc.setFillColor(...C.cyan);
+  doc.rect(0, y, 105, h, 'F');
+  doc.setFillColor(...C.indigo);
+  doc.rect(105, y, 105, h, 'F');
+}
+
+function hLine(
+  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
+  x1: number, x2: number, y: number,
+  color = C.muted, width = 0.2,
+) {
+  doc.setDrawColor(...color);
+  doc.setLineWidth(width);
+  doc.line(x1, y, x2, y);
+}
+
+function badge(
+  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
+  text: string, x: number, y: number,
+  bgColor = C.bgCard, textColor = C.cyanL,
+) {
+  const w = text.length * 1.7 + 8;
+  doc.setFillColor(...bgColor);
+  doc.roundedRect(x, y - 4, w, 6, 1.5, 1.5, 'F');
+  doc.setDrawColor(...C.cyan);
+  doc.setLineWidth(0.15);
+  doc.roundedRect(x, y - 4, w, 6, 1.5, 1.5, 'S');
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(...textColor);
+  doc.text(text, x + w / 2, y - 0.3, { align: 'center' });
+}
+
+function sectionLabel(
+  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
+  label: string, x: number, y: number,
+  color = C.cyan,
+) {
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...color);
+  doc.text(label.toUpperCase(), x, y);
+  hLine(doc, x, 190, y + 1.5, color, 0.15);
+}
+
+function wrapText(
+  doc: InstanceType<Awaited<ReturnType<typeof getJsPDF>>>,
+  text: string, x: number, y: number,
+  maxWidth: number, lineHeight: number,
+  size: number, color: [number,number,number],
+  style = 'normal',
+): number {
+  doc.setFont('helvetica', style);
+  doc.setFontSize(size);
+  doc.setTextColor(...color);
+  const lines = doc.splitTextToSize(text, maxWidth) as string[];
+  lines.forEach((line: string) => {
+    if (y > 280) { doc.addPage(); fillPage(doc); accentBar(doc); y = 20; }
+    doc.text(line, x, y);
+    y += lineHeight;
+  });
+  return y;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GUÍA DE USOS JURÍDICOS PDF
+// DOSSIER PDF — Premium editorial document
 // ─────────────────────────────────────────────────────────────────────────────
-export function generateGuiaJuridicaPDF(): void {
-  const win = window.open('', '_blank');
-  if (!win) return;
-  const date = new Date().toLocaleDateString('es-CL');
+export async function generateDossierPDF(
+  mods: Module[],
+  equipo: readonly EquipoMember[],
+): Promise<void> {
+  const JsPDF = await getJsPDF();
+  const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210;
 
-  win.document.write(`<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <title>Guía de Usos Jurídicos con IA — DIAT 2026</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;600;700;800&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { size: A4 portrait; margin: 0; }
-    body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: #07090f;
-      color: #cbd5e1;
-      width: 210mm;
-      margin: 0 auto;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
+  // ── PAGE 1: COVER ──────────────────────────────────────────────────────────
+  fillPage(doc);
+
+  // Diagonal grid lines (subtle)
+  doc.setDrawColor(6, 182, 212, 0.03);
+  doc.setLineWidth(0.1);
+  for (let i = 0; i < 30; i++) {
+    doc.line(0, i * 10, 210, i * 10);
+    doc.line(i * 7, 0, i * 7, 297);
+  }
+
+  // Top accent bar
+  accentBar(doc, 0, 2);
+
+  // DIAT badge
+  badge(doc, 'DIAT 2026', 20, 32);
+  badge(doc, 'FD · PUCV', 68, 32);
+  badge(doc, 'PROGRAMA OFICIAL', 116, 32);
+
+  // Main title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(42);
+  doc.setTextColor(...C.white);
+  doc.text('DIAT', 20, 80);
+
+  doc.setFontSize(18);
+  doc.setTextColor(...C.cyanL);
+  doc.text('Derecho · Inteligencia Artificial · Tecnología', 20, 94);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(...C.gray);
+  doc.text('Facultad de Derecho — Pontificia Universidad Católica de Valparaíso', 20, 104);
+  doc.text('Septiembre 2026 · Valparaíso, Chile', 20, 112);
+
+  // Divider
+  hLine(doc, 20, 190, 122, C.cyan, 0.4);
+
+  // Subtitle
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.indigo);
+  doc.text('DOSSIER OFICIAL DEL PROGRAMA', 20, 132);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.grayL);
+  const coverDesc = 'Programa de formación aplicada en inteligencia artificial jurídica, prompting avanzado y nuevas competencias digitales para el ejercicio legal. Dirigido a estudiantes de Derecho, egresados y profesionales jurídicos de la región.';
+  wrapText(doc, coverDesc, 20, 142, 170, 6, 9, C.grayL);
+
+  // Stats row
+  const stats = [
+    { num: '69%', label: 'Abogados usarán IA', sub: 'Thomson Reuters 2025' },
+    { num: '4h',  label: 'Ahorro semanal', sub: 'McKinsey, 2024' },
+    { num: '3',   label: 'Módulos intensivos', sub: 'Sep 2026 · PUCV' },
+  ];
+  let sx = 20;
+  stats.forEach(s => {
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(sx, 168, 54, 28, 3, 3, 'F');
+    doc.setDrawColor(...C.muted);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(sx, 168, 54, 28, 3, 3, 'S');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(...C.cyanL);
+    doc.text(s.num, sx + 27, 182, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.white);
+    doc.text(s.label, sx + 27, 189, { align: 'center' });
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(6);
+    doc.setTextColor(...C.gray);
+    doc.text(s.sub, sx + 27, 193, { align: 'center' });
+
+    sx += 58;
+  });
+
+  // Bottom
+  hLine(doc, 20, 190, 260, C.muted);
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.grayD);
+  doc.text('DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · Todos los derechos reservados', 20, 268);
+  doc.text('© 2026 Programa DIAT · Valparaíso, Chile', 20, 275);
+
+  // ── PAGE 2: CONTEXTO Y ESTADÍSTICAS ────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
+
+  badge(doc, 'CONTEXTO', 20, 18);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...C.white);
+  doc.text('¿Por qué aprender IA jurídica ahora?', 20, 32);
+
+  hLine(doc, 20, 190, 36, C.cyan, 0.3);
+
+  let y2 = 46;
+  const contextParas = [
+    'La inteligencia artificial está transformando el ejercicio del derecho de manera acelerada. Los modelos de lenguaje avanzados como Claude, ChatGPT y Gemini son hoy herramientas de trabajo efectivas para investigación jurídica, redacción de documentos y análisis de casos.',
+    'Sin embargo, la ventaja competitiva no reside en el acceso a las herramientas — que es universal — sino en la capacidad de instruirlas con precisión jurídica. El prompting avanzado es la nueva competencia diferenciadora del abogado del siglo XXI.',
+    'El Programa DIAT fue diseñado precisamente para cerrar esa brecha: transformar a juristas en usuarios expertos de IA, capaces de obtener resultados de nivel profesional, con control metodológico, seguridad informacional y criterio crítico sobre las limitaciones del sistema.',
+  ];
+  contextParas.forEach(p => {
+    y2 = wrapText(doc, p, 20, y2, 170, 5.5, 9.5, C.grayL) + 6;
+  });
+
+  // Key data points
+  sectionLabel(doc, '01 · DATOS CLAVE DEL MERCADO', 20, y2 + 4);
+  y2 += 16;
+
+  const dataPoints = [
+    { pct: '69%', text: 'de abogados encuestados afirma que usará IA en tareas jurídicas en los próximos 5 años', src: 'Thomson Reuters, Future of Professionals 2025' },
+    { pct: '23%', text: 'de las horas facturables en un estudio de abogados son susceptibles de automatización parcial', src: 'McKinsey Global Institute, 2024' },
+    { pct: '$1.2B', text: 'inversión en legaltech en América Latina proyectada para 2027', src: 'Stanford CodeX + CB Insights' },
+    { pct: '4h',   text: 'ahorro semanal promedio por profesional que usa IA para tareas de investigación y redacción', src: 'McKinsey, 2024' },
+  ];
+  dataPoints.forEach(d => {
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(20, y2, 170, 14, 2, 2, 'F');
+    doc.setDrawColor(...C.muted);
+    doc.setLineWidth(0.15);
+    doc.roundedRect(20, y2, 170, 14, 2, 2, 'S');
+
+    doc.setFillColor(...C.cyan);
+    doc.roundedRect(20, y2, 28, 14, 2, 2, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(...C.bg);
+    doc.text(d.pct, 34, y2 + 9, { align: 'center' });
+
+    const tLines = doc.splitTextToSize(d.text, 120) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.grayL);
+    doc.text(tLines[0] || '', 52, y2 + 6);
+    if (tLines[1]) doc.text(tLines[1], 52, y2 + 11);
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.gray);
+    doc.text(d.src, 52, y2 + 17.5);
+
+    y2 += 20;
+  });
+
+  // ── PAGE 3: COMPETENCIAS ───────────────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
+
+  badge(doc, 'COMPETENCIAS', 20, 18);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...C.white);
+  doc.text('9 competencias que desarrollarás', 20, 32);
+  hLine(doc, 20, 190, 36, C.indigo, 0.3);
+
+  const competencias = [
+    { n: '01', title: 'Prompting jurídico de precisión', desc: 'Diseñar instrucciones complejas que producen outputs jurídicos fiables, reproducibles y profesionales.' },
+    { n: '02', title: 'Selección estratégica de herramientas', desc: 'Evaluar Claude, ChatGPT, Gemini, NotebookLM y Perplexity para cada tipo de tarea jurídica.' },
+    { n: '03', title: 'Control de alucinaciones', desc: 'Aplicar protocolos de verificación para detectar y prevenir errores jurídicos generados por IA.' },
+    { n: '04', title: 'Seguridad informacional', desc: 'Gestionar datos sensibles, confidencialidad del cliente y riesgos de privacidad al usar IA.' },
+    { n: '05', title: 'Diseño de workflows jurídicos', desc: 'Construir flujos de trabajo con múltiples modelos encadenados para tareas jurídicas complejas.' },
+    { n: '06', title: 'Investigación jurídica aumentada', desc: 'Acelerar la investigación de doctrina y jurisprudencia con IA verificable y citada.' },
+    { n: '07', title: 'Agentes jurídicos especializados', desc: 'Configurar system prompts de producción para Claude Projects y GPTs personalizados.' },
+    { n: '08', title: 'Análisis de documentos avanzado', desc: 'Procesar contratos, sentencias y expedientes con modelos de alta ventana de contexto.' },
+    { n: '09', title: 'Evaluación crítica de outputs', desc: 'Aplicar criterios jurídicos para validar, corregir y mejorar las respuestas de la IA.' },
+  ];
+
+  let cy = 44;
+  competencias.forEach((c, i) => {
+    const col = i % 2;
+    const cx = col === 0 ? 20 : 108;
+    if (col === 0 && i > 0) cy += 22;
+
+    const colors = [C.cyan, C.indigo, C.purple];
+    const clr = colors[i % 3];
+
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(cx, cy, 82, 19, 2, 2, 'F');
+    doc.setDrawColor(clr[0], clr[1], clr[2]);
+    doc.setLineWidth(0.15);
+    doc.roundedRect(cx, cy, 82, 19, 2, 2, 'S');
+
+    doc.setFillColor(...clr);
+    doc.roundedRect(cx, cy, 10, 19, 2, 2, 'F');
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.bg);
+    doc.text(c.n, cx + 5, cy + 11, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.white);
+    doc.text(c.title, cx + 13, cy + 7);
+
+    const dlines = doc.splitTextToSize(c.desc, 66) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.gray);
+    dlines.slice(0, 2).forEach((dl: string, di: number) => doc.text(dl, cx + 13, cy + 12 + di * 4));
+  });
+
+  // ── PAGES 4-6: MODULE BLUEPRINTS ──────────────────────────────────────────
+  const modColors = [C.cyan, C.indigo, C.purple];
+  const modLabels = ['MÓDULO 01', 'MÓDULO 02', 'MÓDULO 03'];
+
+  mods.forEach((mod, i) => {
+    doc.addPage();
+    fillPage(doc);
+
+    const mc = modColors[i];
+    // Top accent bar in module color
+    doc.setFillColor(...mc);
+    doc.rect(0, 0, 210, 2, 'F');
+
+    badge(doc, modLabels[i], 20, 18);
+    badge(doc, mod.displayDate || `Sesión ${i + 1}`, 74, 18);
+    badge(doc, mod.duration || '3h', 130, 18);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(26);
+    doc.setTextColor(...C.white);
+    doc.text(mod.title, 20, 34);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...C.gray);
+    doc.text(mod.subtitle || '', 20, 42);
+
+    hLine(doc, 20, 190, 46, mc, 0.4);
+
+    // Objectives
+    let my = 54;
+    sectionLabel(doc, 'OBJETIVOS DE APRENDIZAJE', 20, my);
+    my += 8;
+
+    mod.objectives.slice(0, 5).forEach((obj, oi) => {
+      doc.setFillColor(...mc);
+      doc.roundedRect(20, my - 3, 6, 6, 1, 1, 'F');
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.bg);
+      doc.text(`0${oi + 1}`, 23, my + 1.5, { align: 'center' });
+
+      const olines = doc.splitTextToSize(obj, 155) as string[];
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C.grayL);
+      olines.slice(0, 2).forEach((ol: string, oi2: number) => doc.text(ol, 30, my + oi2 * 4.5));
+      my += 10;
+    });
+
+    // Contents
+    my += 6;
+    sectionLabel(doc, 'CONTENIDOS DEL MÓDULO', 20, my);
+    my += 8;
+
+    const leftContents = mod.contents.slice(0, Math.ceil(mod.contents.length / 2));
+    const rightContents = mod.contents.slice(Math.ceil(mod.contents.length / 2));
+
+    leftContents.slice(0, 5).forEach((c, ci) => {
+      doc.setFillColor(...C.bgCard);
+      doc.roundedRect(20, my, 82, 10, 1.5, 1.5, 'F');
+      doc.setDrawColor(mc[0], mc[1], mc[2]);
+      doc.setLineWidth(0.3);
+      doc.line(20, my + 1.5, 20, my + 8.5);
+      const cl = doc.splitTextToSize(c, 73) as string[];
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.grayL);
+      doc.text(cl[0] || '', 24, my + 6.5);
+      my += 13;
+    });
+
+    const ry_start = 54 + 8 + mod.objectives.slice(0, 5).length * 10 + 6 + 8;
+    let ry = ry_start;
+    rightContents.slice(0, 5).forEach((c) => {
+      doc.setFillColor(...C.bgCard);
+      doc.roundedRect(108, ry, 82, 10, 1.5, 1.5, 'F');
+      doc.setDrawColor(mc[0], mc[1], mc[2]);
+      doc.setLineWidth(0.3);
+      doc.line(108, ry + 1.5, 108, ry + 8.5);
+      const cl = doc.splitTextToSize(c, 73) as string[];
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.grayL);
+      doc.text(cl[0] || '', 112, ry + 6.5);
+      ry += 13;
+    });
+
+    // Timeline if available
+    if (mod.timeline && mod.timeline.length > 0) {
+      const ty = Math.max(my, ry) + 8;
+      if (ty < 250) {
+        sectionLabel(doc, 'CRONOGRAMA DE LA SESIÓN', 20, ty);
+        let tx = 20;
+        mod.timeline.slice(0, 5).forEach((block) => {
+          const tw = Math.min(30, (170 / mod.timeline.length));
+          doc.setFillColor(...C.bgCard);
+          doc.roundedRect(tx, ty + 6, tw - 2, 18, 1.5, 1.5, 'F');
+          doc.setFillColor(...mc);
+          doc.roundedRect(tx, ty + 6, tw - 2, 5, 1.5, 1.5, 'F');
+          doc.setFont('courier', 'bold');
+          doc.setFontSize(6);
+          doc.setTextColor(...C.bg);
+          doc.text(block.time || '', tx + (tw - 2) / 2, ty + 10, { align: 'center' });
+          const bl = doc.splitTextToSize(block.topic || '', tw - 6) as string[];
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(6.5);
+          doc.setTextColor(...C.grayL);
+          bl.slice(0, 2).forEach((bline: string, bi: number) => doc.text(bline, tx + 2, ty + 17 + bi * 4));
+          tx += tw;
+        });
+      }
     }
-    .page {
-      width: 210mm; min-height: 297mm;
-      page-break-after: always;
-      position: relative; overflow: hidden;
-      padding: 44px 52px;
+
+    // Footer
+    hLine(doc, 20, 190, 278, C.muted);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.grayD);
+    doc.text(`${modLabels[i]} · Programa DIAT 2026 · Facultad de Derecho PUCV`, 20, 285);
+    doc.text(`${i + 1 + 3}`, 190, 285, { align: 'right' });
+  });
+
+  // ── PAGE 7: TOOLKIT ────────────────────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
+
+  badge(doc, 'TOOLKIT IA', 20, 18);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...C.white);
+  doc.text('Herramientas del ecosistema legaltech', 20, 32);
+  hLine(doc, 20, 190, 36, C.cyan, 0.3);
+
+  const tools = [
+    { name: 'Claude', maker: 'Anthropic', role: 'Análisis profundo · Documentos extensos · Agentes jurídicos', ideal: 'Contratos, informes, system prompts', color: C.cyanL },
+    { name: 'ChatGPT', maker: 'OpenAI', role: 'Agentes GPT · Workflows · Generación versátil', ideal: 'GPTs personalizados, automatización', color: C.indigo },
+    { name: 'Gemini', maker: 'Google', role: 'PDFs directos · Ecosistema Google · Multimodal', ideal: 'Análisis de documentos adjuntos', color: C.purple },
+    { name: 'NotebookLM', maker: 'Google', role: 'Investigación con fuentes propias · Citas verificadas', ideal: 'Investigación doctrinal y jurisprudencial', color: [52, 211, 153] as [number,number,number] },
+    { name: 'Perplexity', maker: 'Perplexity AI', role: 'Búsqueda con fuentes en tiempo real', ideal: 'Normativa reciente, jurisprudencia 2024-2025', color: [251, 191, 36] as [number,number,number] },
+    { name: 'Harvey AI', maker: 'Harvey', role: 'IA especializada para firmas de abogados', ideal: 'Grandes firmas, litigación corporativa', color: [245, 101, 101] as [number,number,number] },
+    { name: 'Thomson Reuters AI', maker: 'Thomson Reuters', role: 'Westlaw AI · Research Assistant jurídico premium', ideal: 'Investigación jurídica profesional verificada', color: [248, 113, 113] as [number,number,number] },
+  ];
+
+  let ty = 44;
+  // Table header
+  doc.setFillColor(...C.bgLight);
+  doc.rect(20, ty, 170, 8, 'F');
+  const cols = [20, 52, 90, 130, 172];
+  const headers = ['HERRAMIENTA', 'FABRICANTE', 'ROL PRINCIPAL', 'USO IDEAL'];
+  headers.forEach((h, hi) => {
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.cyanL);
+    doc.text(h, cols[hi] + 2, ty + 5.5);
+  });
+  ty += 10;
+
+  tools.forEach((t, ti) => {
+    const rowBg = ti % 2 === 0 ? C.bgCard : C.bg;
+    doc.setFillColor(...rowBg);
+    doc.rect(20, ty, 170, 11, 'F');
+
+    // Color dot
+    doc.setFillColor(...t.color);
+    doc.circle(cols[0] + 3, ty + 5.5, 2, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.white);
+    doc.text(t.name, cols[0] + 8, ty + 6.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.gray);
+    doc.text(t.maker, cols[1] + 2, ty + 6.5);
+
+    const roleLines = doc.splitTextToSize(t.role, 36) as string[];
+    doc.setTextColor(...C.grayL);
+    doc.text(roleLines[0] || '', cols[2] + 2, ty + 5);
+    if (roleLines[1]) doc.text(roleLines[1], cols[2] + 2, ty + 9);
+
+    const idealLines = doc.splitTextToSize(t.ideal, 38) as string[];
+    doc.text(idealLines[0] || '', cols[3] + 2, ty + 5);
+    if (idealLines[1]) doc.text(idealLines[1], cols[3] + 2, ty + 9);
+
+    ty += 12;
+  });
+
+  // ── PAGE 8: EQUIPO + CIERRE ────────────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
+
+  badge(doc, 'EQUIPO EJECUTOR', 20, 18);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...C.white);
+  doc.text('Equipo Programa DIAT 2026', 20, 32);
+  hLine(doc, 20, 190, 36, C.purple, 0.3);
+
+  // Autoridades
+  sectionLabel(doc, 'AUTORIDADES', 20, 44);
+
+  const autoridades = [
+    { name: 'Eduardo Aldunate Lizana', rol: 'Director, Escuela de Derecho PUCV', color: C.cyanL },
+    { name: 'Dr. Adolfo Silva Walbaum', rol: 'Director Programa DIAT · Director del Taller', color: C.cyanL },
+  ];
+  let ey = 52;
+  autoridades.forEach(a => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...a.color);
+    doc.text(a.name, 20, ey);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.gray);
+    doc.text(a.rol, 20, ey + 5);
+    ey += 13;
+  });
+
+  // Equipo ejecutor
+  sectionLabel(doc, 'EQUIPO EJECUTOR', 20, ey + 4);
+  ey += 12;
+
+  const colorsMap: Record<string, [number,number,number]> = {
+    cyan: C.cyan, indigo: C.indigo, blue: [96, 165, 250],
+    purple: C.purple, emerald: [52, 211, 153], teal: [20, 184, 166],
+    violet: [167, 139, 250],
+  };
+
+  equipo.forEach((m, mi) => {
+    const col2 = mi % 2;
+    const ex = col2 === 0 ? 20 : 108;
+    const mColor = colorsMap[m.color] || C.gray;
+
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(ex, ey, 82, 16, 2, 2, 'F');
+
+    // Avatar
+    doc.setFillColor(mColor[0], mColor[1], mColor[2]);
+    doc.circle(ex + 10, ey + 8, 6, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.bg);
+    doc.text(m.initials, ex + 10, ey + 9.5, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.white);
+    doc.text(m.name, ex + 20, ey + 7);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.gray);
+    doc.text(m.rol, ex + 20, ey + 12);
+    doc.text(m.calidad, ex + 20, ey + 16.5);
+
+    if (col2 === 1) ey += 20;
+  });
+  if (equipo.length % 2 !== 0) ey += 20;
+
+  // Registration CTA
+  ey = Math.max(ey, 200);
+  hLine(doc, 20, 190, ey, C.cyan, 0.3);
+  ey += 10;
+
+  doc.setFillColor(...C.bgCard);
+  doc.roundedRect(20, ey, 170, 40, 3, 3, 'F');
+  doc.setDrawColor(...C.cyan);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(20, ey, 170, 40, 3, 3, 'S');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(...C.cyanL);
+  doc.text('¿Quieres participar?', 105, ey + 12, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.grayL);
+  doc.text('Fechas tentativas: 8 · 15 · 22 Septiembre 2026 · Cupos limitados', 105, ey + 20, { align: 'center' });
+  doc.text('Contacto: programadiat@pucv.cl · Facultad de Derecho PUCV', 105, ey + 28, { align: 'center' });
+
+  // Footer
+  hLine(doc, 20, 190, 278, C.muted);
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.grayD);
+  doc.text('DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · © 2026', 20, 285);
+  doc.text('8', 190, 285, { align: 'right' });
+
+  // Save
+  doc.save('DIAT-Prompting-Hub-2026.pdf');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROMPT PDF — Generated from Prompt Lab
+// ─────────────────────────────────────────────────────────────────────────────
+export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
+  const JsPDF = await getJsPDF();
+  const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // ── PAGE 1: COVER / CONFIG ─────────────────────────────────────────────────
+  fillPage(doc);
+  accentBar(doc, 0, 2);
+
+  badge(doc, 'DIAT 2026', 20, 18);
+  badge(doc, 'LEXIPROMPT v2.0', 58, 18);
+  badge(doc, 'PUCV · DERECHO', 118, 18);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(32);
+  doc.setTextColor(...C.white);
+  doc.text('PROMPT JURÍDICO', 20, 38);
+  doc.setFontSize(14);
+  doc.setTextColor(...C.cyanL);
+  doc.text('LexPrompt Architect · Facultad de Derecho PUCV', 20, 48);
+
+  hLine(doc, 20, 190, 54, C.cyan, 0.4);
+
+  // DNA config table
+  sectionLabel(doc, 'PROMPT DNA — CONFIGURACIÓN', 20, 64);
+
+  const dnaRows = [
+    { label: 'OBJETIVO',    value: cfg.objetivo },
+    { label: 'ÁREA JURÍDICA', value: cfg.area },
+    { label: 'PROFUNDIDAD', value: cfg.profundidad },
+    { label: 'IA OBJETIVO', value: cfg.modelo },
+    { label: 'PROTECCIONES', value: 'Anti-alucinación · Fuentes jurídicas chilenas' },
+  ];
+
+  let dy = 72;
+  dnaRows.forEach((row, ri) => {
+    const rowBg = ri % 2 === 0 ? C.bgCard : C.bgLight;
+    doc.setFillColor(...rowBg);
+    doc.rect(20, dy, 170, 10, 'F');
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.cyan);
+    doc.text(row.label, 24, dy + 6.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.white);
+    doc.text(row.value, 80, dy + 6.5);
+    dy += 11;
+  });
+
+  // Date
+  dy += 6;
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C.gray);
+  doc.text(
+    `Generado: ${new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    20, dy
+  );
+  doc.text('Programa DIAT · Facultad de Derecho PUCV', 20, dy + 5);
+
+  // ── PAGE 2: PROMPT COMPLETO ────────────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
+
+  sectionLabel(doc, 'PROMPT JURÍDICO COMPLETO', 20, 18);
+
+  // Prompt box
+  doc.setFillColor(...C.bgCard);
+  doc.roundedRect(16, 22, 178, 248, 3, 3, 'F');
+  doc.setDrawColor(...C.cyan);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(16, 22, 178, 248, 3, 3, 'S');
+
+  // Print prompt text
+  let py = 32;
+  const lines = cfg.promptText.split('\n');
+  lines.forEach(line => {
+    if (py > 264) { doc.addPage(); fillPage(doc); accentBar(doc); py = 20; }
+    const isHeader = line.startsWith('═') || line.startsWith('─');
+    const isSectionTitle = /^[A-Z] ▸/.test(line) || /^[A-Z] ·/.test(line);
+    const isConfig = line.startsWith(' ');
+
+    if (isHeader) {
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(5.5);
+      doc.setTextColor(...C.muted);
+      doc.text(line.substring(0, 72), 22, py);
+      py += 3.5;
+    } else if (isSectionTitle) {
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.cyanL);
+      doc.text(line, 22, py);
+      py += 5.5;
+    } else if (isConfig) {
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.gray);
+      const tl = doc.splitTextToSize(line, 162) as string[];
+      tl.forEach((tline: string) => {
+        if (py > 264) { doc.addPage(); fillPage(doc); accentBar(doc); py = 20; }
+        doc.text(tline, 22, py);
+        py += 4.5;
+      });
+    } else if (line.trim() === '') {
+      py += 2.5;
+    } else {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.grayL);
+      const tl = doc.splitTextToSize(line, 162) as string[];
+      tl.forEach((tline: string) => {
+        if (py > 264) { doc.addPage(); fillPage(doc); accentBar(doc); py = 20; }
+        doc.text(tline, 22, py);
+        py += 4.8;
+      });
     }
-    .page:last-child { page-break-after: auto; }
-    .p-dark  { background: #070b12; }
-    .p-mid   { background: #09101a; }
-    .p-cover { background: #04060c; }
-    .grid::before {
-      content: ''; position: absolute; inset: 0;
-      background-image: linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
-      background-size: 28px 28px; pointer-events: none;
-    }
-    .scan::after {
-      content: ''; position: absolute; inset: 0;
-      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);
-      pointer-events: none;
-    }
-    .eyebrow { font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#06b6d4; margin-bottom:10px; }
-    .h1 { font-size:32px; font-weight:800; color:#f8fafc; letter-spacing:-.02em; line-height:1.1; margin-bottom:14px; }
-    .h2 { font-size:22px; font-weight:800; color:#f8fafc; letter-spacing:-.02em; line-height:1.1; margin-bottom:12px; }
-    .body { font-size:12.5px; color:#94a3b8; line-height:1.75; }
-    .rule { height:1px; background:linear-gradient(90deg,#06b6d4,#6366f188,transparent); margin:20px 0; }
-    .label { font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:#334155; margin-bottom:10px; }
-    .chip {
-      font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700;
-      padding:3px 10px; border-radius:5px;
-    }
-    .prompt-box {
-      font-family:'JetBrains Mono',monospace; font-size:10.5px; line-height:1.75;
-      color:#cbd5e1; background:rgba(6,182,212,.04);
-      border:1px solid rgba(6,182,212,.15); border-left:3px solid #06b6d4;
-      border-radius:0 10px 10px 0; padding:16px 18px;
-      white-space:pre-wrap; word-break:break-word;
-      margin-bottom:10px;
-    }
-    .tool-header {
-      display:flex; align-items:center; gap:12px;
-      padding:14px 16px; border-radius:10px;
-      margin-bottom:14px;
-    }
-    .tool-icon { font-size:22px; flex-shrink:0; }
-    .tool-name { font-size:15px; font-weight:800; color:#f8fafc; }
-    .tool-tag  { font-family:'JetBrains Mono',monospace; font-size:9px; color:#475569; margin-top:2px; }
-    .checklist-item {
-      display:flex; align-items:flex-start; gap:10px;
-      padding:10px 14px; border-radius:8px;
-      border:1px solid rgba(255,255,255,.05);
-      background:rgba(255,255,255,.02);
-      margin-bottom:7px;
-    }
-    .check-icon { font-size:12px; flex-shrink:0; margin-top:1px; }
-    .check-text { font-size:11px; color:#94a3b8; line-height:1.5; }
-    .check-crit { color:#f87171; font-size:9px; font-family:'JetBrains Mono',monospace; font-weight:700; margin-top:2px; }
-    table { border-collapse:collapse; width:100%; }
-    thead tr { background:rgba(6,182,212,.08); border-bottom:1px solid rgba(6,182,212,.2); }
-    thead th { padding:9px 12px; font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#67e8f9; text-align:left; }
-    tbody tr { border-bottom:1px solid rgba(255,255,255,.04); }
-    tbody td { padding:9px 12px; font-size:11px; color:#94a3b8; vertical-align:top; line-height:1.4; }
-    .td-bold { font-weight:700; color:#e2e8f0; font-family:'JetBrains Mono',monospace; }
-    .td-cyan { color:#67e8f9; font-weight:700; font-family:'JetBrains Mono',monospace; font-size:10px; }
-  </style>
-</head>
-<body>
+  });
 
-<!-- COVER -->
-<div class="page p-cover grid scan" style="padding:0;display:flex;flex-direction:column">
-  <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:480px;height:280px;background:radial-gradient(ellipse,rgba(6,182,212,.1),transparent 70%);pointer-events:none"></div>
-  <div style="padding:26px 52px 0;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1">
-    <div style="display:flex;gap:8px">
-      <span class="chip" style="border:1px solid rgba(6,182,212,.4);background:rgba(6,182,212,.1);color:#67e8f9">DIAT</span>
-      <span class="chip" style="border:1px solid rgba(129,140,248,.3);background:rgba(129,140,248,.08);color:#a5b4fc">FD · PUCV</span>
-    </div>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e293b">${date}</span>
-  </div>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 60px;position:relative;z-index:1">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.28em;color:#334155;text-transform:uppercase;margin-bottom:22px">Guía de referencia profesional</div>
-    <h1 style="font-size:46px;font-weight:900;color:#f8fafc;letter-spacing:-.04em;line-height:1;margin-bottom:14px">
-      Usos Jurídicos<br><span style="color:#06b6d4">con IA</span>
-    </h1>
-    <p style="font-size:14px;color:#64748b;line-height:1.6;max-width:380px;margin-bottom:30px">
-      Prompts recomendados, funciones esenciales y flujos multi-IA para el ejercicio profesional del derecho
-    </p>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:380px;width:100%">
-      ${[['5','herramientas IA'],['15+','prompts listos'],['3','flujos jurídicos']].map(([v,l]) => `
-      <div style="padding:12px;border-radius:9px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);text-align:center">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:900;color:#06b6d4;line-height:1">${v}</div>
-        <div style="font-size:9.5px;color:#475569;margin-top:3px">${l}</div>
-      </div>`).join('')}
-    </div>
-  </div>
-  <div style="padding:0 52px 26px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1">
-    <div style="font-size:11px;color:#334155">Facultad de Derecho · PUCV · Valparaíso</div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e293b">Septiembre 2026 · Fechas tentativas</div>
-  </div>
-  <div style="height:3px;background:linear-gradient(90deg,transparent,#06b6d4,#6366f1,transparent)"></div>
-</div>
+  // ── LAST PAGE: TIPS + SECURITY ─────────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
 
+  badge(doc, 'USO PROFESIONAL', 20, 18);
 
-<!-- PAGE 2: HERRAMIENTAS + PROMPTS (Claude & ChatGPT) -->
-<div class="page p-dark">
-  <div class="eyebrow">01 · Plataformas y Prompts</div>
-  <div class="h1" style="font-size:26px">Prompts recomendados por herramienta</div>
-  <div class="rule"></div>
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...C.white);
+  doc.text('Recomendaciones de uso', 20, 32);
+  hLine(doc, 20, 190, 36, C.purple, 0.3);
 
-  <!-- Claude -->
-  <div class="tool-header" style="background:rgba(234,88,12,.06);border:1px solid rgba(234,88,12,.2)">
-    <span class="tool-icon">🤖</span>
-    <div>
-      <div class="tool-name">Claude <span style="font-size:10px;color:#f97316;font-family:'JetBrains Mono',monospace">Anthropic</span></div>
-      <div class="tool-tag">Análisis profundo · 200k tokens · Documentos extensos · Razonamiento complejo</div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
-    ${[
-      { caso:'Análisis de contrato', prompt:'Actúa como abogado especialista en derecho contractual chileno. Analiza el siguiente contrato e identifica: (1) cláusulas de riesgo, (2) obligaciones principales de cada parte, (3) vacíos o ambigüedades y (4) sugerencias de mejora. Cita el artículo específico del CC cuando aplique. [PEGAR CONTRATO]' },
-      { caso:'Síntesis de expediente', prompt:'Eres un abogado litigante con experiencia en [área]. Lee el siguiente expediente judicial y genera: (1) resumen de hechos relevantes, (2) pretensiones de cada parte, (3) estado procesal actual y (4) identificación de los puntos de derecho controvertidos. Si algo no está claro, escribe [VERIFICAR]. [PEGAR EXPEDIENTE]' },
-    ].map(p => `
-    <div>
-      <div class="label">${p.caso}</div>
-      <div class="prompt-box" style="font-size:9.5px">${p.prompt}</div>
-    </div>`).join('')}
-  </div>
+  if (cfg.modelTip) {
+    sectionLabel(doc, `OPTIMIZACIÓN PARA ${cfg.modelo.toUpperCase()}`, 20, 44);
+    wrapText(doc, cfg.modelTip, 20, 52, 170, 5.5, 9, C.grayL);
+  }
 
-  <!-- ChatGPT -->
-  <div class="tool-header" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2)">
-    <span class="tool-icon">💬</span>
-    <div>
-      <div class="tool-name">ChatGPT <span style="font-size:10px;color:#10b981;font-family:'JetBrains Mono',monospace">OpenAI</span></div>
-      <div class="tool-tag">GPTs personalizados · Borradores rápidos · Brainstorming · Plugins</div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    ${[
-      { caso:'Redacción de escrito', prompt:'Redacta un escrito de [tipo: demanda/recurso/memo] para el Juzgado de [tipo] de [ciudad]. Partes: [demandante] c/ [demandado]. Materia: [describe el conflicto en 2 líneas]. Estilo: formal, preciso, sin adornos. Incluye petición concreta al final. Si necesitas más información, pregunta antes de redactar.' },
-      { caso:'Revisión de argumentos', prompt:'Analiza los siguientes argumentos jurídicos desde la perspectiva del abogado contrario. Identifica las 3 debilidades principales y sugiere cómo reforzarlos. Sé directo y específico. [PEGAR ARGUMENTOS]' },
-    ].map(p => `
-    <div>
-      <div class="label">${p.caso}</div>
-      <div class="prompt-box" style="font-size:9.5px">${p.prompt}</div>
-    </div>`).join('')}
-  </div>
-</div>
+  let sp = cfg.modelTip ? 80 : 44;
+  sectionLabel(doc, 'CAPAS DE SEGURIDAD ACTIVAS', 20, sp);
+  sp += 8;
 
+  const secLayers = [
+    { icon: '🧠', title: 'Anti-alucinaciones', desc: 'El prompt incluye instrucciones para que la IA identifique con [VERIFICAR] cualquier dato no confirmado. Nunca inventa normas ni jurisprudencia.' },
+    { icon: '📚', title: 'Fuentes jurídicas chilenas', desc: 'Anclaje al marco normativo chileno: BCN, Poder Judicial, Contraloría y Tribunal Constitucional como fuentes primarias.' },
+  ];
+  secLayers.forEach(sl => {
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(20, sp, 170, 20, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.cyanL);
+    doc.text(`${sl.icon}  ${sl.title}`, 26, sp + 8);
+    const dl = doc.splitTextToSize(sl.desc, 156) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.gray);
+    dl.slice(0, 2).forEach((d: string, di: number) => doc.text(d, 26, sp + 13 + di * 4.5));
+    sp += 24;
+  });
 
-<!-- PAGE 3: GEMINI, NOTEBOOKLM, PERPLEXITY -->
-<div class="page p-mid">
-  <div class="eyebrow">02 · Más herramientas</div>
+  // DIAT branding
+  hLine(doc, 20, 190, 260, C.muted);
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.grayD);
+  doc.text('LexPrompt Architect v2.0 · Programa DIAT · Facultad de Derecho PUCV', 20, 268);
+  doc.text('© 2026 · Herramienta pedagógica — Verificar outputs con fuentes primarias', 20, 274);
 
-  <!-- Gemini -->
-  <div class="tool-header" style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);margin-bottom:10px">
-    <span class="tool-icon">💎</span>
-    <div>
-      <div class="tool-name">Gemini <span style="font-size:10px;color:#3b82f6;font-family:'JetBrains Mono',monospace">Google</span></div>
-      <div class="tool-tag">PDFs adjuntos sin copiar · Google Drive/Docs · Multimodal</div>
-    </div>
-  </div>
-  <div class="prompt-box" style="font-size:9.5px;margin-bottom:14px">Adjunta el PDF del contrato/sentencia directamente. Luego escribe: "Eres asistente jurídico. Analiza este documento y extrae: (1) partes involucradas, (2) objeto principal, (3) plazos críticos y (4) cláusulas de penalización o sanción. Responde solo con lo que está en el documento. Si hay ambigüedad, indícalo."</div>
+  // Save
+  doc.save('prompt-juridico-diat.pdf');
+}
 
-  <!-- NotebookLM -->
-  <div class="tool-header" style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);margin-bottom:10px">
-    <span class="tool-icon">📓</span>
-    <div>
-      <div class="tool-name">NotebookLM <span style="font-size:10px;color:#6366f1;font-family:'JetBrains Mono',monospace">Google</span></div>
-      <div class="tool-tag">Solo responde sobre documentos subidos · Investigación verificable</div>
-    </div>
-  </div>
-  <div class="prompt-box" style="font-size:9.5px;margin-bottom:14px">Sube tus sentencias, artículos de doctrina o normativa. Luego usa: "Basándote exclusivamente en los documentos subidos, ¿qué criterios han usado los tribunales para resolver [tema específico]? Cita el documento y el párrafo exacto donde encuentres cada criterio."</div>
+// ─────────────────────────────────────────────────────────────────────────────
+// GUÍA JURÍDICA PDF — Tool usage guide
+// ─────────────────────────────────────────────────────────────────────────────
+export async function generateGuiaJuridicaPDF(): Promise<void> {
+  const JsPDF = await getJsPDF();
+  const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  <!-- Perplexity -->
-  <div class="tool-header" style="background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);margin-bottom:10px">
-    <span class="tool-icon">🔍</span>
-    <div>
-      <div class="tool-name">Perplexity <span style="font-size:10px;color:#06b6d4;font-family:'JetBrains Mono',monospace">Perplexity AI</span></div>
-      <div class="tool-tag">Fuentes citables · Datos actuales · Legislación vigente</div>
-    </div>
-  </div>
-  <div class="prompt-box" style="font-size:9.5px;margin-bottom:18px">¿Cuál es la normativa vigente en Chile sobre [tema jurídico específico]? Incluye número de ley, artículo específico y fecha de última modificación. Prioriza fuentes de bcn.cl, pjud.cl y diariooficial.cl. Indica si hay proyectos de ley en tramitación.</div>
+  // ── PAGE 1: COVER ──────────────────────────────────────────────────────────
+  fillPage(doc);
+  accentBar(doc, 0, 2);
 
-  <div class="rule"></div>
-  <div class="h2" style="font-size:16px;margin-bottom:14px">Tabla comparativa: ¿Cuándo usar cada IA?</div>
-  <table>
-    <thead><tr>
-      <th>Herramienta</th>
-      <th>Ideal para</th>
-      <th>Evitar cuando</th>
-      <th>Fortaleza jurídica</th>
-    </tr></thead>
-    <tbody>
-      ${[
-        ['🤖 Claude','Análisis profundo, documentos 50+ pág.','Necesitas datos actuales del día','Razonamiento legal complejo'],
-        ['💬 ChatGPT','Borradores rápidos, GPTs personalizados','Precisión normativa crítica','Brainstorming y estructuración'],
-        ['💎 Gemini','PDFs adjuntos, integración Google','Argumentación técnica muy compleja','Extracción de datos de documentos'],
-        ['📓 NotebookLM','Investigar dentro de tus propios docs','Preguntas fuera de tus fuentes','Síntesis verificable con fuentes'],
-        ['🔍 Perplexity','Legislación y normas actuales','Redacción extensa o análisis','Búsqueda con citas verificables'],
-      ].map(([t,i,e,f]) => `
-      <tr>
-        <td class="td-bold">${t}</td>
-        <td>${i}</td>
-        <td style="color:#64748b">${e}</td>
-        <td class="td-cyan">${f}</td>
-      </tr>`).join('')}
-    </tbody>
-  </table>
-</div>
+  badge(doc, 'DIAT 2026', 20, 20);
+  badge(doc, 'GUÍA JURÍDICA', 58, 20);
+  badge(doc, 'FD · PUCV', 116, 20);
 
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(36);
+  doc.setTextColor(...C.white);
+  doc.text('Guía de Usos', 20, 55);
+  doc.text('Jurídicos con IA', 20, 68);
 
-<!-- PAGE 4: WORKFLOWS + SEGURIDAD -->
-<div class="page p-dark">
-  <div class="eyebrow">03 · Flujos y Seguridad</div>
-  <div class="h1" style="font-size:24px;margin-bottom:20px">Flujos probados y protocolos de seguridad</div>
+  doc.setFontSize(13);
+  doc.setTextColor(...C.cyanL);
+  doc.text('Prompts, Funciones y Workflows para Abogados', 20, 80);
 
-  ${[
-    { title:'Investigación jurídica completa', color:'#06b6d4', time:'30–45 min', steps:[
-      {t:'Perplexity',a:'Busca legislación vigente y jurisprudencia reciente con fuentes citadas'},
-      {t:'NotebookLM',a:'Sube los documentos encontrados y analiza tu propio corpus de sentencias'},
-      {t:'Claude',a:'Sintetiza, redacta el memo o informe final con verificación de fuentes'},
-    ]},
-    { title:'Preparación de audiencia', color:'#818cf8', time:'60–90 min', steps:[
-      {t:'Gemini',a:'Adjunta el expediente PDF y extrae cronología de hechos y pretensiones'},
-      {t:'Claude',a:'Construye el argumentario estratégico y anticipa argumentos contrarios'},
-      {t:'ChatGPT',a:'Redacta el escrito en el formato requerido por el tribunal'},
-    ]},
-    { title:'Redacción de contrato', color:'#a855f7', time:'20–40 min', steps:[
-      {t:'Claude',a:'Redacta el contrato con todas las cláusulas esenciales del área'},
-      {t:'ChatGPT',a:'Identifica riesgos, cláusulas ambiguas y vacíos en el texto'},
-      {t:'Claude',a:'Integra observaciones y genera la versión definitiva pulida'},
-    ]},
-  ].map(wf => `
-  <div style="margin-bottom:14px;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:12px;font-weight:700;color:${wf.color}">${wf.title}</div>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569">⏱ ${wf.time}</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      ${wf.steps.map((s, j) => `
-      <div style="flex:1;padding:8px 10px;border-radius:7px;border:1px solid ${wf.color}2a;background:${wf.color}08">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:${wf.color};margin-bottom:3px">${s.t}</div>
-        <div style="font-size:9.5px;color:#64748b;line-height:1.4">${s.a}</div>
-      </div>
-      ${j < wf.steps.length-1 ? `<div style="font-size:12px;color:#1e293b;flex-shrink:0">→</div>` : ''}`).join('')}
-    </div>
-  </div>`).join('')}
+  hLine(doc, 20, 190, 86, C.cyan, 0.4);
 
-  <div class="rule"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-    <div>
-      <div class="label" style="color:#f87171;border-bottom:1px solid rgba(248,113,113,.2);padding-bottom:6px;margin-bottom:10px">⚠ Seguridad — CRÍTICO</div>
-      ${[
-        'Anonimiza RUT, nombres y datos del cliente ANTES de pegar en la IA',
-        'No uses IAs públicas para casos de alto perfil o con datos sensibles',
-        'Nunca copies estrategia de litigación en ChatGPT o Gemini sin anonimizar',
-        'Verifica los términos de uso de cada plataforma (retención de datos)',
-      ].map(i => `
-      <div class="checklist-item">
-        <span class="check-icon">🔴</span>
-        <span class="check-text">${i}</span>
-      </div>`).join('')}
-    </div>
-    <div>
-      <div class="label" style="color:#fbbf24;border-bottom:1px solid rgba(251,191,36,.2);padding-bottom:6px;margin-bottom:10px">🧠 Anti-alucinaciones</div>
-      ${[
-        '"Si no tienes certeza, escribe [VERIFICAR]" — en todos tus prompts',
-        'Nunca uses jurisprudencia de IA sin verificarla en pjud.cl',
-        'Siempre pide número de artículo exacto y nombre de ley',
-        'Para doctrina: usa NotebookLM con tus libros, no la memoria del LLM',
-      ].map(i => `
-      <div class="checklist-item">
-        <span class="check-icon">🟡</span>
-        <span class="check-text">${i}</span>
-      </div>`).join('')}
-    </div>
-  </div>
-</div>
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...C.gray);
+  const guiaDesc = 'Guía práctica con prompts profesionales para las 5 principales herramientas de IA jurídica. Incluye workflows optimizados, tablas comparativas y protocolos de seguridad para el uso responsable de inteligencia artificial en el ejercicio del derecho.';
+  wrapText(doc, guiaDesc, 20, 96, 170, 5.5, 9.5, C.gray);
 
+  const tools5 = [
+    { name: 'Claude',      desc: 'Análisis profundo, system prompts', color: C.cyan },
+    { name: 'ChatGPT',     desc: 'Agentes, workflows, GPTs', color: C.indigo },
+    { name: 'Gemini',      desc: 'PDFs directos, Google Workspace', color: C.purple },
+    { name: 'NotebookLM',  desc: 'Investigación con fuentes propias', color: [52,211,153] as [number,number,number] },
+    { name: 'Perplexity',  desc: 'Búsqueda con fuentes actuales', color: [251,191,36] as [number,number,number] },
+  ];
 
-<!-- PAGE 5: BACK -->
-<div class="page p-cover grid scan" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:350px;background:radial-gradient(ellipse,rgba(6,182,212,.07),transparent 70%);pointer-events:none"></div>
-  <div style="position:relative;z-index:1">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:56px;font-weight:900;color:rgba(6,182,212,.12);letter-spacing:.1em;line-height:1;margin-bottom:18px">DIAT</div>
-    <div style="font-size:15px;font-weight:800;color:#f8fafc;margin-bottom:6px">Guía de Usos Jurídicos con IA</div>
-    <div style="font-size:11px;color:#334155;margin-bottom:20px">Programa DIAT 2026 · Facultad de Derecho PUCV</div>
-    <div style="font-size:12px;font-style:italic;color:#1e293b;margin-bottom:24px">"La IA amplifica tu criterio. Tú sigues siendo el abogado."</div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e293b">programadiat@pucv.cl · Septiembre 2026 · Valparaíso, Chile</div>
-  </div>
-  <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#06b6d4,#6366f1,transparent)"></div>
-</div>
+  let gx = 20;
+  tools5.forEach(t => {
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(gx, 130, 32, 26, 2, 2, 'F');
+    doc.setDrawColor(t.color[0], t.color[1], t.color[2]);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(gx, 130, 32, 26, 2, 2, 'S');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...t.color);
+    doc.text(t.name, gx + 16, 143, { align: 'center' });
+    const dl = doc.splitTextToSize(t.desc, 28) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.gray);
+    dl.forEach((d: string, di: number) => doc.text(d, gx + 16, 149 + di * 4, { align: 'center' }));
+    gx += 36;
+  });
 
-</body></html>`);
+  // ── PAGE 2: PROMPTS POR HERRAMIENTA ────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
 
-  win.document.close();
-  setTimeout(() => win.print(), 800);
+  sectionLabel(doc, 'PROMPTS RECOMENDADOS POR HERRAMIENTA', 20, 18);
+
+  const promptGuides = [
+    {
+      tool: 'CLAUDE', color: C.cyan,
+      tip: 'Pega el documento completo (hasta 200k tokens). Usa etiquetas <documento> para separar material del prompt. Ideal para contratos extensos y análisis multipasos.',
+      prompt: 'Actúa como abogado senior chileno. Analiza el siguiente [documento/contrato/sentencia] e identifica: (1) puntos clave, (2) riesgos jurídicos, (3) cláusulas problemáticas, (4) recomendaciones accionables. No inventes normas — usa [VERIFICAR] para datos inciertos.',
+    },
+    {
+      tool: 'CHATGPT (GPT-4o)', color: C.indigo,
+      tip: 'Configura un GPT personalizado para tu área práctica con hasta 8.000 caracteres de instrucciones. Usa el modo "Reason" para análisis complejos.',
+      prompt: 'Eres un asistente jurídico especializado en [área]. Tu tarea es [finalidad]. Formato de respuesta: (1) Síntesis ejecutiva, (2) Análisis por puntos, (3) Riesgos, (4) Recomendaciones. Cita normas por nombre, número y artículo específico.',
+    },
+    {
+      tool: 'GEMINI', color: C.purple,
+      tip: 'Adjunta PDFs directamente sin copiar texto. Funciona bien en Google Docs con el panel lateral. Usa instrucciones en secciones claras.',
+      prompt: 'Analiza este documento PDF adjunto como experto jurídico chileno. Identifica: hechos relevantes, normas aplicables, riesgos y recomendaciones. Cita los artículos específicos del documento.',
+    },
+    {
+      tool: 'NOTEBOOKLM', color: [52,211,153] as [number,number,number],
+      tip: 'Primero sube tus documentos fuente (libros, sentencias, apuntes). Luego formula preguntas — responde citando textualmente tus fuentes. Ideal para investigación verificable.',
+      prompt: '¿Qué dice la doctrina sobre [institución jurídica]? Cita los párrafos exactos de los documentos que subí. Si no hay información suficiente en mis documentos, indícalo.',
+    },
+  ];
+
+  let gy = 26;
+  promptGuides.forEach(pg => {
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(20, gy, 170, 44, 2, 2, 'F');
+    doc.setFillColor(pg.color[0], pg.color[1], pg.color[2]);
+    doc.roundedRect(20, gy, 170, 7, 2, 2, 'F');
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.bg);
+    doc.text(pg.tool, 24, gy + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.gray);
+    const tl = doc.splitTextToSize(pg.tip, 162) as string[];
+    tl.slice(0, 2).forEach((tline: string, ti: number) => doc.text(tline, 24, gy + 12 + ti * 4.5));
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.cyanL);
+    const pl = doc.splitTextToSize(pg.prompt, 162) as string[];
+    pl.slice(0, 4).forEach((pline: string, pi: number) => doc.text(pline, 24, gy + 23 + pi * 4.2));
+
+    gy += 48;
+  });
+
+  // ── PAGE 3: WORKFLOWS ──────────────────────────────────────────────────────
+  doc.addPage();
+  fillPage(doc);
+  accentBar(doc);
+
+  sectionLabel(doc, 'WORKFLOWS JURÍDICOS CON IA', 20, 18);
+
+  const workflows = [
+    {
+      title: 'Workflow de Análisis Contractual', color: C.cyan,
+      steps: [
+        'PASO 1 — CLAUDE: "Analiza este contrato e identifica todas las cláusulas de riesgo, ordenadas por criticidad."',
+        'PASO 2 — CHATGPT: "Con base en este análisis, genera una tabla comparativa con los cambios recomendados."',
+        'PASO 3 — NOTEBOOKLM: Verifica normas citadas contra tu base documental interna.',
+        'PASO 4 — PERPLEXITY: Verifica si existen modificaciones legales recientes que afecten el contrato.',
+        'RESULTADO: Informe completo con riesgos identificados, doctrina verificada y cambios recomendados.',
+      ],
+    },
+    {
+      title: 'Workflow de Investigación Jurídica', color: C.indigo,
+      steps: [
+        'PASO 1 — NOTEBOOKLM: Sube doctrina y jurisprudencia disponible. Mapea el estado del debate.',
+        'PASO 2 — PERPLEXITY: "Busca sentencias recientes de la Corte Suprema sobre [tema] con URLs exactas."',
+        'PASO 3 — CLAUDE: "Con estos insumos, redacta un informe jurídico nivel académico sobre [institución]."',
+        'RESULTADO: Informe estructurado con fuentes verificadas, doctrina integrada y análisis crítico.',
+      ],
+    },
+    {
+      title: 'Workflow de Preparación de Audiencia', color: C.purple,
+      steps: [
+        'PASO 1 — CLAUDE: "Actúa como contraparte. ¿Cuáles son los 5 argumentos más fuertes en mi contra?"',
+        'PASO 2 — CHATGPT: "Genera un esquema de argumentación con rebates para cada argumento identificado."',
+        'PASO 3 — GEMINI: Analiza la jurisprudencia adjunta para identificar precedentes favorables.',
+        'RESULTADO: Argumentario completo con anticipación de contingencias y plan de contingencia.',
+      ],
+    },
+  ];
+
+  let wy = 26;
+  workflows.forEach(wf => {
+    doc.setFillColor(...C.bgCard);
+    const wh = 14 + wf.steps.length * 11;
+    doc.roundedRect(20, wy, 170, wh, 2, 2, 'F');
+
+    doc.setFillColor(wf.color[0], wf.color[1], wf.color[2]);
+    doc.rect(20, wy, 3, wh, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.white);
+    doc.text(wf.title, 27, wy + 8);
+
+    let wy2 = wy + 14;
+    wf.steps.forEach(step => {
+      const sl = doc.splitTextToSize(step, 158) as string[];
+      const isStep = step.startsWith('PASO');
+      const isResult = step.startsWith('RESULTADO');
+      doc.setFont('helvetica', isStep || isResult ? 'bold' : 'normal');
+      doc.setFontSize(7.5);
+      const wfColor = isResult ? C.cyanL : C.grayL;
+      doc.setTextColor(...wfColor);
+      doc.text(sl[0] || '', 27, wy2);
+      if (sl[1]) doc.text(sl[1], 27, wy2 + 4);
+      wy2 += 11;
+    });
+
+    wy += wh + 8;
+  });
+
+  // Footer
+  hLine(doc, 20, 190, 278, C.muted);
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.grayD);
+  doc.text('Guía de Usos Jurídicos con IA · Programa DIAT 2026 · Facultad de Derecho PUCV', 20, 285);
+
+  doc.save('guia-juridica-ia-diat.pdf');
 }

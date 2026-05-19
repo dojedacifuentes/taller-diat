@@ -50,6 +50,14 @@ export const equipoEjecutor = [
     initials: 'MD',
     color: 'teal',
   },
+  {
+    id: 'ee-07',
+    name: 'Ignacio Márquez Espinoza',
+    rol: 'Integrante',
+    calidad: 'Estudiante Derecho PUCV',
+    initials: 'IM',
+    color: 'violet',
+  },
 ] as const;
 
 // ── teamMembers legacy — kept for type compatibility with pages that import it
@@ -87,4 +95,5 @@ export const memberAvatarColors: Record<string, string> = {
   purple: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
   emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
   teal: 'bg-teal-500/20 text-teal-400 border-teal-500/40',
+  violet: 'bg-violet-500/20 text-violet-400 border-violet-500/40',
 };
