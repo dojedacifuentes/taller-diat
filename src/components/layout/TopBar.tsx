@@ -26,9 +26,12 @@ export function TopBar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-yellow-500/20 bg-yellow-500/5">
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+            <span className="text-[11px] text-yellow-400 font-medium mono">PRÓXIMAMENTE</span>
+          </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/5">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[11px] text-cyan-400 font-medium mono">SEP 2026</span>
+            <span className="text-[11px] text-cyan-400 font-bold mono">8 · 15 · 22 SEP</span>
           </div>
         </div>
       </div>

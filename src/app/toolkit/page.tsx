@@ -1,7 +1,73 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wrench, ArrowRight, Check, AlertTriangle, Zap, Shield, Brain } from 'lucide-react';
+import { Wrench, ArrowRight, Check, AlertTriangle, Zap, Shield, Brain, ExternalLink } from 'lucide-react';
+
+const officialTools = [
+  {
+    name: 'Claude',
+    emoji: '🤖',
+    desc: 'Análisis profundo, documentos extensos, 200k tokens',
+    url: 'https://claude.ai',
+    color: 'border-orange-500/25 bg-orange-500/5 hover:border-orange-500/40',
+    accent: 'text-orange-400',
+    tag: 'Anthropic',
+  },
+  {
+    name: 'ChatGPT',
+    emoji: '💬',
+    desc: 'Agentes, GPTs personalizados, workflows',
+    url: 'https://chatgpt.com',
+    color: 'border-emerald-500/25 bg-emerald-500/5 hover:border-emerald-500/40',
+    accent: 'text-emerald-400',
+    tag: 'OpenAI',
+  },
+  {
+    name: 'Gemini',
+    emoji: '💎',
+    desc: 'PDFs adjuntos, integración Google Drive/Docs',
+    url: 'https://gemini.google.com',
+    color: 'border-blue-500/25 bg-blue-500/5 hover:border-blue-500/40',
+    accent: 'text-blue-400',
+    tag: 'Google',
+  },
+  {
+    name: 'NotebookLM',
+    emoji: '📓',
+    desc: 'Investiga dentro de tus propios documentos',
+    url: 'https://notebooklm.google.com',
+    color: 'border-indigo-500/25 bg-indigo-500/5 hover:border-indigo-500/40',
+    accent: 'text-indigo-400',
+    tag: 'Google',
+  },
+  {
+    name: 'Perplexity',
+    emoji: '🔍',
+    desc: 'Búsqueda con fuentes verificables y actuales',
+    url: 'https://perplexity.ai',
+    color: 'border-cyan-500/25 bg-cyan-500/5 hover:border-cyan-500/40',
+    accent: 'text-cyan-400',
+    tag: 'Perplexity AI',
+  },
+  {
+    name: 'GitHub',
+    emoji: '🐙',
+    desc: 'Repositorios de código y herramientas legaltech',
+    url: 'https://github.com',
+    color: 'border-zinc-500/25 bg-zinc-500/5 hover:border-zinc-500/40',
+    accent: 'text-zinc-400',
+    tag: 'Microsoft',
+  },
+  {
+    name: 'Vercel',
+    emoji: '▲',
+    desc: 'Deploy instantáneo de prototipos legaltech',
+    url: 'https://vercel.com',
+    color: 'border-white/15 bg-white/5 hover:border-white/25',
+    accent: 'text-white',
+    tag: 'Vercel Inc.',
+  },
+];
 
 const flows = [
   {
@@ -96,6 +162,32 @@ export default function ToolkitPage() {
           Flujos reales, checklists de seguridad y referencia rápida. Lacónico. Útil. Sin rodeos.
         </p>
       </div>
+
+      {/* Tools */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">
+          <ExternalLink className="w-4 h-4 text-cyan-400" /> Herramientas del Programa
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          {officialTools.map(tool => (
+            <a
+              key={tool.name}
+              href={tool.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`group rounded-xl border p-3 transition-all ${tool.color}`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xl">{tool.emoji}</span>
+                <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+              </div>
+              <div className={`text-xs font-bold ${tool.accent}`}>{tool.name}</div>
+              <div className="text-[10px] text-zinc-600 mt-0.5 leading-tight">{tool.desc}</div>
+              <div className={`text-[9px] mt-1.5 mono font-medium ${tool.accent} opacity-60`}>{tool.tag}</div>
+            </a>
+          ))}
+        </div>
+      </section>
 
       {/* Flujos */}
       <section className="space-y-4">

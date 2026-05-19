@@ -1,10 +1,19 @@
 export type ModuleStatus = 'pending' | 'active' | 'completed';
+export type TimeBlockType = 'theory' | 'demo' | 'practice' | 'workshop' | 'analysis' | 'closing';
+
+export interface ModuleTimeBlock {
+  time: string;
+  topic: string;
+  type: TimeBlockType;
+  description: string;
+}
 
 export interface Module {
   id: number;
   title: string;
   subtitle: string;
   date: string;
+  displayDate: string;
   endDate: string;
   status: ModuleStatus;
   duration: string;
@@ -14,6 +23,7 @@ export interface Module {
   activity: string;
   deliverable: string;
   participants: number;
+  timeline: ModuleTimeBlock[];
 }
 
 export interface Tool {

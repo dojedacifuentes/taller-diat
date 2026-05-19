@@ -52,12 +52,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-white/[0.06] space-y-1">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-[10px] text-cyan-500 font-medium mono">M2 EN CURSO</span>
+      <div className="px-4 py-4 border-t border-white/[0.06] space-y-2">
+        <div className="text-[10px] text-zinc-600 uppercase tracking-widest mono font-medium">
+          Módulos
         </div>
-        <div className="text-[10px] text-zinc-600">Facultad de Derecho PUCV · 2026</div>
+        <div className="flex items-center gap-1.5">
+          <span className="mono text-[11px] font-bold text-cyan-400">8 · 15 · 22</span>
+          <span className="text-[10px] text-zinc-500">SEP 2026</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="text-[10px] text-yellow-500 font-medium mono">PRÓXIMAMENTE</span>
+        </div>
+        <div className="text-[10px] text-zinc-600">Facultad de Derecho PUCV</div>
       </div>
     </aside>
   );

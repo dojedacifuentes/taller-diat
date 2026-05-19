@@ -1,11 +1,15 @@
 'use client';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Zap, Layers, Rocket, Wrench, CheckCircle2, Circle } from 'lucide-react';
+import {
+  ArrowRight, Zap, Layers, Rocket, Wrench, ChevronDown,
+  Shield, Brain, Bot, FileText, CheckCircle2, Circle,
+} from 'lucide-react';
 import { useCountdown } from '@/hooks/useCountdown';
 import { modules } from '@/data/modules';
 
-const MODULE1_DATE = '2026-09-04T09:00:00';
+const MODULE1_DATE = '2026-09-08T09:00:00';
 
 const reasons = [
   {
@@ -31,18 +35,54 @@ const reasons = [
   },
 ];
 
-const stats = [
-  { value: '27', label: 'horas de formación' },
-  { value: '3', label: 'módulos especializados' },
-  { value: '7', label: 'plataformas IA' },
-  { value: 'Sep', label: '2026 · Valparaíso' },
+const spoilers = [
+  {
+    mod: 'M1',
+    color: 'border-cyan-500/20 bg-cyan-500/5',
+    accent: 'text-cyan-400',
+    items: [
+      'Tu biblioteca de prompts jurídicos fundamentales',
+      'Checklist de verificación post-IA que usarás siempre',
+      '5 prompts construidos en vivo con casos chilenos reales',
+    ],
+  },
+  {
+    mod: 'M2',
+    color: 'border-indigo-500/20 bg-indigo-500/5',
+    accent: 'text-indigo-400',
+    items: [
+      'Expediente jurídico completo generado con IA supervisada',
+      'Flujo Perplexity → NotebookLM → Claude documentado',
+      'Dominio de Claude Projects para análisis de contratos',
+    ],
+  },
+  {
+    mod: 'M3',
+    color: 'border-purple-500/20 bg-purple-500/5',
+    accent: 'text-purple-400',
+    items: [
+      'Tu propio agente jurídico con system prompt de producción',
+      'Prototipo legaltech deployado en Vercel',
+      'Certificación institucional PUCV · Facultad de Derecho',
+    ],
+  },
 ];
 
 const features = [
   { icon: Layers, href: '/modulos', label: 'Ver los 3 módulos', desc: 'La ruta completa de aprendizaje' },
-  { icon: Zap, href: '/prompt-lab', label: 'Construye tu prompt', desc: 'Generador + descarga PDF' },
+  { icon: Zap, href: '/prompt-lab', label: 'LexPrompt Architect', desc: 'Constructor 7 pasos + PDF' },
   { icon: Rocket, href: '/flashcards', label: 'Aprende con flashcards', desc: '30 cartas de IA jurídica' },
   { icon: Wrench, href: '/toolkit', label: 'Toolkit multi-IA', desc: 'Flujos y guías rápidas' },
+];
+
+const promptLabPreviewSteps = [
+  { num: '01', label: 'Perfil', desc: 'Estudiante, abogado, académico…', icon: '🎓' },
+  { num: '02', label: 'Finalidad', desc: 'Redactar, analizar, litigar…', icon: '📝' },
+  { num: '03', label: 'Área', desc: 'Civil, penal, laboral, tech…', icon: '⚖️' },
+  { num: '04', label: 'Profundidad', desc: 'Rápido → Litigación avanzada', icon: '📊' },
+  { num: '05', label: 'IA objetivo', desc: 'Claude, ChatGPT, Gemini…', icon: '🤖' },
+  { num: '06', label: 'Formato', desc: 'Informe, checklist, tabla…', icon: '🗂️' },
+  { num: '07', label: 'Protecciones', desc: 'Anti-alucin. · Ciberseg. · Fuentes', icon: '🛡️' },
 ];
 
 function CountdownBlock({ value, label }: { value: number; label: string }) {
@@ -61,6 +101,48 @@ function CountdownBlock({ value, label }: { value: number; label: string }) {
   );
 }
 
+function SpoilerCard({ mod, color, accent, items }: typeof spoilers[0]) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-xl border p-4 ${color}`}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between"
+      >
+        <div className="flex items-center gap-2">
+          <span className={`text-xs font-black mono ${accent}`}>{mod}</span>
+          <span className="text-xs text-zinc-400 font-medium">
+            {open ? 'Ocultar' : '¿Qué construirás?'}
+          </span>
+        </div>
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="w-4 h-4 text-zinc-500" />
+        </motion.div>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.ul
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3 space-y-2">
+              {items.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </div>
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const cd = useCountdown(MODULE1_DATE);
 
@@ -74,16 +156,20 @@ export default function LandingPage() {
         transition={{ duration: 0.6 }}
         className="text-center space-y-8"
       >
-        {/* Badge */}
+        {/* Badges */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex justify-center"
+          className="flex flex-wrap justify-center gap-2"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/8 text-xs text-red-400 font-semibold mono tracking-widest uppercase">
             <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
             Inscripciones abiertas · PUCV · Sep 2026
+          </span>
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-700/50 bg-zinc-800/30 text-xs text-zinc-500 font-medium">
+            <Bot className="w-3.5 h-3.5" />
+            Construido completamente con IA
           </span>
         </motion.div>
 
@@ -133,7 +219,7 @@ export default function LandingPage() {
             <span className="text-zinc-600 text-3xl font-bold pb-7">:</span>
             <CountdownBlock value={cd.seconds} label="seg" />
           </div>
-          <div className="text-xs text-zinc-600 mono">Módulo 1 · 4 de septiembre 2026 · 09:00 hrs</div>
+          <div className="text-xs text-zinc-600 mono">Módulo 1 · 8 de septiembre 2026 · 09:00 hrs · PUCV Derecho · Valparaíso</div>
         </motion.div>
 
         {/* CTA */}
@@ -166,19 +252,127 @@ export default function LandingPage() {
         </motion.div>
       </motion.section>
 
+      {/* ── PROMPT LAB HERO ──────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="relative rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-[oklch(0.08_0.02_200/0.9)] to-[oklch(0.08_0.015_250/0.8)] overflow-hidden p-6 sm:p-8"
+      >
+        <div className="absolute inset-0 grid-bg-fine opacity-20" />
+        <div className="relative">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left */}
+            <div className="flex-1 space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                </span>
+                <div>
+                  <div className="text-xs text-cyan-500 font-bold uppercase tracking-widest mono">Feature principal</div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white">LexPrompt Architect</h2>
+                </div>
+              </div>
+
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                El generador de prompts jurídicos más completo en español. 7 pasos, 8 capas de protección
+                (ciberseguridad, anti-alucinaciones, fuentes chilenas verificadas).
+                <span className="text-zinc-200"> Descarga tu prompt en PDF, TXT o cópialo directo a Claude, ChatGPT o Gemini.</span>
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { icon: <Shield className="w-3 h-3" />, label: 'Anti-alucinaciones', color: 'text-indigo-400 border-indigo-500/20 bg-indigo-500/8' },
+                  { icon: <Brain className="w-3 h-3" />, label: 'Fuentes chilenas', color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/8' },
+                  { icon: <FileText className="w-3 h-3" />, label: 'Export PDF/TXT/MD', color: 'text-purple-400 border-purple-500/20 bg-purple-500/8' },
+                  { icon: <Bot className="w-3 h-3" />, label: 'Claude · GPT · Gemini', color: 'text-cyan-400 border-cyan-500/20 bg-cyan-500/8' },
+                ].map(b => (
+                  <span key={b.label} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${b.color}`}>
+                    {b.icon} {b.label}
+                  </span>
+                ))}
+              </div>
+
+              <Link href="/prompt-lab">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-sm transition-colors glow-cyan"
+                >
+                  <Zap className="w-4 h-4" /> Construir mi prompt ahora
+                </motion.button>
+              </Link>
+            </div>
+
+            {/* Right — step preview */}
+            <div className="flex-1 max-w-xs mx-auto lg:mx-0">
+              <div className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-3">
+                Árbol de decisión — 7 pasos
+              </div>
+              <div className="space-y-1.5">
+                {promptLabPreviewSteps.map((s, i) => (
+                  <motion.div
+                    key={s.num}
+                    initial={{ opacity: 0, x: 16 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.07 }}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg border border-white/[0.06] bg-white/[0.02]"
+                  >
+                    <span className="text-[10px] mono text-zinc-700 w-5 shrink-0">{s.num}</span>
+                    <span className="text-base shrink-0">{s.icon}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-zinc-300">{s.label}</div>
+                      <div className="text-[10px] text-zinc-600 truncate">{s.desc}</div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       {/* ── STATS STRIP ──────────────────────────── */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         className="grid grid-cols-2 sm:grid-cols-4 gap-3"
       >
-        {stats.map(({ value, label }) => (
+        {[
+          { value: '6', label: 'horas de formación' },
+          { value: '3', label: 'módulos especializados' },
+          { value: '7', label: 'plataformas IA' },
+          { value: 'Sep', label: '2026 · Valparaíso' },
+        ].map(({ value, label }) => (
           <div key={label} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 text-center">
             <div className="text-2xl font-bold text-white mono">{value}</div>
             <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
           </div>
         ))}
+      </motion.section>
+
+      {/* ── LO QUE CONSTRUIRÁS ───────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="space-y-5"
+      >
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white">Lo que construirás</h2>
+          <p className="text-sm text-zinc-500 mt-1">
+            Cada módulo termina con algo real y tuyo. Expande para ver el spoiler.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {spoilers.map(s => (
+            <SpoilerCard key={s.mod} {...s} />
+          ))}
+        </div>
       </motion.section>
 
       {/* ── WHY ATTEND ───────────────────────────── */}
@@ -233,27 +427,20 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                mod.status === 'active' ? 'border-cyan-500/30 bg-cyan-500/6' :
-                mod.status === 'completed' ? 'border-emerald-500/20 bg-emerald-500/4' :
-                'border-white/[0.06] bg-white/[0.02]'
-              }`}
+              className="flex items-center gap-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]"
             >
-              <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-bold mono text-sm shrink-0 ${
-                mod.status === 'active' ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300' :
-                mod.status === 'completed' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
-                'border-white/10 bg-white/[0.04] text-zinc-500'
-              }`}>
+              <div className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center font-bold mono text-sm shrink-0 text-zinc-500">
                 {mod.id}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-white">{mod.title}</div>
-                <div className="text-xs text-zinc-500 mt-0.5">{mod.date} · {mod.duration}</div>
+                <div className="font-semibold text-sm text-zinc-300">{mod.title}</div>
+                <div className="text-xs text-zinc-600 mt-0.5">{mod.displayDate} · {mod.duration}</div>
               </div>
-              <div className="shrink-0">
-                {mod.status === 'completed' ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> :
-                 mod.status === 'active' ? <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse block" /> :
-                 <Circle className="w-5 h-5 text-zinc-600" />}
+              <div className="shrink-0 flex items-center gap-2">
+                <span className="text-[10px] mono text-yellow-500 border border-yellow-500/20 bg-yellow-500/8 px-2 py-0.5 rounded-md">
+                  PRÓXIMAMENTE
+                </span>
+                <Circle className="w-4 h-4 text-zinc-600" />
               </div>
             </motion.div>
           ))}
@@ -299,14 +486,15 @@ export default function LandingPage() {
       >
         <div className="absolute inset-0 grid-bg-fine opacity-30" />
         <div className="relative space-y-4">
-          <div className="text-2xl font-bold text-white">
-            ¿Sigues leyendo?
-          </div>
+          <div className="text-2xl font-bold text-white">¿Sigues leyendo?</div>
           <p className="text-zinc-400 text-sm max-w-md mx-auto">
-            Probablemente ya estás convencido. El Programa DIAT de la Facultad de Derecho PUCV te espera en septiembre.
+            Probablemente ya estás convencido. El Programa DIAT de la Facultad de Derecho PUCV te espera el 8 de septiembre.
           </p>
           <p className="text-xs text-zinc-600 italic">
             "El futuro llega para todos. La diferencia es quién llega preparado."
+          </p>
+          <p className="text-[10px] text-zinc-700 italic">
+            Esta plataforma fue diseñada y construida completamente con IA — como todo lo que harás en el taller.
           </p>
           <Link href="/modulos">
             <motion.button
