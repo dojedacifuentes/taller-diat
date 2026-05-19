@@ -1,13 +1,32 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, X, Calendar, Copy, Check } from 'lucide-react';
+import { Mail, X, Calendar, Copy, Check, ExternalLink } from 'lucide-react';
 
 const EMAIL = 'programadiat@pucv.cl';
+const SUBJECT = 'Interés en taller de IA jurídica y prompting DIAT';
+const BODY = `Hola Programa DIAT:
+
+Quisiera reservar un cupo y recibir más información sobre el taller de IA jurídica y prompting avanzado que se realizará durante septiembre.
+
+Nombre:
+Carrera / profesión:
+Correo:
+Teléfono (opcional):
+Comentarios:
+
+Muchas gracias.`;
+
 const MAILTO =
   'mailto:' + EMAIL +
-  '?subject=Inter%C3%A9s%20en%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20DIAT' +
-  '&body=Hola%20Programa%20DIAT%3A%0A%0AQuisiera%20reservar%20un%20cupo%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20avanzado%20que%20se%20realizar%C3%A1%20durante%20septiembre.%0A%0ANombre%3A%0ACarrera%20%2F%20profesi%C3%B3n%3A%0ACorreo%3A%0ATel%C3%A9fono%20opcional%3A%0AComentarios%3A%0A%0AMuchas%20gracias.';
+  '?subject=' + encodeURIComponent(SUBJECT) +
+  '&body=' + encodeURIComponent(BODY);
+
+const GMAIL_URL =
+  'https://mail.google.com/mail/?view=cm' +
+  '&to=' + encodeURIComponent(EMAIL) +
+  '&su=' + encodeURIComponent(SUBJECT) +
+  '&body=' + encodeURIComponent(BODY);
 
 export function FloatingCTA() {
   const [visible, setVisible] = useState(false);
@@ -83,23 +102,34 @@ export function FloatingCTA() {
                   8 · 15 · 22 Septiembre 2026 · Fechas tentativas
                 </div>
 
-                {/* Primary CTA — direct mailto, works even without email client visible fallback */}
+                {/* Option A: Gmail webmail (works on any PC without mail client) */}
                 <a
-                  href={MAILTO}
+                  href={GMAIL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 active:bg-cyan-300 text-black text-sm font-bold transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  Abrir correo de reserva
+                  Escribir correo de reserva
+                </a>
+
+                {/* Option B: native mailto (for users with Outlook/Apple Mail) */}
+                <a
+                  href={MAILTO}
+                  className="flex items-center justify-center gap-2 w-full py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 text-xs font-medium transition-all"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Abrir con cliente de correo
                 </a>
 
                 {/* Fallback: visible email + copy */}
-                <div className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 flex items-center gap-2">
-                  <span className="text-[11px] text-zinc-400 flex-1 truncate mono">
+                <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 flex items-center gap-2">
+                  <span className="text-[10px] text-zinc-500 flex-1 truncate mono select-all">
                     {EMAIL}
                   </span>
                   <button
                     onClick={copyEmail}
-                    className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-cyan-400 transition-colors shrink-0"
+                    className="flex items-center gap-1 text-[10px] text-zinc-600 hover:text-cyan-400 transition-colors shrink-0"
                     title="Copiar dirección"
                   >
                     {copied ? (
@@ -143,7 +173,9 @@ export function FloatingCTA() {
                   <div className="text-[10px] text-zinc-500 truncate">Facultad de Derecho PUCV · Cupos limitados</div>
                 </div>
                 <a
-                  href={MAILTO}
+                  href={GMAIL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-colors shrink-0"
                 >
                   <Mail className="w-3 h-3" />

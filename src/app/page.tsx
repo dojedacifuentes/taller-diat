@@ -9,11 +9,13 @@ import {
 } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import { equipoEjecutor } from '@/data/team';
+import { generateDossierPDF } from '@/lib/pdfGenerators';
 
-const MAILTO_RESERVA =
-  'mailto:programadiat@pucv.cl' +
-  '?subject=Inter%C3%A9s%20en%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20DIAT' +
-  '&body=Hola%20Programa%20DIAT%3A%0A%0AQuisiera%20reservar%20un%20cupo%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20avanzado%20que%20se%20realizar%C3%A1%20durante%20septiembre.%0A%0ANombre%3A%0ACarrera%20%2F%20profesi%C3%B3n%3A%0ACorreo%3A%0ATel%C3%A9fono%20opcional%3A%0AComentarios%3A%0A%0AMuchas%20gracias.';
+const DIAT_EMAIL = 'programadiat@pucv.cl';
+const DIAT_SUBJECT = 'Interés en taller de IA jurídica y prompting DIAT';
+const DIAT_BODY = `Hola Programa DIAT:\n\nQuisiera reservar un cupo y recibir más información sobre el taller de IA jurídica y prompting avanzado que se realizará durante septiembre.\n\nNombre:\nCarrera / profesión:\nCorreo:\nTeléfono (opcional):\nComentarios:\n\nMuchas gracias.`;
+const MAILTO_RESERVA = `mailto:${DIAT_EMAIL}?subject=${encodeURIComponent(DIAT_SUBJECT)}&body=${encodeURIComponent(DIAT_BODY)}`;
+const GMAIL_RESERVA = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(DIAT_EMAIL)}&su=${encodeURIComponent(DIAT_SUBJECT)}&body=${encodeURIComponent(DIAT_BODY)}`;
 import { useCountdown } from '@/hooks/useCountdown';
 import { modules } from '@/data/modules';
 
@@ -70,7 +72,7 @@ const spoilers = [
     accent: 'text-purple-400',
     items: [
       'Tu propio agente jurídico con system prompt de producción',
-      'Prototipo legaltech deployado en Vercel',
+      'Tu agente jurídico con system prompt de producción listo',
       'Certificación institucional PUCV · Facultad de Derecho',
     ],
   },
@@ -151,276 +153,6 @@ function SpoilerCard({ mod, color, accent, items }: typeof spoilers[0]) {
   );
 }
 
-function handleProgramPDF(mods: typeof modules, equipo: typeof equipoEjecutor) {
-  const win = window.open('', '_blank');
-  if (!win) return;
-  const date = new Date().toLocaleDateString('es-CL');
-
-  const modColors = ['#06b6d4', '#818cf8', '#c084fc'];
-  const modBg = ['rgba(6,182,212,.08)', 'rgba(129,140,248,.08)', 'rgba(192,132,252,.08)'];
-  const modBorder = ['rgba(6,182,212,.2)', 'rgba(129,140,248,.2)', 'rgba(192,132,252,.2)'];
-
-  const modulesHTML = mods.map((mod, i) => `
-    <div class="module" style="border-color:${modBorder[i]};background:${modBg[i]}">
-      <div class="mod-header" style="border-bottom-color:${modBorder[i]}">
-        <div class="mod-id" style="border-color:${modColors[i]}33;background:${modColors[i]}14;color:${modColors[i]}">${mod.id}</div>
-        <div>
-          <div class="mod-date" style="color:${modColors[i]}">${mod.displayDate} — Módulo ${mod.id} · ${mod.duration}</div>
-          <div class="mod-title">${mod.title}</div>
-          <div class="mod-sub">${mod.subtitle}</div>
-        </div>
-      </div>
-      <div class="mod-grid">
-        <div>
-          <div class="section-label">Objetivos</div>
-          ${mod.objectives.map(o => `<div class="item">◦ ${o}</div>`).join('')}
-        </div>
-        <div>
-          <div class="section-label">Contenidos</div>
-          ${mod.contents.map(c => `<div class="item">◦ ${c}</div>`).join('')}
-        </div>
-      </div>
-      <div class="mod-footer">
-        <div><span class="footer-label">Actividad</span><span class="footer-val">${mod.activity}</span></div>
-        <div><span class="footer-label">Entregable</span><span class="footer-val">${mod.deliverable}</span></div>
-        <div><span class="footer-label">Herramientas</span><span class="footer-val" style="color:${modColors[i]}">${mod.tools.join(' · ')}</span></div>
-      </div>
-    </div>
-  `).join('');
-
-  const equipoHTML = equipo.map(m => `
-    <div class="member">
-      <div class="member-init" style="border-color:rgba(6,182,212,.3);background:rgba(6,182,212,.1);color:#67e8f9">${m.initials}</div>
-      <div>
-        <div class="member-name">${m.name}</div>
-        <div class="member-calidad">${m.calidad}</div>
-        ${m.id === 'ee-01' ? '<div class="member-rol">Subdirector de los Talleres</div>' : ''}
-      </div>
-    </div>
-  `).join('');
-
-  win.document.write(`<!DOCTYPE html><html lang="es"><head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Programa DIAT 2026 — Facultad de Derecho PUCV</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;600;700;800&display=swap');
-      *{box-sizing:border-box;margin:0;padding:0}
-      html,body{min-height:100%}
-      body{
-        font-family:'Space Grotesk',sans-serif;
-        background:#070b12;color:#cbd5e1;
-        padding:48px 56px;max-width:860px;margin:0 auto;
-        -webkit-print-color-adjust:exact;print-color-adjust:exact;
-      }
-      body::before{
-        content:'';position:fixed;inset:0;
-        background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 6px);
-        pointer-events:none;z-index:0;
-      }
-      .wrap{position:relative;z-index:1}
-
-      /* ── HEADER ── */
-      .header{
-        border-bottom:1px solid rgba(6,182,212,.2);
-        padding-bottom:20px;margin-bottom:28px;
-      }
-      .header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
-      .logo-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-      .badge{
-        font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;
-        letter-spacing:.12em;padding:3px 10px;border-radius:5px;
-        border:1px solid rgba(6,182,212,.4);background:rgba(6,182,212,.1);color:#67e8f9;
-      }
-      .badge-inst{
-        font-family:'JetBrains Mono',monospace;font-size:9.5px;
-        border:1px solid rgba(129,140,248,.3);background:rgba(129,140,248,.08);
-        color:#a5b4fc;padding:3px 10px;border-radius:5px;
-      }
-      .badge-vcm{
-        font-family:'JetBrains Mono',monospace;font-size:9.5px;
-        border:1px solid rgba(192,132,252,.3);background:rgba(192,132,252,.08);
-        color:#d8b4fe;padding:3px 10px;border-radius:5px;
-      }
-      .program-title{font-size:26px;font-weight:800;color:#f8fafc;letter-spacing:-.02em;line-height:1.1}
-      .program-sub{font-size:12px;color:#64748b;font-family:'JetBrains Mono',monospace;margin-top:4px}
-      .tagline{
-        font-size:11.5px;color:#94a3b8;line-height:1.65;
-        border-left:2px solid rgba(6,182,212,.4);padding-left:12px;
-        margin-top:12px;max-width:580px;
-      }
-      .meta-right{text-align:right;font-size:9.5px;font-family:'JetBrains Mono',monospace;color:#334155;line-height:1.9}
-      .meta-right .val{color:#475569}
-
-      /* ── DATES STRIP ── */
-      .dates-strip{
-        display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;
-      }
-      .date-chip{
-        font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
-        padding:5px 14px;border-radius:20px;
-        display:inline-flex;align-items:center;gap:6px;
-      }
-      .dc-1{border:1px solid rgba(6,182,212,.3);background:rgba(6,182,212,.08);color:#67e8f9}
-      .dc-2{border:1px solid rgba(129,140,248,.3);background:rgba(129,140,248,.08);color:#a5b4fc}
-      .dc-3{border:1px solid rgba(192,132,252,.3);background:rgba(192,132,252,.08);color:#d8b4fe}
-      .dc-note{border:1px solid rgba(234,179,8,.2);background:rgba(234,179,8,.05);color:#ca8a04;font-weight:400}
-
-      /* ── SECTION TITLES ── */
-      .section-title{
-        font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;
-        letter-spacing:.2em;text-transform:uppercase;color:#334155;
-        margin-bottom:14px;
-        display:flex;align-items:center;gap:8px;
-      }
-      .section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05)}
-
-      /* ── MODULES ── */
-      .module{
-        border:1px solid;border-radius:12px;
-        padding:18px 22px;margin-bottom:16px;
-      }
-      .mod-header{
-        display:flex;align-items:flex-start;gap:14px;
-        padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid;
-      }
-      .mod-id{
-        font-family:'JetBrains Mono',monospace;font-weight:900;font-size:20px;
-        min-width:44px;height:44px;border-radius:10px;border:1px solid;
-        display:flex;align-items:center;justify-content:center;shrink:0;
-      }
-      .mod-date{font-size:9.5px;font-family:'JetBrains Mono',monospace;font-weight:600;margin-bottom:3px}
-      .mod-title{font-size:15px;font-weight:800;color:#f1f5f9;line-height:1.2}
-      .mod-sub{font-size:10.5px;color:#64748b;margin-top:3px}
-      .mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
-      .section-label{font-size:8.5px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#334155;margin-bottom:8px}
-      .item{font-size:10.5px;color:#94a3b8;margin-bottom:5px;line-height:1.55;padding-left:8px}
-      .mod-footer{display:flex;flex-direction:column;gap:6px}
-      .footer-label{font-size:8.5px;font-family:'JetBrains Mono',monospace;font-weight:700;color:#334155;letter-spacing:.1em;text-transform:uppercase;margin-right:8px}
-      .footer-val{font-size:10px;color:#94a3b8}
-
-      /* ── EQUIPO ── */
-      .equipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
-      .member{
-        display:flex;align-items:flex-start;gap:10px;
-        padding:12px 14px;border-radius:10px;
-        border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);
-      }
-      .member-init{
-        width:36px;height:36px;border-radius:8px;border:1px solid;
-        display:flex;align-items:center;justify-content:center;
-        font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;
-        shrink:0;flex-shrink:0;
-      }
-      .member-name{font-size:11px;font-weight:700;color:#e2e8f0;line-height:1.3}
-      .member-calidad{font-size:9.5px;color:#64748b;margin-top:2px}
-      .member-rol{font-size:9px;color:#67e8f9;font-family:'JetBrains Mono',monospace;font-weight:600;margin-top:2px}
-
-      /* ── AUTORIDADES ── */
-      .autoridades{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
-      .aut-card{
-        padding:12px 14px;border-radius:10px;
-        border:1px solid rgba(6,182,212,.15);background:rgba(6,182,212,.04);
-      }
-      .aut-name{font-size:11px;font-weight:700;color:#e2e8f0;line-height:1.3}
-      .aut-title{font-size:9.5px;color:#67e8f9;font-family:'JetBrains Mono',monospace;margin-top:3px}
-      .aut-sub{font-size:9px;color:#475569;margin-top:2px}
-
-      /* ── FOOTER ── */
-      .doc-footer{
-        margin-top:28px;padding-top:16px;
-        border-top:1px solid rgba(255,255,255,.05);
-        display:flex;justify-content:space-between;align-items:center;
-        font-size:9px;font-family:'JetBrains Mono',monospace;color:#1e293b;
-      }
-      .doc-footer .right{display:flex;align-items:center;gap:8px}
-      .glow-badge{
-        display:inline-flex;align-items:center;gap:4px;
-        background:rgba(6,182,212,.08);color:#0891b2;
-        border:1px solid rgba(6,182,212,.2);
-        border-radius:4px;padding:2px 8px;font-size:8.5px;font-weight:700;
-      }
-      @media print{
-        body{padding:32px;background:#070b12}
-        .wrap{page-break-inside:avoid}
-        .module{page-break-inside:avoid}
-      }
-    </style>
-  </head><body>
-  <div class="wrap">
-
-    <div class="header">
-      <div class="header-top">
-        <div>
-          <div class="logo-row">
-            <span class="badge">DIAT</span>
-            <span class="badge-inst">FD · PUCV</span>
-            <span class="badge-vcm">VCM</span>
-          </div>
-          <div class="program-title">Programa DIAT 2026</div>
-          <div class="program-sub">Derecho · Inteligencia Artificial · Tecnología</div>
-          <div class="tagline">
-            Programa de formación aplicada en inteligencia artificial jurídica, prompting avanzado
-            y nuevas competencias digitales para el ejercicio legal.
-            Facultad de Derecho · Pontificia Universidad Católica de Valparaíso.
-          </div>
-        </div>
-        <div class="meta-right">
-          <div>Emitido: <span class="val">${date}</span></div>
-          <div>Versión: <span class="val">2026.1</span></div>
-          <div>Estado: <span class="val">Tentativo</span></div>
-          <div style="margin-top:6px;color:#1e293b">programadiat@pucv.cl</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="dates-strip">
-      <span class="date-chip dc-1">● Módulo 1 · 8 Sep 2026</span>
-      <span class="date-chip dc-2">● Módulo 2 · 15 Sep 2026</span>
-      <span class="date-chip dc-3">● Módulo 3 · 22 Sep 2026</span>
-      <span class="date-chip dc-note">⚠ Fechas tentativas</span>
-    </div>
-
-    <div class="section-title">Estructura del Programa</div>
-    ${modulesHTML}
-
-    <div class="section-title" style="margin-top:24px">Dirección Institucional</div>
-    <div class="autoridades">
-      <div class="aut-card">
-        <div class="aut-name">Eduardo Aldunate Lizana</div>
-        <div class="aut-title">Director · Escuela de Derecho PUCV</div>
-        <div class="aut-sub">Autoridad institucional del Programa</div>
-      </div>
-      <div class="aut-card">
-        <div class="aut-name">Dr. Adolfo Silva Walbaum</div>
-        <div class="aut-title">Director · Programa DIAT</div>
-        <div class="aut-sub">Director del Taller · Responsable académico</div>
-      </div>
-      <div class="aut-card">
-        <div class="aut-name">Diego Ojeda Cifuentes</div>
-        <div class="aut-title">Subdirector de los Talleres</div>
-        <div class="aut-sub">Coordinador Operativo · Plataforma</div>
-      </div>
-    </div>
-
-    <div class="section-title">Equipo Ejecutor — Integrantes Programa DIAT</div>
-    <div class="equipo-grid">
-      ${equipoHTML}
-    </div>
-
-    <div class="doc-footer">
-      <div>Programa DIAT · Facultad de Derecho PUCV · Valparaíso, Chile · 2026</div>
-      <div class="right">
-        <span class="glow-badge">✦ Construido con IA</span>
-        <span>Con apoyo de Vinculación con el Medio</span>
-      </div>
-    </div>
-
-  </div>
-  </body></html>`);
-  win.document.close();
-  setTimeout(() => win.print(), 500);
-}
 
 export default function LandingPage() {
   const cd = useCountdown(MODULE1_DATE);
@@ -507,7 +239,7 @@ export default function LandingPage() {
           transition={{ delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap"
         >
-          <a href={MAILTO_RESERVA}>
+          <a href={GMAIL_RESERVA} target="_blank" rel="noopener noreferrer">
             <motion.button
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors glow-cyan"
               whileHover={{ scale: 1.03 }}
@@ -539,13 +271,13 @@ export default function LandingPage() {
             </motion.button>
           </Link>
           <motion.button
-            onClick={() => handleProgramPDF(modules, equipoEjecutor)}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm text-zinc-400 border border-zinc-700/50 bg-zinc-800/20 hover:border-zinc-600/60 hover:text-zinc-200 transition-all"
+            onClick={() => generateDossierPDF(modules, equipoEjecutor)}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm text-cyan-300 border border-cyan-500/25 bg-cyan-500/8 hover:border-cyan-500/40 hover:bg-cyan-500/15 transition-all"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
           >
             <Download className="w-4 h-4" />
-            Descargar programa PDF
+            Descargar Dossier PDF
           </motion.button>
         </motion.div>
       </motion.section>
@@ -784,9 +516,9 @@ export default function LandingPage() {
         className="space-y-5"
       >
         <div className="text-center space-y-1">
-          <h2 className="text-2xl font-bold text-white">Apps legales con IA</h2>
+          <h2 className="text-2xl font-bold text-white">El ecosistema legaltech</h2>
           <p className="text-sm text-zinc-500">
-            En M3 construirás tu primer prototipo legaltech. Estas son las categorías reales del mercado.
+            Categorías reales del mercado. En M3 aprenderás a evaluar y usar estas herramientas con criterio profesional.
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -814,7 +546,7 @@ export default function LandingPage() {
         </div>
         <div className="text-center">
           <span className="text-xs text-zinc-600 italic">
-            Construido con Claude + Vercel · Deploy en vivo al final del Módulo 3 · Fechas tentativas Sep 2026
+            Septiembre 2026 · Facultad de Derecho PUCV · Fechas tentativas
           </span>
         </div>
       </motion.section>
@@ -891,7 +623,7 @@ export default function LandingPage() {
             8 · 15 · 22 Septiembre 2026 · Fechas tentativas · Cupos limitados
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-2">
-            <a href={MAILTO_RESERVA}>
+            <a href={GMAIL_RESERVA} target="_blank" rel="noopener noreferrer">
               <motion.button
                 className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors"
                 whileHover={{ scale: 1.03 }}

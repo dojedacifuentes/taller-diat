@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Cpu, Filter } from 'lucide-react';
+import { ExternalLink, Cpu, Filter, Download } from 'lucide-react';
 import { tools, levelColors, toolColors, toolIconColors } from '@/data/tools';
 import type { Tool } from '@/lib/types';
+import { generateGuiaJuridicaPDF } from '@/lib/pdfGenerators';
 
 const toolIcons: Record<string, React.ReactNode> = {
   claude: (
@@ -82,8 +83,21 @@ export default function HerramientasPage() {
   return (
     <div className="px-4 lg:px-8 py-6 lg:py-8 max-w-6xl mx-auto space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white">Biblioteca de Herramientas IA</h2>
-        <p className="text-sm text-zinc-500 mt-1">Plataformas seleccionadas para la práctica jurídica con IA</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Biblioteca de Herramientas IA</h2>
+            <p className="text-sm text-zinc-500 mt-1">Plataformas seleccionadas para la práctica jurídica con IA</p>
+          </div>
+          <motion.button
+            onClick={generateGuiaJuridicaPDF}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors shrink-0"
+          >
+            <Download className="w-4 h-4" />
+            Descargar Guía de Usos Jurídicos PDF
+          </motion.button>
+        </div>
       </div>
 
       {/* Filters */}

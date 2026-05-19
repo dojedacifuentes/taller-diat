@@ -99,15 +99,9 @@ export function SiteFooter() {
               Desarrollada íntegramente con inteligencia artificial como demostración práctica
               de las capacidades del Programa DIAT. Subdirección y Coordinación Operativa.
             </div>
-            <a
-              href="https://github.com/dojedacifuentes/taller-diat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] text-zinc-700 hover:text-zinc-500 transition-colors mt-1"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Repositorio GitHub
-            </a>
+            <div className="inline-flex items-center gap-1 text-[10px] text-zinc-700 mt-1">
+              <span className="text-[9px] mono text-zinc-800">Construida con IA generativa · 2026</span>
+            </div>
           </div>
         </div>
 
