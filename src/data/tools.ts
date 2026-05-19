@@ -1,0 +1,107 @@
+import type { Tool } from '@/lib/types';
+
+export const tools: Tool[] = [
+  {
+    id: 'claude',
+    name: 'Claude',
+    description: 'Modelo de lenguaje avanzado de Anthropic. El más preciso y seguro para trabajo jurídico de alta complejidad.',
+    legalUseCase: 'Redacción de contratos, análisis jurisprudencial, elaboración de memorandos, revisión de documentos legales extensos.',
+    level: 'Avanzado',
+    moduleId: 1,
+    category: 'LLM Jurídico',
+    url: 'https://claude.ai',
+    color: 'cyan',
+  },
+  {
+    id: 'chatgpt',
+    name: 'ChatGPT',
+    description: 'Modelo de lenguaje de OpenAI. Versátil y ampliamente adoptado en el ecosistema legal global.',
+    legalUseCase: 'Investigación jurídica inicial, redacción de borradores, síntesis de doctrina, preparación de audiencias.',
+    level: 'Intermedio',
+    moduleId: 1,
+    category: 'LLM General',
+    url: 'https://chatgpt.com',
+    color: 'green',
+  },
+  {
+    id: 'gemini',
+    name: 'Gemini',
+    description: 'Modelo multimodal de Google. Integración nativa con Google Workspace para abogados y estudios jurídicos.',
+    legalUseCase: 'Análisis de documentos PDF masivos, procesamiento de expedientes digitalizados, generación de presentaciones jurídicas.',
+    level: 'Intermedio',
+    moduleId: 2,
+    category: 'LLM Multimodal',
+    url: 'https://gemini.google.com',
+    color: 'blue',
+  },
+  {
+    id: 'notebooklm',
+    name: 'NotebookLM',
+    description: 'Herramienta de investigación de Google que convierte documentos en una base de conocimiento conversacional.',
+    legalUseCase: 'Investigación jurisprudencial profunda, análisis de legislación comparada, síntesis de bibliografía académica.',
+    level: 'Intermedio',
+    moduleId: 2,
+    category: 'Investigación IA',
+    url: 'https://notebooklm.google.com',
+    color: 'yellow',
+  },
+  {
+    id: 'perplexity',
+    name: 'Perplexity',
+    description: 'Motor de búsqueda semántica con IA. Respuestas con fuentes citadas y verificables en tiempo real.',
+    legalUseCase: 'Búsqueda jurídica con fuentes, investigación de legislación vigente, monitoreo de cambios normativos.',
+    level: 'Básico',
+    moduleId: 1,
+    category: 'Búsqueda IA',
+    url: 'https://perplexity.ai',
+    color: 'teal',
+  },
+  {
+    id: 'github',
+    name: 'GitHub',
+    description: 'Plataforma de desarrollo y control de versiones. La base del ecosistema de automatización jurídica.',
+    legalUseCase: 'Gestión de plantillas jurídicas con control de versiones, automatización documental, colaboración en proyectos legales.',
+    level: 'Avanzado',
+    moduleId: 3,
+    category: 'Automatización',
+    url: 'https://github.com',
+    color: 'purple',
+  },
+  {
+    id: 'vercel',
+    name: 'Vercel',
+    description: 'Plataforma de despliegue de aplicaciones web. Permite a abogados publicar herramientas jurídicas propias.',
+    legalUseCase: 'Despliegue de portales jurídicos, publicación de herramientas de automatización legal, prototipos legaltech.',
+    level: 'Avanzado',
+    moduleId: 3,
+    category: 'Infraestructura',
+    url: 'https://vercel.com',
+    color: 'indigo',
+  },
+];
+
+export const levelColors: Record<string, string> = {
+  'Básico': 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10',
+  'Intermedio': 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10',
+  'Avanzado': 'text-cyan-400 border-cyan-400/30 bg-cyan-400/10',
+};
+
+export const toolColors: Record<string, string> = {
+  cyan: 'from-cyan-500/20 to-cyan-500/5 border-cyan-500/30 group-hover:border-cyan-500/60',
+  green: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 group-hover:border-emerald-500/60',
+  blue: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 group-hover:border-blue-500/60',
+  yellow: 'from-yellow-500/20 to-yellow-500/5 border-yellow-500/30 group-hover:border-yellow-500/60',
+  teal: 'from-teal-500/20 to-teal-500/5 border-teal-500/30 group-hover:border-teal-500/60',
+  purple: 'from-purple-500/20 to-purple-500/5 border-purple-500/30 group-hover:border-purple-500/60',
+  indigo: 'from-indigo-500/20 to-indigo-500/5 border-indigo-500/30 group-hover:border-indigo-500/60',
+};
+
+export const toolIconColors: Record<string, string> = {
+  cyan: 'text-cyan-400',
+  green: 'text-emerald-400',
+  blue: 'text-blue-400',
+  yellow: 'text-yellow-400',
+  teal: 'text-teal-400',
+  purple: 'text-purple-400',
+  indigo: 'text-indigo-400',
+};
