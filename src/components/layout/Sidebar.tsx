@@ -53,8 +53,11 @@ export function Sidebar() {
       </nav>
 
       <div className="px-4 py-4 border-t border-white/[0.06] space-y-2">
-        <div className="text-[10px] text-zinc-600 uppercase tracking-widest mono font-medium">
-          Módulos
+        <div className="text-[10px] text-zinc-700 uppercase tracking-widest mono font-medium">
+          Programa DIAT
+        </div>
+        <div className="text-[10px] text-zinc-600 leading-snug">
+          Facultad de Derecho · PUCV
         </div>
         <div className="flex items-center gap-1.5">
           <span className="mono text-[11px] font-bold text-cyan-400">8 · 15 · 22</span>
@@ -64,7 +67,9 @@ export function Sidebar() {
           <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
           <span className="text-[10px] text-yellow-500 font-medium mono">PRÓXIMAMENTE</span>
         </div>
-        <div className="text-[10px] text-zinc-600">Facultad de Derecho PUCV</div>
+        <div className="text-[9px] text-zinc-700 italic leading-relaxed mt-1">
+          Fechas tentativas · Septiembre 2026
+        </div>
       </div>
     </aside>
   );

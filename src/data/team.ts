@@ -1,24 +1,34 @@
 import type { TeamMember } from '@/lib/types';
 
 export const teamMembers: TeamMember[] = [
+  // ── Autoridades institucionales ──────────────────
   {
-    id: 'tm-01',
-    name: 'Prof. Rodrigo Fuentes',
+    id: 'tm-00',
+    name: 'Eduardo Aldunate Lizana',
     role: 'Director',
     status: 'active',
-    email: 'r.fuentes@pucv.cl',
-    initials: 'RF',
+    initials: 'EAL',
     color: 'cyan',
+    // No email exposed for institutional authorities
+  },
+  {
+    id: 'tm-01',
+    name: 'Dr. Adolfo Silva Walbaum',
+    role: 'Subdirector',
+    status: 'active',
+    initials: 'ASW',
+    color: 'indigo',
+    // No email exposed for institutional authorities
   },
   {
     id: 'tm-02',
-    name: 'Prof. Valentina Morales',
-    role: 'Subdirector',
+    name: 'Diego Hernán Ojeda Cifuentes',
+    role: 'Coordinación',
     status: 'active',
-    email: 'v.morales@pucv.cl',
-    initials: 'VM',
-    color: 'indigo',
+    initials: 'DOC',
+    color: 'blue',
   },
+  // ── Equipo operativo ─────────────────────────────
   {
     id: 'tm-03',
     name: 'Catalina Herrera',

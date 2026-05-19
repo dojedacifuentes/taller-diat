@@ -5,7 +5,14 @@ import Link from 'next/link';
 import {
   ArrowRight, Zap, Layers, Rocket, Wrench, ChevronDown,
   Shield, Brain, Bot, FileText, CheckCircle2, Circle,
+  Mail, Building2, GraduationCap, Scale, Cpu, Globe,
 } from 'lucide-react';
+import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
+
+const MAILTO_RESERVA =
+  'mailto:programadiat@pucv.cl' +
+  '?subject=Inter%C3%A9s%20en%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20DIAT' +
+  '&body=Hola%20Programa%20DIAT%3A%0A%0AQuisiera%20reservar%20un%20cupo%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20avanzado%20que%20se%20realizar%C3%A1%20durante%20septiembre.%0A%0ANombre%3A%0ACarrera%20%2F%20profesi%C3%B3n%3A%0ACorreo%3A%0ATel%C3%A9fono%20opcional%3A%0AComentarios%3A%0A%0AMuchas%20gracias.';
 import { useCountdown } from '@/hooks/useCountdown';
 import { modules } from '@/data/modules';
 
@@ -163,13 +170,13 @@ export default function LandingPage() {
           transition={{ delay: 0.1 }}
           className="flex flex-wrap justify-center gap-2"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/8 text-xs text-red-400 font-semibold mono tracking-widest uppercase">
-            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-            Inscripciones abiertas · PUCV · Sep 2026
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/8 text-xs text-cyan-400 font-semibold mono tracking-widest uppercase">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            Programa DIAT · Facultad de Derecho PUCV
           </span>
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-700/50 bg-zinc-800/30 text-xs text-zinc-500 font-medium">
-            <Bot className="w-3.5 h-3.5" />
-            Construido completamente con IA
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-500/20 bg-yellow-500/5 text-xs text-yellow-400 font-medium mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+            Septiembre 2026 · Fechas tentativas
           </span>
         </motion.div>
 
@@ -180,23 +187,22 @@ export default function LandingPage() {
           transition={{ delay: 0.2, duration: 0.6 }}
         >
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-            <span className="text-white">El Derecho que no</span>{' '}
+            <span className="text-white">Entrena las habilidades</span>{' '}
             <br className="hidden sm:block" />
             <span
               className="text-transparent bg-clip-text"
               style={{ backgroundImage: 'linear-gradient(135deg, oklch(0.71 0.17 200) 0%, oklch(0.55 0.22 264) 100%)' }}
             >
-              entiende IA,
+              jurídicas
             </span>{' '}
-            <br className="hidden sm:block" />
-            <span className="text-white">no puede defenderlo.</span>
+            <span className="text-white">que la IA exige.</span>
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            27 horas. 3 módulos. 7 herramientas. Una sola pregunta:{' '}
-            <span className="text-zinc-200 font-medium">¿cuándo te inscribes?</span>
+          <p className="mt-4 text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+            Programa de formación aplicada en inteligencia artificial jurídica,
+            prompting avanzado y nuevas competencias digitales para el ejercicio legal.
           </p>
-          <p className="mt-2 text-sm text-zinc-600 italic">
-            (No, la IA no va a quitarte el trabajo. Un abogado que usa IA, sí.)
+          <p className="mt-2 text-sm text-zinc-600">
+            6 horas · 3 módulos · 7 plataformas IA · Certificación institucional PUCV
           </p>
         </motion.div>
 
@@ -219,7 +225,7 @@ export default function LandingPage() {
             <span className="text-zinc-600 text-3xl font-bold pb-7">:</span>
             <CountdownBlock value={cd.seconds} label="seg" />
           </div>
-          <div className="text-xs text-zinc-600 mono">Módulo 1 · 8 de septiembre 2026 · 09:00 hrs · PUCV Derecho · Valparaíso</div>
+          <div className="text-xs text-zinc-600 mono">Módulo 1 · 8 de septiembre 2026 · PUCV Derecho · Valparaíso · <span className="text-yellow-600">Fechas tentativas</span></div>
         </motion.div>
 
         {/* CTA */}
@@ -227,26 +233,37 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap"
         >
-          <Link href="/modulos">
+          <a href={MAILTO_RESERVA}>
             <motion.button
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors glow-cyan"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors glow-cyan"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
-              Ver el programa completo
-              <ArrowRight className="w-4 h-4" />
+              <Mail className="w-4 h-4" />
+              Reservar cupo
+              <span className="w-1.5 h-1.5 rounded-full bg-black/30 animate-pulse" />
+            </motion.button>
+          </a>
+          <Link href="/prompt-lab">
+            <motion.button
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm text-cyan-300 border border-cyan-500/30 bg-cyan-500/8 hover:bg-cyan-500/15 transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Zap className="w-4 h-4" />
+              Abrir Prompt Lab
             </motion.button>
           </Link>
-          <Link href="/prompt-lab">
+          <Link href="/modulos">
             <motion.button
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm text-zinc-300 border border-white/10 hover:border-white/20 hover:bg-white/[0.04] transition-all"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
             >
-              <Zap className="w-4 h-4 text-cyan-400" />
-              Probar el Prompt Lab
+              Ver módulos
+              <ArrowRight className="w-4 h-4" />
             </motion.button>
           </Link>
         </motion.div>
@@ -477,6 +494,102 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
+      {/* ── APPS LEGALES CON IA ──────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="space-y-5"
+      >
+        <div className="text-center space-y-1">
+          <h2 className="text-2xl font-bold text-white">Apps legales con IA</h2>
+          <p className="text-sm text-zinc-500">
+            En M3 construirás tu primer prototipo legaltech. Estas son las categorías reales del mercado.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {[
+            { icon: <Scale className="w-5 h-5" />, title: 'Asistente de litigios', desc: 'Análisis de expedientes, argumentarios automáticos', color: 'border-cyan-500/20 bg-cyan-500/5', accent: 'text-cyan-400' },
+            { icon: <FileText className="w-5 h-5" />, title: 'Generador de contratos', desc: 'Redacción y revisión de documentos contractuales', color: 'border-indigo-500/20 bg-indigo-500/5', accent: 'text-indigo-400' },
+            { icon: <Brain className="w-5 h-5" />, title: 'Investigador jurídico', desc: 'Síntesis de jurisprudencia y doctrina con fuentes', color: 'border-purple-500/20 bg-purple-500/5', accent: 'text-purple-400' },
+            { icon: <Shield className="w-5 h-5" />, title: 'Auditor de compliance', desc: 'Revisión normativa automatizada para empresas', color: 'border-emerald-500/20 bg-emerald-500/5', accent: 'text-emerald-400' },
+            { icon: <GraduationCap className="w-5 h-5" />, title: 'Tutor legal IA', desc: 'Formación y preparación para exámenes de derecho', color: 'border-yellow-500/20 bg-yellow-500/5', accent: 'text-yellow-400' },
+            { icon: <Globe className="w-5 h-5" />, title: 'Chatbot jurídico', desc: 'Orientación legal ciudadana de primer nivel', color: 'border-orange-500/20 bg-orange-500/5', accent: 'text-orange-400' },
+          ].map(({ icon, title, desc, color, accent }, i) => (
+            <motion.div
+              key={title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className={`rounded-xl border p-4 space-y-2 ${color}`}
+            >
+              <div className={accent}>{icon}</div>
+              <div className={`text-sm font-semibold ${accent}`}>{title}</div>
+              <p className="text-xs text-zinc-500 leading-relaxed">{desc}</p>
+            </motion.div>
+          ))}
+        </div>
+        <div className="text-center">
+          <span className="text-xs text-zinc-600 italic">
+            Construido con Claude + Vercel · Deploy en vivo al final del Módulo 3 · Fechas tentativas Sep 2026
+          </span>
+        </div>
+      </motion.section>
+
+      {/* ── INSTITUTIONAL BACKING ────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 sm:p-8 space-y-5"
+      >
+        <div className="text-center space-y-1">
+          <div className="text-[10px] text-zinc-600 uppercase tracking-widest mono font-medium">Respaldo institucional</div>
+          <h2 className="text-lg font-bold text-white">Actividad organizada por</h2>
+        </div>
+        <div className="flex justify-center">
+          <InstitutionalLogoRow size="md" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          {[
+            {
+              icon: <Building2 className="w-4 h-4" />,
+              label: 'Facultad de Derecho',
+              sub: 'Pontificia Universidad Católica de Valparaíso',
+              color: 'text-cyan-400',
+            },
+            {
+              icon: <Cpu className="w-4 h-4" />,
+              label: 'Programa DIAT',
+              sub: 'Derecho, IA y Tecnología · Formación aplicada',
+              color: 'text-indigo-400',
+            },
+            {
+              icon: <Globe className="w-4 h-4" />,
+              label: 'Vinculación con el Medio',
+              sub: 'PUCV · Transferencia de conocimiento a la sociedad',
+              color: 'text-purple-400',
+            },
+          ].map(({ icon, label, sub, color }) => (
+            <div key={label} className="text-center space-y-1">
+              <div className={`flex justify-center mb-1 ${color}`}>{icon}</div>
+              <div className={`text-sm font-semibold ${color}`}>{label}</div>
+              <div className="text-[11px] text-zinc-600 leading-relaxed">{sub}</div>
+            </div>
+          ))}
+        </div>
+        <div className="text-center pt-2">
+          <p className="text-xs text-zinc-600">
+            Director del Taller:{' '}
+            <span className="text-zinc-400 font-medium">Dr. Adolfo Silva Walbaum</span>
+            {' '}· Bajo la dirección de la Escuela de Derecho PUCV
+          </p>
+        </div>
+      </motion.section>
+
       {/* ── BOTTOM CTA ───────────────────────────── */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -486,25 +599,37 @@ export default function LandingPage() {
       >
         <div className="absolute inset-0 grid-bg-fine opacity-30" />
         <div className="relative space-y-4">
-          <div className="text-2xl font-bold text-white">¿Sigues leyendo?</div>
+          <div className="text-2xl font-bold text-white">Tu cupo en el Programa DIAT 2026</div>
           <p className="text-zinc-400 text-sm max-w-md mx-auto">
-            Probablemente ya estás convencido. El Programa DIAT de la Facultad de Derecho PUCV te espera el 8 de septiembre.
+            Programa DIAT · Facultad de Derecho PUCV. Formación práctica en IA jurídica con certificación institucional.
           </p>
           <p className="text-xs text-zinc-600 italic">
             "El futuro llega para todos. La diferencia es quién llega preparado."
           </p>
-          <p className="text-[10px] text-zinc-700 italic">
-            Esta plataforma fue diseñada y construida completamente con IA — como todo lo que harás en el taller.
+          <p className="text-[11px] text-zinc-600 mono">
+            8 · 15 · 22 Septiembre 2026 · Fechas tentativas · Cupos limitados
           </p>
-          <Link href="/modulos">
-            <motion.button
-              className="mt-2 flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              Ver programa completo <ArrowRight className="w-4 h-4" />
-            </motion.button>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-2">
+            <a href={MAILTO_RESERVA}>
+              <motion.button
+                className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Mail className="w-4 h-4" />
+                Reservar cupo ahora
+              </motion.button>
+            </a>
+            <Link href="/modulos">
+              <motion.button
+                className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm text-zinc-300 border border-white/10 hover:border-white/20 hover:bg-white/[0.04] transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Ver programa completo <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </Link>
+          </div>
         </div>
       </motion.section>
 

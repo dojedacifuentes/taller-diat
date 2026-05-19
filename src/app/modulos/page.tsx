@@ -280,12 +280,13 @@ export default function ModulosPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="mono text-[10px] text-zinc-600 tracking-widest uppercase">Programa DIAT · PUCV · Sep 2026</span>
+          <span className="mono text-[10px] text-zinc-600 tracking-widest uppercase">Programa DIAT · Facultad de Derecho PUCV · Fechas tentativas · Sep 2026</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">LOS 3 MÓDULOS</h1>
         <p className="text-sm text-zinc-500 mt-1">
           6 horas de formación divididas en tres módulos progresivos. Cada uno produce entregables reales.
-          Expande para ver contenido o el timeline de la sesión de 2 horas.
+          Expande para ver contenido o el timeline de la sesión de 2 horas.{' '}
+          <span className="text-zinc-600 italic">Fechas tentativas · Septiembre 2026.</span>
         </p>
       </motion.div>
 
@@ -330,6 +331,7 @@ export default function ModulosPage() {
         <p className="text-xs text-zinc-600">
           Los módulos son presenciales en la Facultad de Derecho PUCV, Valparaíso.{' '}
           <span className="text-zinc-500">Certificación institucional al completar los 3 módulos.</span>
+          {' '}<span className="text-zinc-700 italic">Fechas tentativas · Septiembre 2026.</span>
         </p>
       </motion.div>
     </div>

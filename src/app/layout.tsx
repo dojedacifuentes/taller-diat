@@ -5,6 +5,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { TopBar } from '@/components/layout/TopBar';
 import { GridBackground } from '@/components/common/GridBackground';
+import { FloatingCTA } from '@/components/common/FloatingCTA';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -38,9 +40,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1 pb-20 lg:pb-0">
               {children}
             </main>
+            <SiteFooter />
           </div>
         </div>
         <MobileNav />
+        <FloatingCTA />
       </body>
     </html>
   );
