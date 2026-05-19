@@ -322,6 +322,89 @@ Si la consulta es ambigua, incompleta o carece de información suficiente para u
   },
 ];
 
+// ─── AI RECOMMENDATION ENGINE ────────────────────────────────────────────────
+
+export interface AIRecommendation {
+  ai: TargetAI;
+  score: number;   // 0–100
+  reasons: string[];
+}
+
+export function recommendAIModel(
+  purpose: PromptPurpose,
+  area: PromptArea,
+  depth: DepthLevel,
+): AIRecommendation[] {
+  const base: Record<string, { score: number; reasons: string[] }> = {
+    claude:     { score: 60, reasons: [] },
+    chatgpt:    { score: 58, reasons: [] },
+    gemini:     { score: 55, reasons: [] },
+    notebooklm: { score: 48, reasons: [] },
+    perplexity: { score: 45, reasons: [] },
+  };
+
+  // Purpose boosts
+  if (['agente', 'redactar'].includes(purpose.id)) {
+    base.claude.score    += 25; base.claude.reasons.push('Ideal para agentes y documentos extensos');
+    base.chatgpt.score   += 20; base.chatgpt.reasons.push('Perfecto para GPTs personalizados');
+  }
+  if (['estudiar', 'examen'].includes(purpose.id)) {
+    base.claude.score      += 15; base.claude.reasons.push('Explicaciones pedagógicas detalladas');
+    base.notebooklm.score  += 25; base.notebooklm.reasons.push('Estudia citando tus propios apuntes');
+  }
+  if (purpose.id === 'doctrina') {
+    base.notebooklm.score  += 30; base.notebooklm.reasons.push('Investigación con fuentes propias citadas');
+    base.perplexity.score  += 22; base.perplexity.reasons.push('Jurisprudencia reciente verificada');
+  }
+  if (['sentencia', 'contrato'].includes(purpose.id)) {
+    base.claude.score  += 25; base.claude.reasons.push('Análisis profundo de documentos extensos');
+    base.gemini.score  += 22; base.gemini.reasons.push('Adjunta PDFs directamente sin copiar texto');
+  }
+  if (['audiencia', 'estrategia'].includes(purpose.id)) {
+    base.claude.score   += 20; base.claude.reasons.push('Razonamiento estratégico multi-paso');
+    base.chatgpt.score  += 15; base.chatgpt.reasons.push('Argumentarios y planes de contingencia');
+  }
+  if (purpose.id === 'comparar') {
+    base.claude.score  += 15; base.claude.reasons.push('Análisis comparado con rigor estructural');
+    base.gemini.score  += 12; base.gemini.reasons.push('Búsqueda en tiempo real útil para comparación');
+  }
+
+  // Area boosts
+  if (area.id === 'tech') {
+    base.claude.score      += 15; base.claude.reasons.push('Especialista en IA y tecnología jurídica');
+    base.perplexity.score  += 10; base.perplexity.reasons.push('Normativa emergente de IA actualizada');
+  }
+  if (['administrativo', 'constitucional'].includes(area.id)) {
+    base.perplexity.score  += 15; base.perplexity.reasons.push('Normativa pública actualizada en tiempo real');
+    base.notebooklm.score  += 10; base.notebooklm.reasons.push('Sube la ley y analiza con precisión');
+  }
+  if (area.id === 'filosofia') {
+    base.claude.score  += 20; base.claude.reasons.push('Razonamiento filosófico y teoría jurídica');
+  }
+
+  // Depth boosts
+  if (depth.id === 'academico') {
+    base.claude.score      += 20; base.claude.reasons.push('Nivel académico con razonamiento profundo');
+    base.notebooklm.score  += 15; base.notebooklm.reasons.push('Citas precisas de tus fuentes académicas');
+  }
+  if (depth.id === 'litigacion') {
+    base.claude.score  += 20; base.claude.reasons.push('Análisis estratégico de litigación avanzada');
+    base.chatgpt.score += 10; base.chatgpt.reasons.push('Argumentarios estructurados para audiencia');
+  }
+  if (depth.id === 'rapido') {
+    base.chatgpt.score  += 12; base.chatgpt.reasons.push('Respuestas rápidas y directas');
+    base.perplexity.score += 8; base.perplexity.reasons.push('Síntesis con fuentes en segundos');
+  }
+
+  return targetAIs
+    .map(ai => ({
+      ai,
+      score: Math.min(100, base[ai.id]?.score ?? 50),
+      reasons: base[ai.id]?.reasons ?? [],
+    }))
+    .sort((a, b) => b.score - a.score);
+}
+
 // ─── AUTO-SELECTION HELPERS ──────────────────────────────────────────────────
 // Derive a sensible profile and output format from purpose+depth without
 // requiring the user to explicitly choose them in the wizard flow.
@@ -459,4 +542,73 @@ export function generateGPTInstructions(fullPrompt: string): string {
 
 export function generateClaudeProject(fullPrompt: string): string {
   return `[CLAUDE PROJECT — System Prompt]\n\n${fullPrompt.substring(0, 7500)}\n\n[Fin — configurar en Claude → Projects → New Project → Instructions]`;
+}
+
+// ─── PROMPT++ (YAML STRUCTURED FORMAT) ───────────────────────────────────────
+
+export function generatePromptPlusPlus(
+  profile: PromptProfile,
+  purpose: PromptPurpose,
+  area: PromptArea,
+  depth: DepthLevel,
+  targetAI: TargetAI,
+  format: OutputFormat,
+  activeEnhancements: string[],
+  context: string,
+): string {
+  const date = new Date().toISOString().slice(0, 10);
+  const layers = enhancements.filter(e => activeEnhancements.includes(e.id));
+  const indent = (s: string, n = 2) => s.replace(/\n/g, `\n${' '.repeat(n)}`);
+
+  return `# LexPrompt Architect v2.0 — Structured Machine-Readable Format
+# DIAT Prompting Hub · Facultad de Derecho PUCV
+
+lexiprompt: "2.0"
+generated: "${date}"
+platform: "${targetAI.label}"
+
+config:
+  profile:    "${profile.id}"    # ${profile.label}
+  finalidad:  "${purpose.id}"   # ${purpose.label}
+  area:       "${area.id}"      # ${area.label}
+  profundidad: "${depth.id}"    # ${depth.label}
+  formato:    "${format.id}"    # ${format.label}
+  capas:
+${layers.map(l => `    - ${l.id}  # ${l.label}`).join('\n') || '    []'}
+
+context: |
+  ${context.trim() || '(sin contexto adicional)'}
+
+system_role: |
+  ${indent(profile.template)}
+
+purpose: |
+  ${indent(purpose.template)}
+
+area_context: |
+  ${indent(area.template)}
+
+depth_instruction: |
+  ${indent(depth.template)}
+
+format_instruction: |
+  ${indent(format.template)}
+${layers.length > 0 ? `
+security_layers:
+${layers.map(l => `  - id: ${l.id}
+    label: "${l.label}"
+    instruction: |
+      ${indent(l.template.trim(), 6)}`).join('\n')}
+` : ''}
+sources:
+${area.sources.map(s => `  - "${s}"`).join('\n') || '  []'}
+
+optimization_tip: |
+  ${indent(targetAI.optimizationTip)}
+
+# ─── Usage ────────────────────────────────────────────────────────────────────
+# Paste config.system_role → purpose → area_context → depth_instruction
+# → format_instruction → security_layers in that order into your AI platform.
+# Replace context block with your specific case details.
+`;
 }
