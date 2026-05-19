@@ -358,6 +358,158 @@ function WorkflowPipeline({ sel }: { sel: FlowSel }) {
   );
 }
 
+// ── AI Recommendation Step ────────────────────────────────────────────────────
+function AIRecommendStep({
+  aiRecs,
+  onSelect,
+}: {
+  aiRecs: import('@/data/promptBuilder').AIRecommendation[];
+  onSelect: (ai: TargetAI) => void;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  const top = aiRecs[0];
+  const rest = aiRecs.slice(1);
+
+  return (
+    <motion.div
+      key="recomendacion"
+      initial={{ opacity: 0, x: 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -24 }}
+      transition={{ duration: 0.22 }}
+      className="p-6 lg:p-10 max-w-2xl"
+    >
+      <div className="mb-2">
+        <span className="text-[9px] mono font-bold text-cyan-400/60 uppercase tracking-widest">
+          Paso 7 de 7
+        </span>
+      </div>
+      <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">
+        IA recomendada
+      </h1>
+      <p className="text-zinc-500 text-sm mb-8">
+        Basado en tu objetivo, área y nivel de profundidad
+      </p>
+
+      {/* Top recommendation — prominent */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="rounded-2xl border border-cyan-500/30 bg-cyan-500/[0.05] p-6 mb-4"
+      >
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl font-bold text-white">{top.ai.label}</span>
+              <span className="text-[8px] mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-bold">
+                MEJOR OPCIÓN
+              </span>
+            </div>
+            <p className="text-sm text-zinc-400">{top.ai.description}</p>
+          </div>
+          {/* Score ring */}
+          <div className="shrink-0 text-center">
+            <div className="text-3xl font-bold mono text-cyan-400">{top.score}%</div>
+            <div className="text-[9px] text-zinc-600 uppercase tracking-wider">match</div>
+          </div>
+        </div>
+
+        {/* Score bar */}
+        <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden mb-4">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-400"
+            initial={{ width: 0 }}
+            animate={{ width: `${top.score}%` }}
+            transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
+          />
+        </div>
+
+        {/* Reasons */}
+        {top.reasons.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-5">
+            {top.reasons.map(r => (
+              <span key={r} className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.07] text-zinc-400">
+                ✓ {r}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* CTA */}
+        <button
+          onClick={() => onSelect(top.ai)}
+          className="w-full py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold text-sm hover:bg-cyan-500/30 transition-all"
+        >
+          Usar {top.ai.label} — Generar prompt →
+        </button>
+      </motion.div>
+
+      {/* Toggle to see all options */}
+      {!showAll ? (
+        <button
+          onClick={() => setShowAll(true)}
+          className="w-full py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-zinc-600 hover:text-zinc-400 text-xs hover:bg-white/[0.04] transition-all"
+        >
+          Ver otras opciones ({rest.length} IAs con su % de compatibilidad)
+        </button>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="space-y-2"
+        >
+          <div className="text-[9px] mono text-zinc-600 uppercase tracking-widest mb-3">
+            Otras opciones
+          </div>
+          {rest.map((rec, i) => (
+            <motion.button
+              key={rec.ai.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              onClick={() => onSelect(rec.ai)}
+              className="w-full text-left p-4 rounded-xl border border-white/[0.07] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04] transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="shrink-0 w-6 h-6 rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[10px] mono text-zinc-600 font-bold">
+                  {i + 2}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-zinc-300 group-hover:text-white transition-colors">
+                    {rec.ai.label}
+                  </div>
+                  <div className="text-[11px] text-zinc-600 mt-0.5">{rec.ai.description}</div>
+                  {rec.reasons.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {rec.reasons.map(r => (
+                        <span key={r} className="text-[9px] text-zinc-700 px-1.5 py-0.5 rounded bg-white/[0.02] border border-white/[0.04]">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className="text-sm font-bold mono text-zinc-500">{rec.score}%</div>
+                  <div className="w-16 h-1 rounded-full bg-white/[0.04] overflow-hidden mt-1">
+                    <motion.div
+                      className="h-full rounded-full bg-zinc-600"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${rec.score}%` }}
+                      transition={{ delay: i * 0.06 + 0.1, duration: 0.4 }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          ))}
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function PromptLabPage() {
   const [step, setStep] = useState<FlowStep>('finalidad');
@@ -384,7 +536,7 @@ export default function PromptLabPage() {
   const nextMap: Record<string, FlowStep> = {
     finalidad: 'area', area: 'profundidad', profundidad: 'formato',
     formato: 'capas', capas: 'contexto', contexto: 'recomendacion',
-    recomendacion: 'generating',
+    recomendacion: 'generating', modelo: 'generating',
   };
 
   const selectStep = useCallback(<K extends keyof FlowSel>(key: K, value: FlowSel[K]) => {
@@ -787,90 +939,11 @@ export default function PromptLabPage() {
             )}
 
             {/* ── STEP 7: AI RECOMMENDATION ──────────────────────────────────── */}
-            {step === 'recomendacion' && (
-              <motion.div
-                key="recomendacion"
-                initial={{ opacity: 0, x: 24 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -24 }}
-                transition={{ duration: 0.22 }}
-                className="p-6 lg:p-10 max-w-3xl"
-              >
-                <div className="mb-2">
-                  <span className="text-[9px] mono font-bold text-cyan-400/60 uppercase tracking-widest">
-                    Paso 7 de 7
-                  </span>
-                </div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight">
-                  ¿Qué IA usarás?
-                </h1>
-                <p className="text-zinc-500 text-sm mb-8">
-                  Ranking personalizado para tu combinación de objetivo + área + nivel
-                </p>
-
-                <div className="space-y-3">
-                  {aiRecs.map((rec, i) => (
-                    <motion.button
-                      key={rec.ai.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.08 }}
-                      onClick={() => selectStep('modelo', rec.ai)}
-                      className={`
-                        w-full text-left p-4 rounded-xl border transition-all duration-200 cursor-pointer group
-                        ${sel.modelo?.id === rec.ai.id
-                          ? 'border-cyan-500/50 bg-cyan-500/[0.07]'
-                          : 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.12]'
-                        }
-                      `}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Rank badge */}
-                        <div className={`
-                          shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold mono
-                          ${i === 0 ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-white/[0.04] text-zinc-600 border border-white/[0.06]'}
-                        `}>
-                          {i + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-bold text-sm ${sel.modelo?.id === rec.ai.id ? 'text-cyan-400' : 'text-zinc-200'}`}>
-                              {rec.ai.label}
-                            </span>
-                            {i === 0 && (
-                              <span className="text-[8px] mono px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">
-                                RECOMENDADO
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-zinc-500 mb-2">{rec.ai.description}</p>
-                          {rec.reasons.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {rec.reasons.map(r => (
-                                <span key={r} className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/[0.06] text-zinc-600">
-                                  {r}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {/* Score bar */}
-                        <div className="shrink-0 text-right">
-                          <div className="text-[10px] mono font-bold text-zinc-400 mb-1">{rec.score}%</div>
-                          <div className="w-16 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
-                            <motion.div
-                              className={`h-full rounded-full ${i === 0 ? 'bg-gradient-to-r from-cyan-500 to-indigo-400' : 'bg-zinc-700'}`}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${rec.score}%` }}
-                              transition={{ delay: i * 0.08 + 0.2, duration: 0.5 }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
+            {step === 'recomendacion' && aiRecs.length > 0 && (
+              <AIRecommendStep
+                aiRecs={aiRecs}
+                onSelect={(ai) => selectStep('modelo', ai)}
+              />
             )}
 
             {/* ── STEP 8: GENERATING ─────────────────────────────────────────── */}
