@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import { equipoEjecutor } from '@/data/team';
+import { modules } from '@/data/modules';
+import { useCountdown } from '@/hooks/useCountdown';
 import { generateDossierPDF } from '@/lib/pdfGenerators';
 
 const DIAT_EMAIL = 'programadiat@pucv.cl';
@@ -16,8 +18,6 @@ const DIAT_SUBJECT = 'Interés en taller de IA jurídica y prompting DIAT';
 const DIAT_BODY = `Hola Programa DIAT:\n\nQuisiera reservar un cupo y recibir más información sobre el taller de IA jurídica y prompting avanzado que se realizará durante septiembre.\n\nNombre:\nCarrera / profesión:\nCorreo:\nTeléfono (opcional):\nComentarios:\n\nMuchas gracias.`;
 const MAILTO_RESERVA = `mailto:${DIAT_EMAIL}?subject=${encodeURIComponent(DIAT_SUBJECT)}&body=${encodeURIComponent(DIAT_BODY)}`;
 const GMAIL_RESERVA = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(DIAT_EMAIL)}&su=${encodeURIComponent(DIAT_SUBJECT)}&body=${encodeURIComponent(DIAT_BODY)}`;
-import { useCountdown } from '@/hooks/useCountdown';
-import { modules } from '@/data/modules';
 
 const MODULE1_DATE = '2026-09-08T09:00:00';
 

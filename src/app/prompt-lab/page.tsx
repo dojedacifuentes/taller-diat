@@ -90,153 +90,245 @@ export default function PromptLabPage() {
     const win = window.open('', '_blank');
     if (!win) return;
     const date = new Date().toLocaleDateString('es-CL');
-    const enhs = activeEnhancements.map(id => {
+    const enhList = activeEnhancements.map(id => {
       const e = enhancements.find(x => x.id === id);
-      return e ? `${e.emoji} ${e.label}` : id;
-    }).join('  ·  ');
-    win.document.write(`<!DOCTYPE html><html lang="es"><head>
-      <meta charset="utf-8">
-      <title>LexPrompt — DIAT · PUCV ${date}</title>
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;600;700;800&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0}
-        html,body{height:100%}
-        body{
-          font-family:'Space Grotesk',sans-serif;
-          background:#080c14;
-          color:#e2e8f0;
-          padding:44px 52px;
-          max-width:820px;
-          margin:0 auto;
-          -webkit-print-color-adjust:exact;
-          print-color-adjust:exact;
-        }
-        /* scan-line overlay */
-        body::before{
-          content:'';position:fixed;inset:0;
-          background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);
-          pointer-events:none;z-index:0;
-        }
-        .wrap{position:relative;z-index:1}
-        /* header */
-        .header{
-          border-bottom:1px solid rgba(6,182,212,.25);
-          padding-bottom:18px;margin-bottom:22px;
-          display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
-        }
-        .logo-row{display:flex;align-items:center;gap:10px}
-        .logo-badge{
-          font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;
-          letter-spacing:.12em;padding:4px 10px;border-radius:6px;
-          border:1px solid rgba(6,182,212,.4);background:rgba(6,182,212,.1);color:#67e8f9;
-        }
-        .title-block h1{font-size:22px;font-weight:800;color:#f8fafc;letter-spacing:-.02em;line-height:1.15}
-        .title-block .sub{font-size:11.5px;color:#64748b;margin-top:3px;font-family:'JetBrains Mono',monospace}
-        .meta-block{text-align:right;font-size:10px;color:#475569;font-family:'JetBrains Mono',monospace;line-height:1.8}
-        .meta-block .date-val{color:#94a3b8;font-weight:500}
-        /* config grid */
-        .config{
-          display:grid;grid-template-columns:1fr 1fr;gap:6px;
-          margin-bottom:22px;
-          background:rgba(255,255,255,.03);
-          border:1px solid rgba(255,255,255,.06);
-          border-radius:12px;padding:16px 20px;
-        }
-        .config-item{font-size:10.5px;color:#64748b}
-        .config-item span{font-weight:700;color:#67e8f9;font-family:'JetBrains Mono',monospace}
-        /* enhancements strip */
-        .enhs{
-          display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;
-        }
-        .enh-chip{
-          font-size:9.5px;font-family:'JetBrains Mono',monospace;font-weight:600;
-          padding:3px 9px;border-radius:20px;
-          border:1px solid rgba(129,140,248,.35);
-          background:rgba(129,140,248,.08);color:#a5b4fc;
-        }
-        /* prompt box */
-        .prompt-label{
-          font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;
-          letter-spacing:.15em;color:#334155;text-transform:uppercase;margin-bottom:8px;
-        }
-        .prompt-box{
-          font-family:'JetBrains Mono',monospace;
-          font-size:11px;line-height:1.85;
-          color:#cbd5e1;
-          background:rgba(255,255,255,.03);
-          border:1px solid rgba(6,182,212,.18);
-          border-left:3px solid #06b6d4;
-          border-radius:0 12px 12px 0;
-          padding:22px 24px;
-          white-space:pre-wrap;word-break:break-word;
-          box-shadow:0 0 40px rgba(6,182,212,.04) inset;
-        }
-        /* footer */
-        .footer{
-          margin-top:28px;padding-top:16px;
-          border-top:1px solid rgba(255,255,255,.06);
-          display:flex;justify-content:space-between;align-items:center;
-          font-size:9.5px;font-family:'JetBrains Mono',monospace;color:#334155;
-        }
-        .badge{
-          display:inline-flex;align-items:center;gap:4px;
-          background:rgba(16,185,129,.08);color:#6ee7b7;
-          border:1px solid rgba(16,185,129,.25);
-          border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;
-        }
-        @media print{
-          body{padding:32px;background:#080c14}
-          .prompt-box{border-left-color:#06b6d4}
-        }
-      </style>
-    </head><body>
-    <div class="wrap">
-      <div class="header">
-        <div>
-          <div class="logo-row" style="margin-bottom:8px">
-            <span class="logo-badge">DIAT</span>
-            <span style="font-size:10px;color:#334155;font-family:'JetBrains Mono',monospace">· Facultad de Derecho PUCV</span>
-          </div>
-          <div class="title-block">
-            <h1>⚖️ LexPrompt Architect</h1>
-            <div class="sub">Prompt Jurídico Profesional · v2.0</div>
-          </div>
-        </div>
-        <div class="meta-block">
-          <div>Generado: <span class="date-val">${date}</span></div>
-          <div>Facultad de Derecho · PUCV</div>
-          <div>Valparaíso · Chile</div>
-        </div>
+      return e ? `<span class="enh-chip">${e.emoji} ${e.label}</span>` : '';
+    }).join('');
+
+    win.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LexPrompt — DIAT · PUCV ${date}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;600;700;800&display=swap');
+    /* ── CRITICAL: page setup ── */
+    @page { size: A4 portrait; margin: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Force dark background at every level ── */
+    html {
+      background: #070b12;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: #070b12;
+      color: #cbd5e1;
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 48px 56px 52px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      position: relative;
+    }
+    /* scan-line texture */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,.05) 2px, rgba(0,0,0,.05) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* subtle grid */
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(6,182,212,.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,.015) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; }
+
+    /* top accent line */
+    .accent-top {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #06b6d4, #6366f1, transparent);
+      margin: -48px -56px 40px;
+      width: calc(100% + 112px);
+    }
+
+    /* header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding-bottom: 22px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(6,182,212,.2);
+    }
+    .logo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .badge-diat {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 900; font-size: 11px;
+      letter-spacing: .15em; padding: 4px 11px;
+      border-radius: 6px;
+      border: 1px solid rgba(6,182,212,.45);
+      background: rgba(6,182,212,.12);
+      color: #67e8f9;
+    }
+    .badge-inst {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(129,140,248,.3);
+      background: rgba(129,140,248,.08);
+      color: #a5b4fc;
+    }
+    .h1 { font-size: 24px; font-weight: 800; color: #f8fafc; letter-spacing: -.02em; line-height: 1.15; }
+    .sub { font-size: 11px; color: #475569; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+    .meta { text-align: right; font-size: 10px; color: #334155; font-family: 'JetBrains Mono', monospace; line-height: 1.9; }
+    .meta .val { color: #64748b; }
+
+    /* config grid */
+    .config {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px; padding: 16px 20px;
+    }
+    .config-item { font-size: 10.5px; color: #475569; line-height: 1.6; }
+    .config-item span { font-weight: 700; color: #67e8f9; font-family: 'JetBrains Mono', monospace; }
+
+    /* enhancements */
+    .enhs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .enh-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid rgba(129,140,248,.3);
+      background: rgba(129,140,248,.08);
+      color: #a5b4fc;
+    }
+
+    /* section label */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: #334155; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(6,182,212,.12); }
+
+    /* prompt box */
+    .prompt-box {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px; line-height: 1.9;
+      color: #e2e8f0;
+      background: rgba(6,182,212,.04);
+      border: 1px solid rgba(6,182,212,.2);
+      border-left: 3px solid #06b6d4;
+      border-radius: 0 12px 12px 0;
+      padding: 24px 26px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* system prompts section */
+    .sp-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-top: 22px;
+    }
+    .sp-card {
+      padding: 14px 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.07);
+      background: rgba(255,255,255,.02);
+    }
+    .sp-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .sp-box {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; line-height: 1.7;
+      color: #64748b;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
+    /* footer */
+    .footer {
+      margin-top: 32px; padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 9px; font-family: 'JetBrains Mono', monospace; color: #1e293b;
+    }
+    .footer-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(6,182,212,.08); color: #0891b2;
+      border: 1px solid rgba(6,182,212,.2);
+      border-radius: 4px; padding: 3px 9px;
+      font-size: 8.5px; font-weight: 700;
+    }
+
+    @media print {
+      html, body { background: #070b12 !important; }
+      .prompt-box { border-left-color: #06b6d4 !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="accent-top"></div>
+
+  <div class="header">
+    <div>
+      <div class="logo-row">
+        <span class="badge-diat">DIAT</span>
+        <span class="badge-inst">FD · PUCV</span>
       </div>
-
-      <div class="config">
-        <div class="config-item">Perfil: <span>${profile?.emoji ?? ''} ${profile?.label ?? '—'}</span></div>
-        <div class="config-item">Finalidad: <span>${purpose?.emoji ?? ''} ${purpose?.label ?? '—'}</span></div>
-        <div class="config-item">Área jurídica: <span>${area?.emoji ?? ''} ${area?.label ?? '—'}</span></div>
-        <div class="config-item">Profundidad: <span>${depth?.label ?? '—'}</span></div>
-        <div class="config-item">IA objetivo: <span>${targetAI?.label ?? '—'}</span></div>
-        <div class="config-item">Formato: <span>${format?.emoji ?? ''} ${format?.label ?? '—'}</span></div>
-      </div>
-
-      ${enhs ? `<div class="enhs">${activeEnhancements.map(id => {
-        const e = enhancements.find(x => x.id === id);
-        return e ? `<span class="enh-chip">${e.emoji} ${e.label}</span>` : '';
-      }).join('')}</div>` : ''}
-
-      <div class="prompt-label">▸ Prompt generado</div>
-      <div class="prompt-box">${prompt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-
-      <div class="footer">
-        <div>DIAT Prompting Hub · Facultad de Derecho PUCV · ${new Date().getFullYear()}</div>
-        <div>
-          <span class="badge">✦ Construido con IA</span>
-          &nbsp;·&nbsp;"Construye criterio antes de automatizar."
-        </div>
-      </div>
+      <h1 class="h1">⚖️ LexPrompt Architect</h1>
+      <div class="sub">Prompt Jurídico Profesional · Generado con IA · v2.1</div>
     </div>
-    </body></html>`);
+    <div class="meta">
+      <div>Generado: <span class="val">${date}</span></div>
+      <div>Plataforma: <span class="val">DIAT Prompting Hub</span></div>
+      <div>Facultad de Derecho · PUCV</div>
+      <div>Valparaíso · Chile</div>
+    </div>
+  </div>
+
+  <div class="section-label">Configuración del prompt</div>
+  <div class="config">
+    <div class="config-item">Perfil: <span>${profile?.emoji ?? ''} ${profile?.label ?? '—'}</span></div>
+    <div class="config-item">Finalidad: <span>${purpose?.emoji ?? ''} ${purpose?.label ?? '—'}</span></div>
+    <div class="config-item">Área jurídica: <span>${area?.emoji ?? ''} ${area?.label ?? '—'}</span></div>
+    <div class="config-item">Profundidad: <span>${depth?.label ?? '—'}</span></div>
+    <div class="config-item">IA objetivo: <span>${targetAI?.label ?? '—'}</span></div>
+    <div class="config-item">Formato de salida: <span>${format?.emoji ?? ''} ${format?.label ?? '—'}</span></div>
+  </div>
+
+  ${enhList ? `<div class="section-label" style="margin-bottom:10px">Capas de protección activas</div><div class="enhs">${enhList}</div>` : ''}
+
+  <div class="section-label">Prompt generado</div>
+  <div class="prompt-box">${prompt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+
+  <div class="footer">
+    <div>DIAT Prompting Hub · Facultad de Derecho PUCV · ${new Date().getFullYear()} · Septiembre 2026</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="footer-badge">✦ IA Jurídica Aplicada</span>
+      <span>"Construye criterio antes de automatizar."</span>
+    </div>
+  </div>
+</div>
+</body></html>`);
     win.document.close();
-    setTimeout(() => win.print(), 400);
+    setTimeout(() => win.print(), 800);
   };
 
   const reset = () => {
