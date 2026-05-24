@@ -5,6 +5,7 @@ import { Zap } from 'lucide-react';
 const titles: Record<string, { title: string; subtitle: string }> = {
   '/': { title: 'DIAT 2026', subtitle: 'Programa de IA Jurídica · PUCV' },
   '/modulos': { title: 'Las 3 Misiones', subtitle: 'Septiembre 2026 · Módulos del programa' },
+  '/compatibilidad': { title: 'Compatibilidad DIAT', subtitle: 'Diagnostico de encaje, ruta y automatizacion' },
   '/prompt-lab': { title: 'Prompt Lab', subtitle: 'Constructor de prompts jurídicos profesionales' },
   '/flashcards': { title: 'Flashcards IA', subtitle: '30 cartas para dominar la IA' },
   '/toolkit': { title: 'Toolkit IA', subtitle: 'Guías rápidas y flujos multi-IA' },

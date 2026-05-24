@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowRight, Zap, Layers, Rocket, Wrench, ChevronDown,
   Shield, Brain, Bot, FileText, CheckCircle2, Circle,
-  Mail, Building2, GraduationCap, Scale, Cpu, Globe, Download,
+  Mail, Building2, GraduationCap, Scale, Cpu, Globe, Download, Target,
 } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import { equipoEjecutor } from '@/data/team';
@@ -16,7 +16,6 @@ import { generateDossierPDF } from '@/lib/pdfGenerators';
 const DIAT_EMAIL = 'programadiat@pucv.cl';
 const DIAT_SUBJECT = 'Interés en taller de IA jurídica y prompting DIAT';
 const DIAT_BODY = `Hola Programa DIAT:\n\nQuisiera reservar un cupo y recibir más información sobre el taller de IA jurídica y prompting avanzado que se realizará durante septiembre.\n\nNombre:\nCarrera / profesión:\nCorreo:\nTeléfono (opcional):\nComentarios:\n\nMuchas gracias.`;
-const MAILTO_RESERVA = `mailto:${DIAT_EMAIL}?subject=${encodeURIComponent(DIAT_SUBJECT)}&body=${encodeURIComponent(DIAT_BODY)}`;
 const GMAIL_RESERVA = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(DIAT_EMAIL)}&su=${encodeURIComponent(DIAT_SUBJECT)}&body=${encodeURIComponent(DIAT_BODY)}`;
 
 const MODULE1_DATE = '2026-09-08T09:00:00';
@@ -80,6 +79,7 @@ const spoilers = [
 
 const features = [
   { icon: Layers, href: '/modulos', label: 'Ver los 3 módulos', desc: 'La ruta completa de aprendizaje' },
+  { icon: Target, href: '/compatibilidad', label: 'Compatibilidad DIAT', desc: 'Diagnostico de ruta y potencial' },
   { icon: Zap, href: '/prompt-lab', label: 'LexPrompt Architect', desc: 'Constructor 7 pasos + PDF' },
   { icon: Rocket, href: '/flashcards', label: 'Aprende con flashcards', desc: '30 cartas de IA jurídica' },
   { icon: Wrench, href: '/toolkit', label: 'Toolkit multi-IA', desc: 'Flujos y guías rápidas' },
@@ -415,7 +415,7 @@ export default function LandingPage() {
       >
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white">¿Por qué DIAT?</h2>
-          <p className="text-sm text-zinc-500 mt-1">Porque el futuro del derecho se construye ahora, no "cuando haya tiempo".</p>
+          <p className="text-sm text-zinc-500 mt-1">Porque el futuro del derecho se construye ahora, no &quot;cuando haya tiempo&quot;.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {reasons.map(({ emoji, title, desc, color, accent }, i) => (
@@ -617,7 +617,7 @@ export default function LandingPage() {
             Programa DIAT · Facultad de Derecho PUCV. Formación práctica en IA jurídica con certificación institucional.
           </p>
           <p className="text-xs text-zinc-600 italic">
-            "El futuro llega para todos. La diferencia es quién llega preparado."
+            &quot;El futuro llega para todos. La diferencia es quién llega preparado.&quot;
           </p>
           <p className="text-[11px] text-zinc-600 mono">
             8 · 15 · 22 Septiembre 2026 · Fechas tentativas · Cupos limitados

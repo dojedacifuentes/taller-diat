@@ -2,11 +2,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, Rocket, Zap, Layers, Wrench, BookOpen } from 'lucide-react';
+import { Home, Rocket, Zap, Layers, Wrench, BookOpen, Target } from 'lucide-react';
 
 const nav = [
   { href: '/', icon: Home, label: 'Inicio' },
   { href: '/modulos', icon: Layers, label: 'Módulos' },
+  { href: '/compatibilidad', icon: Target, label: 'Fit' },
   { href: '/prompt-lab', icon: Zap, label: 'Lab' },
   { href: '/flashcards', icon: Rocket, label: 'Cards' },
   { href: '/toolkit', icon: Wrench, label: 'Toolkit' },
