@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Wrench, ArrowRight, Check, AlertTriangle, Zap, Shield, Brain, ExternalLink } from 'lucide-react';
+import { complementaryNotice } from '@/data/program';
 
 const officialTools = [
   {
@@ -49,15 +50,6 @@ const officialTools = [
     accent: 'text-cyan-400',
     tag: 'Perplexity AI',
   },
-  {
-    name: 'Harvey AI',
-    emoji: '⚖️',
-    desc: 'Asistente IA especializado para firmas de abogados',
-    url: 'https://harvey.ai',
-    color: 'border-amber-500/25 bg-amber-500/5 hover:border-amber-500/40',
-    accent: 'text-amber-400',
-    tag: 'Harvey',
-  },
 ];
 
 const flows = [
@@ -73,7 +65,6 @@ const flows = [
       { tool: 'Claude', action: 'Redacta el documento final con la información verificada', emoji: '🤖' },
     ],
     time: '30-45 min',
-    replaces: '4-6 horas de investigación manual',
   },
   {
     id: 'litigios',
@@ -88,7 +79,6 @@ const flows = [
       { tool: 'Tú', action: 'Revisas, validas y firmas. El éxito es tuyo.', emoji: '⚖️' },
     ],
     time: '60-90 min',
-    replaces: 'Un día completo de trabajo',
   },
   {
     id: 'contratos',
@@ -102,7 +92,6 @@ const flows = [
       { tool: 'Claude', action: 'Integra las observaciones y genera la versión final pulida', emoji: '🤖' },
     ],
     time: '20-40 min',
-    replaces: '2-3 horas de redacción',
   },
 ];
 
@@ -147,17 +136,20 @@ export default function ToolkitPage() {
           <span className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
             <Wrench className="w-5 h-5 text-emerald-400" />
           </span>
-          Toolkit Multi-IA
+          Toolkit
         </h1>
         <p className="text-sm text-zinc-500 mt-1">
-          Flujos reales, checklists de seguridad y referencia rápida. Lacónico. Útil. Sin rodeos.
+          Flujos de referencia, checklists de verificación y guías rápidas de herramientas.
+        </p>
+        <p className="text-xs text-zinc-600 mt-3 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+          {complementaryNotice}
         </p>
       </div>
 
       {/* Tools */}
       <section className="space-y-4">
         <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">
-          <ExternalLink className="w-4 h-4 text-cyan-400" /> Herramientas del Programa
+          <ExternalLink className="w-4 h-4 text-cyan-400" /> Herramientas de referencia
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {officialTools.map(tool => (
@@ -216,7 +208,7 @@ export default function ToolkitPage() {
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
               <span className="text-xs text-zinc-400 mono font-medium">⏱ {flow.time}</span>
-              <span className="text-[10px] text-zinc-600">Reemplaza: {flow.replaces}</span>
+              <span className="text-[10px] text-zinc-600">Verificar cada paso antes de usar</span>
             </div>
           </div>
 

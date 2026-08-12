@@ -5,6 +5,7 @@ import { ExternalLink, Cpu, Filter, Download } from 'lucide-react';
 import { tools, levelColors, toolColors, toolIconColors } from '@/data/tools';
 import type { Tool } from '@/lib/types';
 import { generateGuiaJuridicaPDF } from '@/lib/pdfGenerators';
+import { complementaryNotice } from '@/data/program';
 
 const toolIcons: Record<string, React.ReactNode> = {
   claude: (
@@ -37,7 +38,7 @@ function ToolCard({ tool, index }: { tool: Tool; index: number }) {
           <span className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-medium ${levelClass}`}>
             {tool.level}
           </span>
-          <span className="text-[10px] text-zinc-600 mono">M{tool.moduleId}</span>
+          <span className="text-[10px] text-zinc-600 mono">{tool.category}</span>
         </div>
       </div>
 
@@ -85,8 +86,8 @@ export default function HerramientasPage() {
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-white">Biblioteca de Herramientas IA</h2>
-            <p className="text-sm text-zinc-500 mt-1">Plataformas seleccionadas para la práctica jurídica con IA</p>
+            <h2 className="text-2xl font-bold text-white">Catálogo de herramientas</h2>
+            <p className="text-sm text-zinc-500 mt-1">Plataformas de IA generativa, con su uso jurídico de referencia</p>
           </div>
           <motion.button
             onClick={generateGuiaJuridicaPDF}
@@ -95,9 +96,12 @@ export default function HerramientasPage() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors shrink-0"
           >
             <Download className="w-4 h-4" />
-            Descargar Guía de Usos Jurídicos PDF
+            Descargar guía PDF
           </motion.button>
         </div>
+        <p className="text-xs text-zinc-600 mt-3 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+          {complementaryNotice}
+        </p>
       </div>
 
       {/* Filters */}

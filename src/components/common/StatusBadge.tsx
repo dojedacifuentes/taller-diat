@@ -1,6 +1,6 @@
-import type { ModuleStatus } from '@/lib/types';
+import type { SessionStatus } from '@/lib/types';
 
-const config: Record<ModuleStatus, { label: string; className: string; dot: string }> = {
+const config: Record<SessionStatus, { label: string; className: string; dot: string }> = {
   completed: {
     label: 'Completado',
     className: 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10',
@@ -18,7 +18,7 @@ const config: Record<ModuleStatus, { label: string; className: string; dot: stri
   },
 };
 
-export function StatusBadge({ status }: { status: ModuleStatus }) {
+export function StatusBadge({ status }: { status: SessionStatus }) {
   const { label, className, dot } = config[status];
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${className}`}>

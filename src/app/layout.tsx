@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { GridBackground } from '@/components/common/GridBackground';
 import { FloatingCTA } from '@/components/common/FloatingCTA';
 import { SiteFooter } from '@/components/layout/SiteFooter';
+import { seo } from '@/data/program';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -21,8 +22,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'DIAT Prompting Hub — Facultad de Derecho PUCV',
-  description: 'Programa de Derecho, Inteligencia Artificial y Tecnología · Pontificia Universidad Católica de Valparaíso',
+  title: seo.title,
+  description: seo.description,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

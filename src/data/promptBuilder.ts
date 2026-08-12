@@ -463,7 +463,7 @@ export function generatePrompt(
 
   return `════════════════════════════════════════════════════════
  PROMPT JURÍDICO PROFESIONAL
- LexPrompt Architect v2.0 · DIAT Prompting Hub · PUCV
+ LexPrompt Architect · Prompt Lab · DIAT PUCV
  Generado: ${date}
 ════════════════════════════════════════════════════════
 
@@ -515,7 +515,7 @@ ${contextBlock}
  [ ] La responsabilidad final siempre recae en el abogado
 
 ════════════════════════════════════════════════════════
- DIAT Prompting Hub · Facultad de Derecho PUCV · 2026
+ Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV · 2026
  "Construye criterio antes de automatizar."
 ════════════════════════════════════════════════════════`;
 }
@@ -529,7 +529,7 @@ export function generateCompact(fullPrompt: string): string {
   const core = lines.slice(start, end).filter(l =>
     !l.startsWith('────') && !l.startsWith('════') && l.trim()
   );
-  return `[PROMPT COMPACTO — DIAT Prompting Hub]\n\n${core.join('\n')}`;
+  return `[PROMPT COMPACTO — Prompt Lab · DIAT PUCV]\n\n${core.join('\n')}`;
 }
 
 export function generateSystemPrompt(fullPrompt: string, targetAI: TargetAI): string {
@@ -560,8 +560,8 @@ export function generatePromptPlusPlus(
   const layers = enhancements.filter(e => activeEnhancements.includes(e.id));
   const indent = (s: string, n = 2) => s.replace(/\n/g, `\n${' '.repeat(n)}`);
 
-  return `# LexPrompt Architect v2.0 — Structured Machine-Readable Format
-# DIAT Prompting Hub · Facultad de Derecho PUCV
+  return `# LexPrompt Architect — Structured Machine-Readable Format
+# Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV
 
 lexiprompt: "2.0"
 generated: "${date}"
@@ -951,7 +951,7 @@ export function buildIRYAML(input: CompilerInput): string {
   const layers = enhancements.filter(e => activeEnhancements.includes(e.id));
 
   return `# LexPrompt Cognitive IR v3.0
-# DIAT Prompting Hub · Facultad de Derecho PUCV
+# Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV
 # Intermediate Representation — Model-agnostic execution schema
 
 lexicognitive: "3.0"
@@ -1016,7 +1016,7 @@ uncertainty_protocols:
 context: |
   ${context.trim() || '(sin contexto adicional)'}
 
-# DIAT Prompting Hub · Facultad de Derecho PUCV · 2026
+# Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV · 2026
 `;
 }
 
@@ -1035,7 +1035,7 @@ export function compileForClaude(input: CompilerInput): string {
   return `<lexiprompt version="3.0" platform="claude">
 <!--
   LexPrompt Cognitive Runtime v3.0 · Compilado para Claude
-  DIAT Prompting Hub · Facultad de Derecho PUCV
+  Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV
 -->
 
 <cognitive_configuration>
@@ -1146,7 +1146,7 @@ export function compileForGPT(input: CompilerInput): string {
   const sep = '═'.repeat(58);
 
   return `[PROMPT JURÍDICO — Compilado para ${targetAI.label}]
-[LexPrompt Cognitive Runtime v3.0 · DIAT Prompting Hub · PUCV]
+[LexPrompt Cognitive Runtime v3.0 · Prompt Lab · DIAT PUCV]
 
 ${sep}
  ROL Y PERSPECTIVA EXPERTA
@@ -1256,7 +1256,7 @@ ${sep}
  [ ] La responsabilidad final recae siempre en el abogado
 
 ${sep}
- DIAT Prompting Hub · Facultad de Derecho PUCV · 2026
+ Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV · 2026
  "Construye criterio antes de automatizar."
 ${sep}`;
 }
@@ -1272,7 +1272,7 @@ export function compileForGemini(input: CompilerInput): string {
   const date = new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return `# ANÁLISIS JURÍDICO — CONFIGURACIÓN COGNITIVA
-**LexPrompt Cognitive Runtime v3.0 · DIAT Prompting Hub · Facultad de Derecho PUCV**
+**LexPrompt Cognitive Runtime v3.0 · Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV**
 *Compilado para ${targetAI.label} · ${date}*
 
 ---
@@ -1373,5 +1373,5 @@ ${targetAI.optimizationTip}
 
 ---
 
-*DIAT Prompting Hub · Facultad de Derecho PUCV · 2026 · "Construye criterio antes de automatizar."*`;
+*Prompt Lab · DIAT PUCV · Facultad y Escuela de Derecho PUCV · 2026 · "Construye criterio antes de automatizar."*`;
 }

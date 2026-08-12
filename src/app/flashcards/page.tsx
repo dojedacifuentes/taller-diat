@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RotateCcw, Check, X, Rocket } from 'lucide-react';
 import { flashcards, categories } from '@/data/flashcards';
+import { complementaryNotice } from '@/data/program';
 
 const catColors: Record<string, string> = {
   'Vocabulario IA': 'border-cyan-500/35 bg-cyan-500/8 text-cyan-400',
@@ -91,10 +92,13 @@ export default function FlashcardsPage() {
           <span className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
             <Rocket className="w-5 h-5 text-purple-400" />
           </span>
-          Flashcards IA
+          Flashcards
         </h1>
         <p className="text-sm text-zinc-500 mt-1">
-          30 cartas para dominar el idioma de la IA. Pulsa <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] mono">espacio</kbd> para voltear, <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] mono">←→</kbd> para navegar.
+          Repaso de vocabulario y conceptos de IA aplicada al Derecho. Pulsa <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] mono">espacio</kbd> para voltear, <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] mono">←→</kbd> para navegar.
+        </p>
+        <p className="text-xs text-zinc-600 mt-3 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+          {complementaryNotice}
         </p>
       </div>
 

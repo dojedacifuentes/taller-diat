@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { equipoEjecutor, memberAvatarColors } from '@/data/team';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import { Shield, Layers, Code2, Users, GraduationCap } from 'lucide-react';
+import { identity, institution, schedule, contact } from '@/data/program';
 
 // ── Autoridades del programa ─────────────────────────────────────────────
 const autoridades = [
@@ -158,13 +159,13 @@ export default function EquipoPage() {
         className="rounded-xl border border-cyan-500/15 bg-cyan-500/5 p-4"
       >
         <p className="text-xs text-zinc-400 leading-relaxed">
-          <span className="text-cyan-400 font-medium">Programa DIAT 2026.</span>{' '}
-          Actividad organizada por el Programa DIAT de la Facultad de Derecho PUCV, con apoyo de Vinculación con el Medio.
+          <span className="text-cyan-400 font-medium">{identity.name}.</span>{' '}
+          Actividad organizada por el {institution.programLong}, {institution.faculty}.
           Consultas e inscripciones:{' '}
-          <a href="mailto:programadiat@pucv.cl" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-            programadiat@pucv.cl
+          <a href={`mailto:${contact.email}`} className="text-cyan-400 hover:text-cyan-300 transition-colors">
+            {contact.email}
           </a>
-          {' '}· Fechas tentativas · Septiembre 2026.
+          {' '}· {schedule.datesLong} · {schedule.time}.
         </p>
       </motion.div>
 

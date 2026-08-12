@@ -185,15 +185,15 @@ export const flashcards: Flashcard[] = [
   },
   {
     id: 29, category: 'Flujos Multi-IA', emoji: '⚡',
-    front: 'El flujo avanzado para litigios',
-    back: 'GEMINI (lee el expediente PDF) → CLAUDE (analiza estrategia legal) → CHATGPT (genera argumentario en formato audiencia) → humano revisa y firma.',
-    funFact: 'Harvey AI (la IA jurídica de élite) hace esto en automático. Cuesta USD 50k/año.',
+    front: 'Las cuatro partes de un flujo jurídico',
+    back: 'ENTRADAS (qué información entra) → INTERVENCIÓN DE IA (qué hace el modelo) → CONTROL HUMANO (quién revisa y con qué criterio) → SALIDA (el resultado y sus límites).',
+    funFact: 'Si no puedes dibujar estas cuatro partes, todavía no tienes un flujo: tienes un prompt suelto.',
   },
   {
     id: 30, category: 'Flujos Multi-IA', emoji: '🌍',
-    front: 'El futuro que ya llegó',
-    back: 'Harvey AI · Clio Duo · Thomson Reuters AI · Lexis+ AI. El ecosistema legaltech explota en 2026. Los que sepan usarlas, liderarán la profesión.',
-    funFact: 'Firmas como Allen & Overy ya tienen IA mandatoria para todos sus abogados. Chile sigue.',
+    front: 'Comparar dos herramientas sin engañarte',
+    back: 'Compara fundamento normativo, fuentes verificables, omisiones y riesgos de error. Nunca compares por fluidez: un texto bien redactado puede estar jurídicamente equivocado.',
+    funFact: 'La fluidez del lenguaje y la corrección jurídica son variables independientes.',
   },
 ];
 
