@@ -1,16 +1,15 @@
 'use client';
 import Link from 'next/link';
-import { Mail, ExternalLink, Shield } from 'lucide-react';
+import { Mail, Shield } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
-
-const MAILTO =
-  'mailto:programadiat@pucv.cl' +
-  '?subject=Inter%C3%A9s%20en%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20DIAT' +
-  '&body=Hola%20Programa%20DIAT%3A%0A%0AQuisiera%20reservar%20un%20cupo%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20taller%20de%20IA%20jur%C3%ADdica%20y%20prompting%20avanzado%20que%20se%20realizar%C3%A1%20durante%20septiembre.%0A%0ANombre%3A%0ACarrera%20%2F%20profesi%C3%B3n%3A%0ACorreo%3A%0ATel%C3%A9fono%20opcional%3A%0AComentarios%3A%0A%0AMuchas%20gracias.';
+import {
+  identity, institution, schedule, registration, mailto, contact,
+} from '@/data/program';
 
 const navLinks = [
   { href: '/', label: 'Inicio' },
-  { href: '/modulos', label: 'Módulos' },
+  { href: '/modulos', label: 'Las 3 sesiones' },
+  { href: '/dossier', label: 'Dossier' },
   { href: '/prompt-lab', label: 'Prompt Lab' },
   { href: '/flashcards', label: 'Flashcards' },
   { href: '/toolkit', label: 'Toolkit' },
@@ -29,34 +28,33 @@ export function SiteFooter() {
           <div className="space-y-3 max-w-sm">
             <InstitutionalLogoRow size="sm" />
             <div>
-              <div className="text-sm font-bold text-white">Programa DIAT 2026</div>
+              <div className="text-sm font-bold text-white">{identity.name}</div>
               <div className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">
-                Programa de formación aplicada en inteligencia artificial jurídica,
-                prompting avanzado y nuevas competencias digitales para el ejercicio legal.
+                {identity.tagline}. {institution.programLong}.
               </div>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-zinc-600">
               <Shield className="w-3 h-3 text-zinc-700 shrink-0" />
-              Facultad de Derecho · PUCV · Valparaíso, Chile
+              {institution.faculty} · {institution.city}
             </div>
           </div>
 
           {/* CTA */}
           <div className="flex flex-col gap-3 shrink-0">
             <div className="text-[11px] text-zinc-500 text-center md:text-right">
-              Fechas tentativas · Septiembre 2026
+              {schedule.weekdayLabel} · {schedule.time}
             </div>
             <a
-              href={MAILTO}
+              href={mailto}
               className="flex items-center gap-2 px-5 py-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-sm font-bold transition-all group"
             >
               <Mail className="w-4 h-4" />
-              Reservar cupo
+              {registration.ctaPrimary}
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse ml-1" />
             </a>
             <div className="flex items-center gap-1 text-[10px] text-zinc-600 justify-center md:justify-end">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/60 animate-pulse" />
-              Cupos limitados · 8 · 15 · 22 Sep 2026
+              {registration.note} · {schedule.datesShort}
             </div>
           </div>
         </div>
@@ -94,13 +92,17 @@ export function SiteFooter() {
           </div>
 
           <div className="space-y-1">
-            <div className="text-[10px] text-zinc-700 uppercase tracking-widest mono font-medium">Plataforma</div>
+            <div className="text-[10px] text-zinc-700 uppercase tracking-widest mono font-medium">Contacto</div>
+            <div className="text-[11px] text-zinc-500 leading-relaxed">
+              <a href={`mailto:${contact.email}`} className="text-zinc-400 hover:text-cyan-400 transition-colors">
+                {contact.email}
+              </a>
+            </div>
             <div className="text-[11px] text-zinc-600 leading-relaxed">
-              Desarrollada íntegramente con inteligencia artificial como demostración práctica
-              de las capacidades del Programa DIAT. Subdirección y Coordinación Operativa.
+              Inscripción por correo. {registration.note}.
             </div>
             <div className="inline-flex items-center gap-1 text-[10px] text-zinc-700 mt-1">
-              <span className="text-[9px] mono text-zinc-800">Construida con IA generativa · 2026</span>
+              <span className="text-[9px] mono text-zinc-800">Plataforma construida con IA generativa · 2026</span>
             </div>
           </div>
         </div>
@@ -108,10 +110,10 @@ export function SiteFooter() {
         {/* Bottom bar */}
         <div className="border-t border-white/[0.04] pt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="text-[10px] text-zinc-700 mono">
-            © 2026 Programa DIAT · Facultad de Derecho PUCV · Todos los derechos reservados
+            © 2026 {institution.program} · {institution.faculty} · Todos los derechos reservados
           </div>
           <div className="text-[10px] text-zinc-700 mono">
-            Prompting Hub v2.0 · Construido con IA
+            {identity.name} · {schedule.datesShort}
           </div>
         </div>
 

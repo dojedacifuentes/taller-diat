@@ -3,30 +3,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, X, Calendar, Copy, Check, ExternalLink } from 'lucide-react';
 
-const EMAIL = 'programadiat@pucv.cl';
-const SUBJECT = 'Interés en taller de IA jurídica y prompting DIAT';
-const BODY = `Hola Programa DIAT:
+import {
+  identity, institution, schedule, registration, contact, mailto, gmailCompose,
+} from '@/data/program';
 
-Quisiera reservar un cupo y recibir más información sobre el taller de IA jurídica y prompting avanzado que se realizará durante septiembre.
-
-Nombre:
-Carrera / profesión:
-Correo:
-Teléfono (opcional):
-Comentarios:
-
-Muchas gracias.`;
-
-const MAILTO =
-  'mailto:' + EMAIL +
-  '?subject=' + encodeURIComponent(SUBJECT) +
-  '&body=' + encodeURIComponent(BODY);
-
-const GMAIL_URL =
-  'https://mail.google.com/mail/?view=cm' +
-  '&to=' + encodeURIComponent(EMAIL) +
-  '&su=' + encodeURIComponent(SUBJECT) +
-  '&body=' + encodeURIComponent(BODY);
+const EMAIL = contact.email;
+const MAILTO = mailto;
+const GMAIL_URL = gmailCompose;
 
 export function FloatingCTA() {
   const [visible, setVisible] = useState(false);
@@ -81,11 +64,11 @@ export function FloatingCTA() {
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                       <span className="text-[10px] mono font-bold text-cyan-400 uppercase tracking-widest">
-                        Cupos disponibles
+                        {registration.note}
                       </span>
                     </div>
                     <div className="text-sm font-bold text-white mt-0.5">
-                      Reserva tu lugar en DIAT 2026
+                      {identity.name}
                     </div>
                   </div>
                   <button
@@ -97,9 +80,13 @@ export function FloatingCTA() {
                 </div>
 
                 {/* Date */}
-                <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-                  <Calendar className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                  8 · 15 · 22 Septiembre 2026 · Fechas tentativas
+                <div className="flex items-start gap-2 text-[11px] text-zinc-400">
+                  <Calendar className="w-3.5 h-3.5 text-cyan-500 shrink-0 mt-0.5" />
+                  <span>
+                    {schedule.datesShort}
+                    <br />
+                    <span className="text-zinc-500">{schedule.weekdayLabel} · {schedule.time}</span>
+                  </span>
                 </div>
 
                 {/* Option A: Gmail webmail (works on any PC without mail client) */}
@@ -147,7 +134,7 @@ export function FloatingCTA() {
                 </div>
 
                 <div className="text-[9px] text-zinc-700 text-center">
-                  Facultad de Derecho PUCV · Cupos limitados
+                  {institution.faculty} · {registration.note}
                 </div>
               </div>
             </div>
@@ -169,8 +156,8 @@ export function FloatingCTA() {
               <div className="h-px bg-gradient-to-r from-cyan-500 via-indigo-500 to-transparent -mx-4 mb-3" />
               <div className="flex items-center gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-white truncate">Reserva tu cupo — DIAT 2026</div>
-                  <div className="text-[10px] text-zinc-500 truncate">Facultad de Derecho PUCV · Cupos limitados</div>
+                  <div className="text-xs font-bold text-white truncate">{identity.shortName}</div>
+                  <div className="text-[10px] text-zinc-500 truncate">{schedule.datesShort} · {registration.note}</div>
                 </div>
                 <a
                   href={GMAIL_URL}

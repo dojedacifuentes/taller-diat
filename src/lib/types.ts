@@ -1,29 +1,41 @@
-export type ModuleStatus = 'pending' | 'active' | 'completed';
-export type TimeBlockType = 'theory' | 'demo' | 'practice' | 'workshop' | 'analysis' | 'closing';
+export type SessionStatus = 'pending' | 'active' | 'completed';
 
-export interface ModuleTimeBlock {
-  time: string;
-  topic: string;
-  type: TimeBlockType;
+/**
+ * Una unidad de contenido de la sesión. `items` recoge los desgloses que la
+ * propuesta académica enumera (p. ej. contexto · rol · tarea · fuentes…).
+ */
+export interface SessionContent {
+  title: string;
+  items?: string[];
+}
+
+/** Trabajo aplicado de la sesión: caso guiado, laboratorio o cierre. */
+export interface SessionPractice {
+  label: string;
   description: string;
 }
 
-export interface Module {
+/**
+ * Sesión del taller. Deliberadamente no existe un campo de minutos por bloque:
+ * la propuesta fija el horario (15:00–16:30) pero no reparte el tiempo entre
+ * actividades, y no corresponde inventar esa distribución.
+ */
+export interface Session {
   id: number;
+  label: string;
+  shortTitle: string;
   title: string;
-  subtitle: string;
+  /** Fecha ISO (YYYY-MM-DD). */
   date: string;
   displayDate: string;
-  endDate: string;
-  status: ModuleStatus;
+  displayDateShort: string;
+  time: string;
   duration: string;
-  objectives: string[];
-  contents: string[];
-  tools: string[];
-  activity: string;
-  deliverable: string;
-  participants: number;
-  timeline: ModuleTimeBlock[];
+  purpose: string;
+  contents: SessionContent[];
+  practice: SessionPractice;
+  product: string;
+  notes?: string[];
 }
 
 export interface Tool {
@@ -32,7 +44,6 @@ export interface Tool {
   description: string;
   legalUseCase: string;
   level: 'Básico' | 'Intermedio' | 'Avanzado';
-  moduleId: number;
   category: string;
   url: string;
   color: string;
@@ -60,23 +71,21 @@ export interface TeamMember {
   color: string;
 }
 
-export interface AdminStats {
-  inscribed: number;
-  attendanceRate: number;
-  progressAverage: number;
-  evidencesSubmitted: number;
-  certificatesIssued: number;
-  activeModules: number;
+/**
+ * Indicador oficial de resultado. `value` es null mientras no exista un dato
+ * real registrado por la coordinación — nunca se rellena con estimaciones.
+ */
+export interface IndicatorRecord {
+  id: string;
+  label: string;
+  value: number | null;
+  unit: string;
 }
 
+/** Asistencia por sesión. Null hasta que la jornada se realice. */
 export interface AttendanceData {
-  module: string;
-  presencial: number;
-  online: number;
-}
-
-export interface ProgressData {
-  week: string;
-  progreso: number;
-  objetivo: number;
+  session: string;
+  date: string;
+  registered: number | null;
+  attended: number | null;
 }

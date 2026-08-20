@@ -1,19 +1,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared PDF generators — jsPDF direct download (no print dialog)
-// Called from client components on click — no 'use client' needed here
+// Generadores PDF — jsPDF, descarga directa (sin diálogo de impresión)
+// Se invocan desde componentes cliente al hacer clic, por eso este módulo no
+// necesita 'use client'.
+//
+// Todo el contenido del taller proviene de @/data/program. No escribir fechas,
+// nombres ni cifras a mano en este archivo.
 // ─────────────────────────────────────────────────────────────────────────────
-import type { Module } from '@/lib/types';
 import type { jsPDF as JsPDFClass } from 'jspdf';
-
-// ─── Local types ─────────────────────────────────────────────────────────────
-type EquipoMember = {
-  readonly id: string;
-  readonly name: string;
-  readonly rol: string;
-  readonly calidad: string;
-  readonly initials: string;
-  readonly color: string;
-};
+import type { Session } from '@/lib/types';
+import {
+  identity, institution, schedule, audience, modality, methodology,
+  objective, learningOutcomes, sessions, finalChallenge, evaluation,
+  evaluationTotal, organization, indicators, background, sources,
+  contact, registration,
+} from '@/data/program';
 
 export interface PromptConfig {
   objetivo: string;
@@ -24,30 +24,31 @@ export interface PromptConfig {
   modelTip?: string;
 }
 
-// ─── Color palette ────────────────────────────────────────────────────────────
+// ─── Paleta ───────────────────────────────────────────────────────────────────
 const C = {
-  bg:      [7,  11,  18]  as [number,number,number],   // #070b12
-  bgCard:  [12, 18,  30]  as [number,number,number],   // #0c121e
-  bgLight: [18, 26,  46]  as [number,number,number],   // #121a2e
-  white:   [248,250, 252] as [number,number,number],   // #f8fafc
-  cyan:    [6,  182, 212] as [number,number,number],   // #06b6d4
-  cyanL:   [34, 211, 238] as [number,number,number],   // #22d3ee
-  indigo:  [129,140, 248] as [number,number,number],   // #818cf8
-  purple:  [168,85,  247] as [number,number,number],   // #a855f7
-  gray:    [100,116, 139] as [number,number,number],   // #64748b
-  grayL:   [148,163, 184] as [number,number,number],   // #94a3b8
-  grayD:   [51, 65,  85]  as [number,number,number],   // #334155
-  muted:   [30, 41,  59]  as [number,number,number],   // #1e293b
+  bg:      [7,  11,  18]  as [number,number,number],
+  bgCard:  [12, 18,  30]  as [number,number,number],
+  bgLight: [18, 26,  46]  as [number,number,number],
+  white:   [248,250, 252] as [number,number,number],
+  cyan:    [6,  182, 212] as [number,number,number],
+  cyanL:   [34, 211, 238] as [number,number,number],
+  indigo:  [129,140, 248] as [number,number,number],
+  purple:  [168,85,  247] as [number,number,number],
+  emerald: [52, 211, 153] as [number,number,number],
+  gray:    [100,116, 139] as [number,number,number],
+  grayL:   [148,163, 184] as [number,number,number],
+  grayD:   [51, 65,  85]  as [number,number,number],
+  muted:   [30, 41,  59]  as [number,number,number],
 };
 
-// ─── Layout constants (A4 portrait, mm) ──────────────────────────────────────
-const PW = 210;   // page width
-const PH = 297;   // page height
-const ML = 20;    // left margin
-const MR = 190;   // right margin endpoint
+// ─── Medidas A4 vertical (mm) ────────────────────────────────────────────────
+const PW = 210;
+const PH = 297;
+const ML = 20;
+const MR = 190;
+const CW = MR - ML; // ancho de columna útil
 
-// ─── jsPDF lazy import — cached singleton ────────────────────────────────────
-// Cached after first call so multiple downloads in a session avoid re-resolving the import.
+// ─── Import perezoso de jsPDF, cacheado ──────────────────────────────────────
 let _jsPDFCache: typeof JsPDFClass | null = null;
 async function getJsPDF(): Promise<typeof JsPDFClass> {
   if (!_jsPDFCache) {
@@ -56,17 +57,15 @@ async function getJsPDF(): Promise<typeof JsPDFClass> {
   return _jsPDFCache;
 }
 
-// ─── Local doc type alias ─────────────────────────────────────────────────────
 type JsPDFDoc = InstanceType<typeof JsPDFClass>;
 
-// ─── Drawing helpers ──────────────────────────────────────────────────────────
+// ─── Helpers de dibujo ────────────────────────────────────────────────────────
 function fillPage(doc: JsPDFDoc, color = C.bg) {
   doc.setFillColor(...color);
   doc.rect(0, 0, PW, PH, 'F');
 }
 
 function accentBar(doc: JsPDFDoc, y = 0, h = 1.5) {
-  // Cyan→Indigo gradient approximated as two rects
   doc.setFillColor(...C.cyan);
   doc.rect(0, y, PW / 2, h, 'F');
   doc.setFillColor(...C.indigo);
@@ -79,17 +78,18 @@ function hLine(doc: JsPDFDoc, x1: number, x2: number, y: number, color = C.muted
   doc.line(x1, y, x2, y);
 }
 
-function badge(doc: JsPDFDoc, text: string, x: number, y: number, bgColor = C.bgCard, textColor = C.cyanL) {
+function badge(doc: JsPDFDoc, text: string, x: number, y: number, borderColor = C.cyan, textColor = C.cyanL) {
   const w = text.length * 1.7 + 8;
-  doc.setFillColor(...bgColor);
+  doc.setFillColor(...C.bgCard);
   doc.roundedRect(x, y - 4, w, 6, 1.5, 1.5, 'F');
-  doc.setDrawColor(...C.cyan);
+  doc.setDrawColor(...borderColor);
   doc.setLineWidth(0.15);
   doc.roundedRect(x, y - 4, w, 6, 1.5, 1.5, 'S');
   doc.setFont('courier', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(...textColor);
   doc.text(text, x + w / 2, y - 0.3, { align: 'center' });
+  return w;
 }
 
 function sectionLabel(doc: JsPDFDoc, label: string, x: number, y: number, color = C.cyan) {
@@ -100,24 +100,29 @@ function sectionLabel(doc: JsPDFDoc, label: string, x: number, y: number, color 
   hLine(doc, x, MR, y + 1.5, color, 0.15);
 }
 
-/** Standard dark page header: fillPage + accentBar + badges + bold title + hLine. */
+/** Cabecera estándar: fondo + barra + badges + título + línea. */
 function pageHeader(
   doc: JsPDFDoc,
-  badges: { text: string; x: number }[],
+  badges: string[],
   title: string,
   lineColor: [number, number, number] = C.cyan,
 ) {
   fillPage(doc);
   accentBar(doc);
-  badges.forEach(b => badge(doc, b.text, b.x, 18));
+  let bx = ML;
+  badges.forEach(b => { bx += badge(doc, b, bx, 18, lineColor) + 4; });
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setTextColor(...C.white);
-  doc.text(title, ML, 32);
-  hLine(doc, ML, MR, 36, lineColor, 0.3);
+  const lines = doc.splitTextToSize(title, CW) as string[];
+  let ty = 33;
+  lines.forEach(l => { doc.text(l, ML, ty); ty += 9; });
+  hLine(doc, ML, MR, ty - 4, lineColor, 0.3);
+  return ty + 4;
 }
 
-/** Standard dark page footer with left label and optional right page-number. */
+/** Pie estándar con etiqueta izquierda y número de página a la derecha. */
 function pageFooter(doc: JsPDFDoc, leftText: string, rightText = '') {
   hLine(doc, ML, MR, 278, C.muted);
   doc.setFont('courier', 'normal');
@@ -127,581 +132,744 @@ function pageFooter(doc: JsPDFDoc, leftText: string, rightText = '') {
   if (rightText) doc.text(rightText, MR, 285, { align: 'right' });
 }
 
-function wrapText(
+function paragraph(
   doc: JsPDFDoc,
   text: string, x: number, y: number,
-  maxWidth: number, lineHeight: number,
-  size: number, color: [number,number,number],
+  maxWidth = CW, lineHeight = 5.2,
+  size = 9, color: [number,number,number] = C.grayL,
   style = 'normal',
 ): number {
   doc.setFont('helvetica', style);
   doc.setFontSize(size);
   doc.setTextColor(...color);
   const lines = doc.splitTextToSize(text, maxWidth) as string[];
-  lines.forEach((line: string) => {
-    if (y > 280) { doc.addPage(); fillPage(doc); accentBar(doc); y = 20; }
-    doc.text(line, x, y);
-    y += lineHeight;
+  lines.forEach(line => { doc.text(line, x, y); y += lineHeight; });
+  return y;
+}
+
+/** Lista numerada en tarjetas. Devuelve la Y final. */
+function numberedCards(
+  doc: JsPDFDoc,
+  items: readonly string[],
+  y: number,
+  accent: [number, number, number],
+): number {
+  items.forEach((item, i) => {
+    const lines = doc.splitTextToSize(item, CW - 22) as string[];
+    const h = Math.max(12, lines.length * 4.6 + 6);
+
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(ML, y, CW, h, 2, 2, 'F');
+    doc.setFillColor(...accent);
+    doc.roundedRect(ML, y, 12, h, 2, 2, 'F');
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.bg);
+    doc.text(String(i + 1).padStart(2, '0'), ML + 6, y + h / 2 + 1.2, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.grayL);
+    lines.forEach((l, li) => doc.text(l, ML + 17, y + 6.5 + li * 4.6));
+
+    y += h + 4;
   });
   return y;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DOSSIER PDF — Premium editorial document
+// DOSSIER — estructura editorial
+//
+// DOSSIER_SECTIONS es la fuente de verdad compartida entre la página /dossier y
+// el generador: la UI no puede prometer un número de secciones distinto al que
+// realmente produce el PDF.
 // ─────────────────────────────────────────────────────────────────────────────
-export async function generateDossierPDF(
-  mods: Module[],
-  equipo: readonly EquipoMember[],
-): Promise<void> {
+export const DOSSIER_SECTIONS = [
+  { num: '01', title: 'Antecedentes y evolución', desc: 'Taller 2025 · progresión 2026' },
+  { num: '02', title: 'Objetivo general', desc: 'Propósito y principios de uso responsable' },
+  { num: '03', title: 'Resultados de aprendizaje', desc: 'Los cinco resultados oficiales' },
+  { num: '04', title: 'Público, formato y metodología', desc: 'Público · presencial · 30/70 · ABP' },
+  { num: '05', title: 'Sesión 1 · 27 de agosto', desc: 'Del prompt aislado al razonamiento asistido' },
+  { num: '06', title: 'Sesión 2 · 3 de septiembre', desc: 'Laboratorio: del prompt al flujo verificable' },
+  { num: '07', title: 'Sesión 3 · 10 de septiembre', desc: 'Match Making e interdisciplina' },
+  { num: '08', title: 'Desafío final y evaluación', desc: 'Flujo jurídico · criterios porcentuales' },
+  { num: '09', title: 'Organización e indicadores', desc: 'DIAT · Derecho · LMIL · Ingeniería' },
+  { num: '10', title: 'Fuentes, cierre e inscripción', desc: 'Fuentes institucionales y contacto' },
+] as const;
+
+/** Portada + una página por sección. */
+export const DOSSIER_PAGE_COUNT = DOSSIER_SECTIONS.length + 1;
+
+const FOOT = `${identity.name} · ${institution.faculty}`;
+
+function sessionPage(doc: JsPDFDoc, session: Session, accent: [number, number, number], pageNo: number) {
+  doc.addPage();
+  const startY = pageHeader(
+    doc,
+    [session.label.toUpperCase(), session.displayDateShort, schedule.time],
+    session.title,
+    accent,
+  );
+
+  let y = startY + 6;
+
+  sectionLabel(doc, 'PROPÓSITO', ML, y, accent);
+  y = paragraph(doc, session.purpose, ML, y + 7) + 6;
+
+  sectionLabel(doc, 'CONTENIDOS', ML, y, accent);
+  y += 8;
+
+  session.contents.forEach((content, i) => {
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...accent);
+    doc.text(String(i + 1).padStart(2, '0'), ML, y);
+
+    const lines = doc.splitTextToSize(content.title, CW - 12) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.grayL);
+    lines.forEach((l, li) => doc.text(l, ML + 10, y + li * 4.4));
+    y += lines.length * 4.4;
+
+    if (content.items) {
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.gray);
+      const chips = doc.splitTextToSize(content.items.join('  ·  '), CW - 12) as string[];
+      chips.forEach(l => { doc.text(l, ML + 10, y + 3.6); y += 4; });
+      y += 1;
+    }
+    y += 3.5;
+  });
+
+  y += 3;
+  sectionLabel(doc, session.practice.label.toUpperCase(), ML, y, accent);
+  y = paragraph(doc, session.practice.description, ML, y + 7) + 6;
+
+  // Producto
+  doc.setFillColor(...C.bgCard);
+  doc.roundedRect(ML, y, CW, 16, 2, 2, 'F');
+  doc.setDrawColor(...accent);
+  doc.setLineWidth(0.25);
+  doc.roundedRect(ML, y, CW, 16, 2, 2, 'S');
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(...accent);
+  doc.text('PRODUCTO DE LA SESIÓN', ML + 6, y + 6);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.white);
+  doc.text(session.product, ML + 6, y + 12.5);
+  y += 22;
+
+  if (session.notes) {
+    session.notes.forEach(note => {
+      const lines = doc.splitTextToSize(note, CW - 12) as string[];
+      const h = lines.length * 4.4 + 7;
+      doc.setFillColor(...C.bgLight);
+      doc.roundedRect(ML, y, CW, h, 2, 2, 'F');
+      doc.setFillColor(...C.emerald);
+      doc.rect(ML, y, 2, h, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.grayL);
+      lines.forEach((l, li) => doc.text(l, ML + 7, y + 6 + li * 4.4));
+      y += h + 4;
+    });
+  }
+
+  pageFooter(doc, `${session.label} · ${FOOT}`, String(pageNo));
+}
+
+export async function generateDossierPDF(): Promise<void> {
   const JsPDF = await getJsPDF();
   const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const accents: [number, number, number][] = [C.cyan, C.indigo, C.purple];
 
-  // ── PAGE 1: COVER ──────────────────────────────────────────────────────────
+  // ── PÁGINA 1 · PORTADA ─────────────────────────────────────────────────────
   fillPage(doc);
-
-  // Diagonal grid lines (subtle)
-  doc.setDrawColor(6, 182, 212, 0.03);
-  doc.setLineWidth(0.1);
+  doc.setDrawColor(...C.muted);
+  doc.setLineWidth(0.08);
   for (let i = 0; i < 30; i++) {
     doc.line(0, i * 10, PW, i * 10);
     doc.line(i * 7, 0, i * 7, PH);
   }
-
-  // Top accent bar
   accentBar(doc, 0, 2);
 
-  // DIAT badge
-  badge(doc, 'DIAT 2026', 20, 32);
-  badge(doc, 'FD · PUCV', 68, 32);
-  badge(doc, 'PROGRAMA OFICIAL', 116, 32);
+  let bx = ML;
+  [identity.documentLabel.toUpperCase(), 'DIAT PUCV', 'DERECHO PUCV'].forEach(b => {
+    bx += badge(doc, b, bx, 32) + 4;
+  });
 
-  // Main title
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(42);
+  doc.setFontSize(34);
   doc.setTextColor(...C.white);
-  doc.text('DIAT', 20, 80);
-
-  doc.setFontSize(18);
+  doc.text('Taller de Prompting', ML, 78);
   doc.setTextColor(...C.cyanL);
-  doc.text('Derecho · Inteligencia Artificial · Tecnología', 20, 94);
+  doc.text('Jurídico 3.0', ML, 94);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(12);
-  doc.setTextColor(...C.gray);
-  doc.text('Facultad de Derecho — Pontificia Universidad Católica de Valparaíso', 20, 104);
-  doc.text('Septiembre 2026 · Valparaíso, Chile', 20, 112);
+  doc.setFontSize(13);
+  doc.setTextColor(...C.grayL);
+  doc.text(identity.tagline, ML, 108);
 
-  // Divider
-  hLine(doc, ML, MR, 122, C.cyan, 0.4);
+  hLine(doc, ML, MR, 118, C.cyan, 0.4);
 
-  // Subtitle
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(...C.indigo);
-  doc.text('DOSSIER OFICIAL DEL PROGRAMA', 20, 132);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...C.white);
+  doc.text(`${schedule.weekdayLabel.toUpperCase()} · ${schedule.time}`, ML, 130);
+  doc.setFontSize(13);
+  doc.setTextColor(...C.cyanL);
+  doc.text(schedule.datesShort, ML, 140);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
+  doc.setTextColor(...C.gray);
+  doc.text(
+    `${schedule.sessionCount} sesiones de ${schedule.sessionDuration} · ${schedule.totalDuration} en total`,
+    ML, 149,
+  );
+
+  // Tesis editorial
+  doc.setFillColor(...C.bgCard);
+  doc.roundedRect(ML, 162, CW, 30, 3, 3, 'F');
+  doc.setFillColor(...C.cyan);
+  doc.rect(ML, 162, 2, 30, 'F');
+  paragraph(doc, identity.thesis, ML + 8, 174, CW - 16, 5.4, 9.5, C.grayL, 'bold');
+
+  // Institución
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
   doc.setTextColor(...C.grayL);
-  const coverDesc = 'Programa de formación aplicada en inteligencia artificial jurídica, prompting avanzado y nuevas competencias digitales para el ejercicio legal. Dirigido a estudiantes de Derecho, egresados y profesionales jurídicos de la región.';
-  wrapText(doc, coverDesc, 20, 142, 170, 6, 9, C.grayL);
+  doc.text(institution.programLong, ML, 212);
+  doc.text(institution.faculty, ML, 220);
+  doc.setFontSize(9);
+  doc.setTextColor(...C.gray);
+  doc.text(`${institution.university} · ${institution.city}`, ML, 228);
 
-  // Stats row
-  const stats = [
-    { num: '69%', label: 'Abogados usarán IA', sub: 'Thomson Reuters 2025' },
-    { num: '4h',  label: 'Ahorro semanal', sub: 'McKinsey, 2024' },
-    { num: '3',   label: 'Módulos intensivos', sub: 'Sep 2026 · PUCV' },
-  ];
-  let sx = 20;
-  stats.forEach(s => {
-    doc.setFillColor(...C.bgCard);
-    doc.roundedRect(sx, 168, 54, 28, 3, 3, 'F');
-    doc.setDrawColor(...C.muted);
-    doc.setLineWidth(0.2);
-    doc.roundedRect(sx, 168, 54, 28, 3, 3, 'S');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(...C.cyanL);
-    doc.text(s.num, sx + 27, 182, { align: 'center' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.white);
-    doc.text(s.label, sx + 27, 189, { align: 'center' });
-
-    doc.setFont('courier', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(...C.gray);
-    doc.text(s.sub, sx + 27, 193, { align: 'center' });
-
-    sx += 58;
-  });
-
-  // Bottom
   hLine(doc, ML, MR, 260, C.muted);
   doc.setFont('courier', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...C.grayD);
-  doc.text('DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · Todos los derechos reservados', ML, 268);
-  doc.text('© 2026 Programa DIAT · Valparaíso, Chile', ML, 275);
+  doc.text(`${identity.name} · ${institution.program} · ${contact.email}`, ML, 268);
+  doc.text(
+    `Dossier · portada + ${DOSSIER_SECTIONS.length} secciones · © 2026 ${institution.program}`,
+    ML, 275,
+  );
 
-  // ── PAGE 2: CONTEXTO Y ESTADÍSTICAS ────────────────────────────────────────
+  // ── PÁGINA 2 · 01 ANTECEDENTES Y EVOLUCIÓN ────────────────────────────────
   doc.addPage();
-  pageHeader(doc, [{ text: 'CONTEXTO', x: ML }], '¿Por qué aprender IA jurídica ahora?');
+  let y = pageHeader(doc, ['01', 'ANTECEDENTES'], 'Antecedentes y evolución');
+  y += 6;
 
-  let y2 = 46;
-  const contextParas = [
-    'La inteligencia artificial está transformando el ejercicio del derecho de manera acelerada. Los modelos de lenguaje avanzados como Claude, ChatGPT y Gemini son hoy herramientas de trabajo efectivas para investigación jurídica, redacción de documentos y análisis de casos.',
-    'Sin embargo, la ventaja competitiva no reside en el acceso a las herramientas — que es universal — sino en la capacidad de instruirlas con precisión jurídica. El prompting avanzado es la nueva competencia diferenciadora del abogado del siglo XXI.',
-    'El Programa DIAT fue diseñado precisamente para cerrar esa brecha: transformar a juristas en usuarios expertos de IA, capaces de obtener resultados de nivel profesional, con control metodológico, seguridad informacional y criterio crítico sobre las limitaciones del sistema.',
-  ];
-  contextParas.forEach(p => {
-    y2 = wrapText(doc, p, 20, y2, 170, 5.5, 9.5, C.grayL) + 6;
-  });
+  sectionLabel(doc, background.previous.title.toUpperCase(), ML, y);
+  y = paragraph(doc, background.previous.text, ML, y + 8) + 3;
+  y = paragraph(doc, background.previous.scope, ML, y, CW, 5.2, 9, C.gray) + 8;
 
-  // Key data points
-  sectionLabel(doc, '01 · DATOS CLAVE DEL MERCADO', 20, y2 + 4);
-  y2 += 16;
+  sectionLabel(doc, background.evolution.title.toUpperCase(), ML, y, C.indigo);
+  y = paragraph(doc, background.evolution.text, ML, y + 8) + 6;
 
-  const dataPoints = [
-    { pct: '69%', text: 'de abogados encuestados afirma que usará IA en tareas jurídicas en los próximos 5 años', src: 'Thomson Reuters, Future of Professionals 2025' },
-    { pct: '23%', text: 'de las horas facturables en un estudio de abogados son susceptibles de automatización parcial', src: 'McKinsey Global Institute, 2024' },
-    { pct: '$1.2B', text: 'inversión en legaltech en América Latina proyectada para 2027', src: 'Stanford CodeX + CB Insights' },
-    { pct: '4h',   text: 'ahorro semanal promedio por profesional que usa IA para tareas de investigación y redacción', src: 'McKinsey, 2024' },
-  ];
-  dataPoints.forEach(d => {
+  // Progresión en tres pasos
+  const stepW = (CW - 16) / 3;
+  background.evolution.steps.forEach((step, i) => {
+    const sx = ML + i * (stepW + 8);
     doc.setFillColor(...C.bgCard);
-    doc.roundedRect(20, y2, 170, 14, 2, 2, 'F');
-    doc.setDrawColor(...C.muted);
-    doc.setLineWidth(0.15);
-    doc.roundedRect(20, y2, 170, 14, 2, 2, 'S');
-
-    doc.setFillColor(...C.cyan);
-    doc.roundedRect(20, y2, 28, 14, 2, 2, 'F');
-
+    doc.roundedRect(sx, y, stepW, 24, 2, 2, 'F');
+    doc.setDrawColor(...accents[i]);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(sx, y, stepW, 24, 2, 2, 'S');
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...accents[i]);
+    doc.text(`0${i + 1}`, sx + 5, y + 8);
+    const lines = doc.splitTextToSize(step, stepW - 10) as string[];
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...C.bg);
-    doc.text(d.pct, 34, y2 + 9, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setTextColor(...C.white);
+    lines.forEach((l, li) => doc.text(l, sx + 5, y + 15 + li * 4.6));
+  });
+  y += 32;
 
-    const tLines = doc.splitTextToSize(d.text, 120) as string[];
+  doc.setFillColor(...C.bgLight);
+  doc.roundedRect(ML, y, CW, 20, 2, 2, 'F');
+  paragraph(doc, identity.principle, ML + 7, y + 8, CW - 14, 5, 9, C.grayL, 'bold');
+
+  pageFooter(doc, `01 · Antecedentes · ${FOOT}`, '2');
+
+  // ── PÁGINA 3 · 02 OBJETIVO GENERAL ────────────────────────────────────────
+  doc.addPage();
+  y = pageHeader(doc, ['02', 'OBJETIVO'], objective.label);
+  y += 8;
+
+  doc.setFillColor(...C.bgCard);
+  doc.roundedRect(ML, y, CW, 44, 3, 3, 'F');
+  doc.setFillColor(...C.cyan);
+  doc.rect(ML, y, 2, 44, 'F');
+  paragraph(doc, objective.text, ML + 8, y + 11, CW - 16, 5.6, 10, C.white);
+  y += 54;
+
+  sectionLabel(doc, 'PRINCIPIOS DE USO RESPONSABLE', ML, y);
+  y += 10;
+
+  const principles = [
+    identity.principle,
+    'Uso exclusivo de casos simulados, anonimizados o expresamente autorizados.',
+    'No se utilizan datos personales ni información confidencial.',
+    'Registro de fuentes, errores, decisiones y correcciones en todo el proceso.',
+  ];
+  y = numberedCards(doc, principles, y, C.indigo) + 6;
+
+  doc.setFillColor(...C.bgLight);
+  doc.roundedRect(ML, y, CW, 22, 2, 2, 'F');
+  paragraph(doc, identity.thesis, ML + 7, y + 9, CW - 14, 5, 9, C.cyanL, 'bold');
+
+  pageFooter(doc, `02 · ${objective.label} · ${FOOT}`, '3');
+
+  // ── PÁGINA 4 · 03 RESULTADOS DE APRENDIZAJE ───────────────────────────────
+  doc.addPage();
+  y = pageHeader(doc, ['03', 'RESULTADOS'], 'Resultados de aprendizaje', C.indigo);
+  y += 6;
+
+  y = paragraph(
+    doc,
+    'Al finalizar las tres sesiones, cada participante debería ser capaz de:',
+    ML, y, CW, 5.2, 9, C.gray,
+  ) + 6;
+
+  numberedCards(doc, learningOutcomes, y, C.indigo);
+
+  pageFooter(doc, `03 · Resultados de aprendizaje · ${FOOT}`, '4');
+
+  // ── PÁGINA 5 · 04 PÚBLICO, FORMATO Y METODOLOGÍA ──────────────────────────
+  doc.addPage();
+  y = pageHeader(doc, ['04', 'METODOLOGÍA'], 'Público, formato y metodología');
+  y += 6;
+
+  sectionLabel(doc, 'PÚBLICO', ML, y);
+  y = paragraph(doc, audience.detail, ML, y + 8) + 6;
+
+  sectionLabel(doc, 'FORMATO', ML, y);
+  y += 8;
+  let mx = ML;
+  modality.items.forEach(item => {
+    const w = item.length * 1.75 + 9;
+    if (mx + w > MR) { mx = ML; y += 9; }
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(mx, y - 4.5, w, 7, 1.5, 1.5, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.grayL);
+    doc.text(item, mx + w / 2, y, { align: 'center' });
+    mx += w + 4;
+  });
+  y += 12;
+
+  // Proporción 30/70
+  sectionLabel(doc, 'PROPORCIÓN PEDAGÓGICA', ML, y);
+  y += 10;
+  const contentsW = CW * (methodology.ratio.contents / 100);
+  doc.setFillColor(...C.indigo);
+  doc.roundedRect(ML, y, contentsW, 10, 1.5, 1.5, 'F');
+  doc.setFillColor(...C.cyan);
+  doc.roundedRect(ML + contentsW, y, CW - contentsW, 10, 1.5, 1.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.bg);
+  doc.text(`${methodology.ratio.contents}% contenidos`, ML + contentsW / 2, y + 6.5, { align: 'center' });
+  doc.text(`${methodology.ratio.practice}% práctica`, ML + contentsW + (CW - contentsW) / 2, y + 6.5, { align: 'center' });
+  y += 18;
+
+  sectionLabel(doc, 'ESTRUCTURA DE CADA JORNADA', ML, y);
+  y += 9;
+  const stageW = (CW - 12) / 4;
+  methodology.stages.forEach((stage, i) => {
+    const sx = ML + i * (stageW + 4);
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(sx, y, stageW, 26, 2, 2, 'F');
+    doc.setFillColor(...C.cyan);
+    doc.roundedRect(sx, y, stageW, 4, 2, 2, 'F');
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(6);
+    doc.setTextColor(...C.bg);
+    doc.text(`0${i + 1}`, sx + stageW / 2, y + 3, { align: 'center' });
+    const tl = doc.splitTextToSize(stage.label, stageW - 6) as string[];
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.white);
+    tl.forEach((l, li) => doc.text(l, sx + 3, y + 10 + li * 4));
+  });
+  y += 34;
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...C.cyanL);
+  const spineLines = doc.splitTextToSize(methodology.spine, CW) as string[];
+  spineLines.forEach(l => { doc.text(l, ML, y); y += 5; });
+  y += 5;
+
+  sectionLabel(doc, 'PRINCIPIOS METODOLÓGICOS', ML, y);
+  y += 8;
+  methodology.principles.forEach(p => {
+    doc.setFillColor(...C.cyan);
+    doc.circle(ML + 1.5, y - 1.2, 0.9, 'F');
+    const lines = doc.splitTextToSize(p, CW - 8) as string[];
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(...C.grayL);
-    doc.text(tLines[0] || '', 52, y2 + 6);
-    if (tLines[1]) doc.text(tLines[1], 52, y2 + 11);
+    lines.forEach((l, li) => doc.text(l, ML + 6, y + li * 4.4));
+    y += lines.length * 4.4 + 2.5;
+  });
 
+  pageFooter(doc, `04 · Público, formato y metodología · ${FOOT}`, '5');
+
+  // ── PÁGINAS 6-8 · 05/06/07 LAS TRES SESIONES ──────────────────────────────
+  sessions.forEach((session, i) => sessionPage(doc, session, accents[i], i + 6));
+
+  // ── PÁGINA 9 · 08 DESAFÍO FINAL Y EVALUACIÓN ──────────────────────────────
+  doc.addPage();
+  y = pageHeader(doc, ['08', 'DESAFÍO FINAL'], 'Desafío final y evaluación');
+  y += 6;
+
+  doc.setFillColor(...C.bgCard);
+  doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
+  doc.setFillColor(...C.cyan);
+  doc.rect(ML, y, 2, 22, 'F');
+  paragraph(doc, finalChallenge.headline, ML + 8, y + 9, CW - 16, 5.4, 10.5, C.white, 'bold');
+  y += 30;
+
+  sectionLabel(doc, 'EL ENTREGABLE DEBE INCLUIR', ML, y);
+  y += 9;
+  const compW = (CW - 8) / 3;
+  finalChallenge.components.forEach((comp, i) => {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    const cx = ML + col * (compW + 4);
+    const cy = y + row * 20;
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(cx, cy, compW, 16, 2, 2, 'F');
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.gray);
+    doc.text(String(i + 1).padStart(2, '0'), cx + 4, cy + 6);
+    const lines = doc.splitTextToSize(comp, compW - 8) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.grayL);
+    lines.slice(0, 2).forEach((l, li) => doc.text(l, cx + 4, cy + 11 + li * 4));
+  });
+  y += Math.ceil(finalChallenge.components.length / 3) * 20 + 6;
+
+  sectionLabel(doc, 'CRITERIOS DE EVALUACIÓN', ML, y, C.indigo);
+  y += 10;
+
+  const barMax = 70;
+  evaluation.forEach(({ weight, criterion }) => {
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...C.cyanL);
+    doc.text(`${weight}%`, ML + 12, y + 4, { align: 'right' });
+
+    doc.setFillColor(...C.muted);
+    doc.roundedRect(ML + 16, y, barMax, 5, 1, 1, 'F');
+    doc.setFillColor(...C.cyan);
+    doc.roundedRect(ML + 16, y, (barMax * weight) / 25, 5, 1, 1, 'F');
+
+    const lines = doc.splitTextToSize(criterion, CW - barMax - 22) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.grayL);
+    lines.forEach((l, li) => doc.text(l, ML + barMax + 20, y + 4 + li * 4.2));
+
+    y += Math.max(11, lines.length * 4.2 + 6);
+  });
+
+  hLine(doc, ML, MR, y, C.muted);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.white);
+  doc.text(`TOTAL ${evaluationTotal}%`, MR, y + 7, { align: 'right' });
+
+  pageFooter(doc, `08 · Desafío final y evaluación · ${FOOT}`, '9');
+
+  // ── PÁGINA 10 · 09 ORGANIZACIÓN E INDICADORES ─────────────────────────────
+  doc.addPage();
+  y = pageHeader(doc, ['09', 'ORGANIZACIÓN'], 'Organización, continuidad e indicadores', C.purple);
+  y += 6;
+
+  sectionLabel(doc, 'ORGANIZACIÓN Y CONTINUIDAD', ML, y, C.purple);
+  y += 9;
+
+  organization.forEach(({ entity, role }) => {
+    const eLines = doc.splitTextToSize(entity, CW - 12) as string[];
+    const rLines = doc.splitTextToSize(role, CW - 12) as string[];
+    const h = eLines.length * 4.6 + rLines.length * 4.2 + 7;
+
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(ML, y, CW, h, 2, 2, 'F');
+    doc.setFillColor(...C.purple);
+    doc.rect(ML, y, 2, h, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.white);
+    eLines.forEach((l, li) => doc.text(l, ML + 7, y + 6 + li * 4.6));
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.gray);
+    rLines.forEach((l, li) => doc.text(l, ML + 7, y + 6 + eLines.length * 4.6 + li * 4.2));
+
+    y += h + 4;
+  });
+
+  y += 4;
+  sectionLabel(doc, 'INDICADORES DE RESULTADO', ML, y, C.purple);
+  y += 8;
+
+  indicators.forEach(ind => {
+    doc.setDrawColor(...C.purple);
+    doc.setLineWidth(0.3);
+    doc.rect(ML, y - 2.6, 3, 3, 'S');
+    const lines = doc.splitTextToSize(ind, CW - 10) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.grayL);
+    lines.forEach((l, li) => doc.text(l, ML + 8, y + li * 4.4));
+    y += lines.length * 4.4 + 3;
+  });
+
+  pageFooter(doc, `09 · Organización e indicadores · ${FOOT}`, '10');
+
+  // ── PÁGINA 11 · 10 FUENTES, CIERRE E INSCRIPCIÓN ──────────────────────────
+  doc.addPage();
+  y = pageHeader(doc, ['10', 'FUENTES'], 'Fuentes, cierre e inscripción');
+  y += 6;
+
+  sectionLabel(doc, 'FUENTES PÚBLICAS CONSULTADAS', ML, y);
+  y += 9;
+
+  sources.forEach((src, i) => {
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.cyan);
+    doc.text(String(i + 1).padStart(2, '0'), ML, y);
+
+    const lines = doc.splitTextToSize(src.label, CW - 10) as string[];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.grayL);
+    lines.forEach((l, li) => doc.text(l, ML + 8, y + li * 4.2));
+    y += lines.length * 4.2;
+
+    const urlLines = doc.splitTextToSize(src.url, CW - 10) as string[];
     doc.setFont('courier', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(...C.gray);
-    doc.text(d.src, 52, y2 + 17.5);
-
-    y2 += 20;
+    urlLines.forEach(l => { doc.text(l, ML + 8, y + 3.4); y += 3.6; });
+    y += 4;
   });
 
-  // ── PAGE 3: COMPETENCIAS ───────────────────────────────────────────────────
-  doc.addPage();
-  pageHeader(doc, [{ text: 'COMPETENCIAS', x: ML }], '9 competencias que desarrollarás', C.indigo);
-
-  const competencias = [
-    { n: '01', title: 'Prompting jurídico de precisión', desc: 'Diseñar instrucciones complejas que producen outputs jurídicos fiables, reproducibles y profesionales.' },
-    { n: '02', title: 'Selección estratégica de herramientas', desc: 'Evaluar Claude, ChatGPT, Gemini, NotebookLM y Perplexity para cada tipo de tarea jurídica.' },
-    { n: '03', title: 'Control de alucinaciones', desc: 'Aplicar protocolos de verificación para detectar y prevenir errores jurídicos generados por IA.' },
-    { n: '04', title: 'Seguridad informacional', desc: 'Gestionar datos sensibles, confidencialidad del cliente y riesgos de privacidad al usar IA.' },
-    { n: '05', title: 'Diseño de workflows jurídicos', desc: 'Construir flujos de trabajo con múltiples modelos encadenados para tareas jurídicas complejas.' },
-    { n: '06', title: 'Investigación jurídica aumentada', desc: 'Acelerar la investigación de doctrina y jurisprudencia con IA verificable y citada.' },
-    { n: '07', title: 'Agentes jurídicos especializados', desc: 'Configurar system prompts de producción para Claude Projects y GPTs personalizados.' },
-    { n: '08', title: 'Análisis de documentos avanzado', desc: 'Procesar contratos, sentencias y expedientes con modelos de alta ventana de contexto.' },
-    { n: '09', title: 'Evaluación crítica de outputs', desc: 'Aplicar criterios jurídicos para validar, corregir y mejorar las respuestas de la IA.' },
-  ];
-
-  let cy = 44;
-  competencias.forEach((c, i) => {
-    const col = i % 2;
-    const cx = col === 0 ? 20 : 108;
-    if (col === 0 && i > 0) cy += 22;
-
-    const colors = [C.cyan, C.indigo, C.purple];
-    const clr = colors[i % 3];
-
-    doc.setFillColor(...C.bgCard);
-    doc.roundedRect(cx, cy, 82, 19, 2, 2, 'F');
-    doc.setDrawColor(clr[0], clr[1], clr[2]);
-    doc.setLineWidth(0.15);
-    doc.roundedRect(cx, cy, 82, 19, 2, 2, 'S');
-
-    doc.setFillColor(...clr);
-    doc.roundedRect(cx, cy, 10, 19, 2, 2, 'F');
-
-    doc.setFont('courier', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(...C.bg);
-    doc.text(c.n, cx + 5, cy + 11, { align: 'center' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(...C.white);
-    doc.text(c.title, cx + 13, cy + 7);
-
-    const dlines = doc.splitTextToSize(c.desc, 66) as string[];
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.gray);
-    dlines.slice(0, 2).forEach((dl: string, di: number) => doc.text(dl, cx + 13, cy + 12 + di * 4));
-  });
-
-  // ── PAGES 4-6: MODULE BLUEPRINTS ──────────────────────────────────────────
-  const modColors = [C.cyan, C.indigo, C.purple];
-  const modLabels = ['MÓDULO 01', 'MÓDULO 02', 'MÓDULO 03'];
-
-  mods.forEach((mod, i) => {
-    doc.addPage();
-    fillPage(doc);
-
-    const mc = modColors[i];
-    // Top accent bar in module color
-    doc.setFillColor(...mc);
-    doc.rect(0, 0, PW, 2, 'F');
-
-    badge(doc, modLabels[i], 20, 18);
-    badge(doc, mod.displayDate || `Sesión ${i + 1}`, 74, 18);
-    badge(doc, mod.duration || '3h', 130, 18);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(26);
-    doc.setTextColor(...C.white);
-    doc.text(mod.title, 20, 34);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(...C.gray);
-    doc.text(mod.subtitle || '', 20, 42);
-
-    hLine(doc, ML, MR, 46, mc, 0.4);
-
-    // Objectives
-    let my = 54;
-    sectionLabel(doc, 'OBJETIVOS DE APRENDIZAJE', 20, my);
-    my += 8;
-
-    mod.objectives.slice(0, 5).forEach((obj, oi) => {
-      doc.setFillColor(...mc);
-      doc.roundedRect(20, my - 3, 6, 6, 1, 1, 'F');
-      doc.setFont('courier', 'bold');
-      doc.setFontSize(7);
-      doc.setTextColor(...C.bg);
-      doc.text(`0${oi + 1}`, 23, my + 1.5, { align: 'center' });
-
-      const olines = doc.splitTextToSize(obj, 155) as string[];
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C.grayL);
-      olines.slice(0, 2).forEach((ol: string, oi2: number) => doc.text(ol, 30, my + oi2 * 4.5));
-      my += 10;
-    });
-
-    // Contents
-    my += 6;
-    sectionLabel(doc, 'CONTENIDOS DEL MÓDULO', 20, my);
-    my += 8;
-
-    const leftContents = mod.contents.slice(0, Math.ceil(mod.contents.length / 2));
-    const rightContents = mod.contents.slice(Math.ceil(mod.contents.length / 2));
-
-    leftContents.slice(0, 5).forEach((c, ci) => {
-      doc.setFillColor(...C.bgCard);
-      doc.roundedRect(20, my, 82, 10, 1.5, 1.5, 'F');
-      doc.setDrawColor(mc[0], mc[1], mc[2]);
-      doc.setLineWidth(0.3);
-      doc.line(20, my + 1.5, 20, my + 8.5);
-      const cl = doc.splitTextToSize(c, 73) as string[];
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...C.grayL);
-      doc.text(cl[0] || '', 24, my + 6.5);
-      my += 13;
-    });
-
-    const ry_start = 54 + 8 + mod.objectives.slice(0, 5).length * 10 + 6 + 8;
-    let ry = ry_start;
-    rightContents.slice(0, 5).forEach((c) => {
-      doc.setFillColor(...C.bgCard);
-      doc.roundedRect(108, ry, 82, 10, 1.5, 1.5, 'F');
-      doc.setDrawColor(mc[0], mc[1], mc[2]);
-      doc.setLineWidth(0.3);
-      doc.line(108, ry + 1.5, 108, ry + 8.5);
-      const cl = doc.splitTextToSize(c, 73) as string[];
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...C.grayL);
-      doc.text(cl[0] || '', 112, ry + 6.5);
-      ry += 13;
-    });
-
-    // Timeline if available
-    if (mod.timeline && mod.timeline.length > 0) {
-      const ty = Math.max(my, ry) + 8;
-      if (ty < 250) {
-        sectionLabel(doc, 'CRONOGRAMA DE LA SESIÓN', 20, ty);
-        let tx = 20;
-        mod.timeline.slice(0, 5).forEach((block) => {
-          const tw = Math.min(30, (170 / mod.timeline.length));
-          doc.setFillColor(...C.bgCard);
-          doc.roundedRect(tx, ty + 6, tw - 2, 18, 1.5, 1.5, 'F');
-          doc.setFillColor(...mc);
-          doc.roundedRect(tx, ty + 6, tw - 2, 5, 1.5, 1.5, 'F');
-          doc.setFont('courier', 'bold');
-          doc.setFontSize(6);
-          doc.setTextColor(...C.bg);
-          doc.text(block.time || '', tx + (tw - 2) / 2, ty + 10, { align: 'center' });
-          const bl = doc.splitTextToSize(block.topic || '', tw - 6) as string[];
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(6.5);
-          doc.setTextColor(...C.grayL);
-          bl.slice(0, 2).forEach((bline: string, bi: number) => doc.text(bline, tx + 2, ty + 17 + bi * 4));
-          tx += tw;
-        });
-      }
-    }
-
-    // Footer
-    pageFooter(doc, `${modLabels[i]} · Programa DIAT 2026 · Facultad de Derecho PUCV`, `${i + 4}`);
-  });
-
-  // ── PAGE 7: TOOLKIT ────────────────────────────────────────────────────────
-  doc.addPage();
-  pageHeader(doc, [{ text: 'TOOLKIT IA', x: ML }], 'Herramientas del ecosistema legaltech');
-
-  const tools = [
-    { name: 'Claude', maker: 'Anthropic', role: 'Análisis profundo · Documentos extensos · Agentes jurídicos', ideal: 'Contratos, informes, system prompts', color: C.cyanL },
-    { name: 'ChatGPT', maker: 'OpenAI', role: 'Agentes GPT · Workflows · Generación versátil', ideal: 'GPTs personalizados, automatización', color: C.indigo },
-    { name: 'Gemini', maker: 'Google', role: 'PDFs directos · Ecosistema Google · Multimodal', ideal: 'Análisis de documentos adjuntos', color: C.purple },
-    { name: 'NotebookLM', maker: 'Google', role: 'Investigación con fuentes propias · Citas verificadas', ideal: 'Investigación doctrinal y jurisprudencial', color: [52, 211, 153] as [number,number,number] },
-    { name: 'Perplexity', maker: 'Perplexity AI', role: 'Búsqueda con fuentes en tiempo real', ideal: 'Normativa reciente, jurisprudencia 2024-2025', color: [251, 191, 36] as [number,number,number] },
-    { name: 'Harvey AI', maker: 'Harvey', role: 'IA especializada para firmas de abogados', ideal: 'Grandes firmas, litigación corporativa', color: [245, 101, 101] as [number,number,number] },
-    { name: 'Thomson Reuters AI', maker: 'Thomson Reuters', role: 'Westlaw AI · Research Assistant jurídico premium', ideal: 'Investigación jurídica profesional verificada', color: [248, 113, 113] as [number,number,number] },
-  ];
-
-  let ty = 44;
-  // Table header
+  y += 4;
   doc.setFillColor(...C.bgLight);
-  doc.rect(20, ty, 170, 8, 'F');
-  const cols = [20, 52, 90, 130, 172];
-  const headers = ['HERRAMIENTA', 'FABRICANTE', 'ROL PRINCIPAL', 'USO IDEAL'];
-  headers.forEach((h, hi) => {
-    doc.setFont('courier', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.cyanL);
-    doc.text(h, cols[hi] + 2, ty + 5.5);
-  });
-  ty += 10;
+  doc.roundedRect(ML, y, CW, 24, 2, 2, 'F');
+  paragraph(doc, identity.thesis, ML + 7, y + 9, CW - 14, 5, 9, C.cyanL, 'bold');
+  y += 32;
 
-  tools.forEach((t, ti) => {
-    const rowBg = ti % 2 === 0 ? C.bgCard : C.bg;
-    doc.setFillColor(...rowBg);
-    doc.rect(20, ty, 170, 11, 'F');
-
-    // Color dot
-    doc.setFillColor(...t.color);
-    doc.circle(cols[0] + 3, ty + 5.5, 2, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...C.white);
-    doc.text(t.name, cols[0] + 8, ty + 6.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...C.gray);
-    doc.text(t.maker, cols[1] + 2, ty + 6.5);
-
-    const roleLines = doc.splitTextToSize(t.role, 36) as string[];
-    doc.setTextColor(...C.grayL);
-    doc.text(roleLines[0] || '', cols[2] + 2, ty + 5);
-    if (roleLines[1]) doc.text(roleLines[1], cols[2] + 2, ty + 9);
-
-    const idealLines = doc.splitTextToSize(t.ideal, 38) as string[];
-    doc.text(idealLines[0] || '', cols[3] + 2, ty + 5);
-    if (idealLines[1]) doc.text(idealLines[1], cols[3] + 2, ty + 9);
-
-    ty += 12;
-  });
-
-  // ── PAGE 8: EQUIPO + CIERRE ────────────────────────────────────────────────
-  doc.addPage();
-  pageHeader(doc, [{ text: 'EQUIPO EJECUTOR', x: ML }], 'Equipo Programa DIAT 2026', C.purple);
-
-  // Autoridades
-  sectionLabel(doc, 'AUTORIDADES', 20, 44);
-
-  const autoridades = [
-    { name: 'Eduardo Aldunate Lizana', rol: 'Director, Escuela de Derecho PUCV', color: C.cyanL },
-    { name: 'Dr. Adolfo Silva Walbaum', rol: 'Director Programa DIAT · Director del Taller', color: C.cyanL },
-  ];
-  let ey = 52;
-  autoridades.forEach(a => {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(...a.color);
-    doc.text(a.name, 20, ey);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...C.gray);
-    doc.text(a.rol, 20, ey + 5);
-    ey += 13;
-  });
-
-  // Equipo ejecutor
-  sectionLabel(doc, 'EQUIPO EJECUTOR', 20, ey + 4);
-  ey += 12;
-
-  const colorsMap: Record<string, [number,number,number]> = {
-    cyan: C.cyan, indigo: C.indigo, blue: [96, 165, 250],
-    purple: C.purple, emerald: [52, 211, 153], teal: [20, 184, 166],
-    violet: [167, 139, 250],
-  };
-
-  equipo.forEach((m, mi) => {
-    const col2 = mi % 2;
-    const ex = col2 === 0 ? 20 : 108;
-    const mColor = colorsMap[m.color] || C.gray;
-
-    doc.setFillColor(...C.bgCard);
-    doc.roundedRect(ex, ey, 82, 16, 2, 2, 'F');
-
-    // Avatar
-    doc.setFillColor(mColor[0], mColor[1], mColor[2]);
-    doc.circle(ex + 10, ey + 8, 6, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.bg);
-    doc.text(m.initials, ex + 10, ey + 9.5, { align: 'center' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...C.white);
-    doc.text(m.name, ex + 20, ey + 7);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.gray);
-    doc.text(m.rol, ex + 20, ey + 12);
-    doc.text(m.calidad, ex + 20, ey + 16.5);
-
-    if (col2 === 1) ey += 20;
-  });
-  if (equipo.length % 2 !== 0) ey += 20;
-
-  // Registration CTA
-  ey = Math.max(ey, 200);
-  hLine(doc, ML, MR, ey, C.cyan, 0.3);
-  ey += 10;
-
+  // CTA de inscripción
   doc.setFillColor(...C.bgCard);
-  doc.roundedRect(20, ey, 170, 40, 3, 3, 'F');
+  doc.roundedRect(ML, y, CW, 46, 3, 3, 'F');
   doc.setDrawColor(...C.cyan);
   doc.setLineWidth(0.3);
-  doc.roundedRect(20, ey, 170, 40, 3, 3, 'S');
+  doc.roundedRect(ML, y, CW, 46, 3, 3, 'S');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(...C.cyanL);
-  doc.text('¿Quieres participar?', 105, ey + 12, { align: 'center' });
+  doc.text('Inscripción', PW / 2, y + 12, { align: 'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...C.grayL);
-  doc.text('Fechas tentativas: 8 · 15 · 22 Septiembre 2026 · Cupos limitados', 105, ey + 20, { align: 'center' });
-  doc.text('Contacto: programadiat@pucv.cl · Facultad de Derecho PUCV', 105, ey + 28, { align: 'center' });
+  doc.text(`${schedule.datesLong}`, PW / 2, y + 21, { align: 'center' });
+  doc.text(`${schedule.time} · ${registration.note}`, PW / 2, y + 28, { align: 'center' });
+  doc.setTextColor(...C.white);
+  doc.text(`Contacto: ${contact.email}`, PW / 2, y + 36, { align: 'center' });
+  doc.setFontSize(8);
+  doc.setTextColor(...C.gray);
+  doc.text(institution.faculty, PW / 2, y + 42, { align: 'center' });
 
-  // Footer
-  pageFooter(doc, 'DIAT Prompting Hub v2.0 · Facultad de Derecho PUCV · © 2026', '8');
+  pageFooter(doc, `10 · Fuentes e inscripción · ${FOOT}`, String(DOSSIER_PAGE_COUNT));
 
-  // Save
-  doc.save('DIAT-Prompting-Hub-2026.pdf');
+  doc.save('Taller-Prompting-Juridico-3.0-DIAT-PUCV-Dossier.pdf');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PROMPT PDF — Generated from Prompt Lab
+// PROGRAMA — resumen de una página del calendario y las tres sesiones
+// ─────────────────────────────────────────────────────────────────────────────
+export async function generateProgramPDF(): Promise<void> {
+  const JsPDF = await getJsPDF();
+  const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const accents: [number, number, number][] = [C.cyan, C.indigo, C.purple];
+
+  let y = pageHeader(
+    doc,
+    ['PROGRAMA', 'DIAT PUCV'],
+    identity.name,
+  );
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(...C.cyanL);
+  doc.text(identity.tagline, ML, y + 3);
+  y += 12;
+
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.white);
+  doc.text(`${schedule.weekdayLabel.toUpperCase()} · ${schedule.time} · ${schedule.datesShort}`, ML, y);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...C.gray);
+  doc.text(
+    `${schedule.sessionCount} sesiones de ${schedule.sessionDuration} · ${schedule.totalDuration} en total · ${methodology.ratio.label}`,
+    ML, y + 6,
+  );
+  y += 16;
+
+  sessions.forEach((session, i) => {
+    const accent = accents[i];
+    const contentLines = session.contents.map((c, ci) =>
+      `${String(ci + 1).padStart(2, '0')}  ${c.title}${c.items ? ` (${c.items.join(' · ')})` : ''}`,
+    );
+    const wrapped = contentLines.flatMap(l => doc.splitTextToSize(l, CW - 14) as string[]);
+    const h = 34 + wrapped.length * 4.2;
+
+    doc.setFillColor(...C.bgCard);
+    doc.roundedRect(ML, y, CW, h, 2.5, 2.5, 'F');
+    doc.setFillColor(...accent);
+    doc.rect(ML, y, 2.5, h, 'F');
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...accent);
+    doc.text(`${session.label.toUpperCase()} · ${session.displayDate.toUpperCase()} · ${session.time}`, ML + 8, y + 7);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...C.white);
+    doc.text(session.title, ML + 8, y + 15);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.gray);
+    const purposeLines = doc.splitTextToSize(session.purpose, CW - 14) as string[];
+    purposeLines.slice(0, 2).forEach((l, li) => doc.text(l, ML + 8, y + 21 + li * 4));
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.grayL);
+    wrapped.forEach((l, li) => doc.text(l, ML + 8, y + 32 + li * 4.2));
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...accent);
+    doc.text(`PRODUCTO: ${session.product}`, ML + 8, y + h - 4);
+
+    y += h + 5;
+  });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.gray);
+  y = paragraph(doc, audience.detail, ML, y + 2, CW, 4.4, 8, C.gray) + 1;
+  paragraph(doc, `${methodology.spine} Contacto: ${contact.email}`, ML, y, CW, 4.4, 8, C.gray);
+
+  pageFooter(doc, `${identity.name} · ${institution.faculty}`, '1');
+
+  doc.save('Taller-Prompting-Juridico-3.0-Programa.pdf');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROMPT PDF — generado desde el Prompt Lab (recurso complementario)
 // ─────────────────────────────────────────────────────────────────────────────
 export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
   const JsPDF = await getJsPDF();
   const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // ── PAGE 1: COVER / CONFIG ─────────────────────────────────────────────────
   fillPage(doc);
   accentBar(doc, 0, 2);
 
-  badge(doc, 'DIAT 2026', 20, 18);
-  badge(doc, 'LEXIPROMPT v2.0', 58, 18);
-  badge(doc, 'PUCV · DERECHO', 118, 18);
+  let bx = ML;
+  ['PROMPT LAB', 'RECURSO COMPLEMENTARIO', 'DIAT PUCV'].forEach(b => {
+    bx += badge(doc, b, bx, 18) + 4;
+  });
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(32);
+  doc.setFontSize(30);
   doc.setTextColor(...C.white);
-  doc.text('PROMPT JURÍDICO', 20, 38);
-  doc.setFontSize(14);
+  doc.text('PROMPT JURÍDICO', ML, 40);
+  doc.setFontSize(12);
   doc.setTextColor(...C.cyanL);
-  doc.text('LexPrompt Architect · Facultad de Derecho PUCV', 20, 48);
+  doc.text(`LexPrompt Architect · ${institution.faculty}`, ML, 50);
 
-  hLine(doc, ML, MR, 54, C.cyan, 0.4);
+  hLine(doc, ML, MR, 56, C.cyan, 0.4);
 
-  // DNA config table
-  sectionLabel(doc, 'PROMPT DNA — CONFIGURACIÓN', 20, 64);
+  sectionLabel(doc, 'CONFIGURACIÓN DEL PROMPT', ML, 66);
 
   const dnaRows = [
-    { label: 'OBJETIVO',    value: cfg.objetivo },
+    { label: 'OBJETIVO', value: cfg.objetivo },
     { label: 'ÁREA JURÍDICA', value: cfg.area },
     { label: 'PROFUNDIDAD', value: cfg.profundidad },
     { label: 'IA OBJETIVO', value: cfg.modelo },
-    { label: 'PROTECCIONES', value: 'Anti-alucinación · Fuentes jurídicas chilenas' },
+    { label: 'PROTECCIONES', value: 'Verificación de fuentes · Control de alucinaciones' },
   ];
 
-  let dy = 72;
+  let dy = 74;
   dnaRows.forEach((row, ri) => {
-    const rowBg = ri % 2 === 0 ? C.bgCard : C.bgLight;
-    doc.setFillColor(...rowBg);
-    doc.rect(20, dy, 170, 10, 'F');
+    doc.setFillColor(...(ri % 2 === 0 ? C.bgCard : C.bgLight));
+    doc.rect(ML, dy, CW, 10, 'F');
     doc.setFont('courier', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(...C.cyan);
-    doc.text(row.label, 24, dy + 6.5);
+    doc.text(row.label, ML + 4, dy + 6.5);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(...C.white);
-    doc.text(row.value, 80, dy + 6.5);
+    doc.text(row.value, ML + 60, dy + 6.5);
     dy += 11;
   });
 
-  // Date
   dy += 6;
   doc.setFont('courier', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(...C.gray);
   doc.text(
     `Generado: ${new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}`,
-    20, dy
+    ML, dy,
   );
-  doc.text('Programa DIAT · Facultad de Derecho PUCV', 20, dy + 5);
+  doc.text(
+    'Recurso complementario de la plataforma — no forma parte del programa de las tres sesiones.',
+    ML, dy + 5,
+  );
 
-  // ── PAGE 2: PROMPT COMPLETO ────────────────────────────────────────────────
+  // ── Prompt completo ────────────────────────────────────────────────────────
   doc.addPage();
   fillPage(doc);
   accentBar(doc);
 
-  sectionLabel(doc, 'PROMPT JURÍDICO COMPLETO', 20, 18);
+  sectionLabel(doc, 'PROMPT JURÍDICO COMPLETO', ML, 18);
 
-  // Prompt box
   doc.setFillColor(...C.bgCard);
   doc.roundedRect(16, 22, 178, 248, 3, 3, 'F');
   doc.setDrawColor(...C.cyan);
   doc.setLineWidth(0.2);
   doc.roundedRect(16, 22, 178, 248, 3, 3, 'S');
 
-  // Print prompt text
   let py = 32;
-  const lines = cfg.promptText.split('\n');
-  lines.forEach(line => {
+  cfg.promptText.split('\n').forEach(line => {
     if (py > 264) { doc.addPage(); fillPage(doc); accentBar(doc); py = 20; }
     const isHeader = line.startsWith('═') || line.startsWith('─');
     const isSectionTitle = /^[A-Z] ▸/.test(line) || /^[A-Z] ·/.test(line);
@@ -723,8 +891,7 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
       doc.setFont('courier', 'normal');
       doc.setFontSize(7.5);
       doc.setTextColor(...C.gray);
-      const tl = doc.splitTextToSize(line, 162) as string[];
-      tl.forEach((tline: string) => {
+      (doc.splitTextToSize(line, 162) as string[]).forEach(tline => {
         if (py > 264) { doc.addPage(); fillPage(doc); accentBar(doc); py = 20; }
         doc.text(tline, 22, py);
         py += 4.5;
@@ -735,8 +902,7 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(...C.grayL);
-      const tl = doc.splitTextToSize(line, 162) as string[];
-      tl.forEach((tline: string) => {
+      (doc.splitTextToSize(line, 162) as string[]).forEach(tline => {
         if (py > 264) { doc.addPage(); fillPage(doc); accentBar(doc); py = 20; }
         doc.text(tline, 22, py);
         py += 4.8;
@@ -744,11 +910,11 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
     }
   });
 
-  // ── LAST PAGE: TIPS + SECURITY ─────────────────────────────────────────────
+  // ── Recomendaciones de uso ─────────────────────────────────────────────────
   doc.addPage();
   fillPage(doc);
   accentBar(doc);
-  badge(doc, 'USO PROFESIONAL', ML, 18);
+  badge(doc, 'USO RESPONSABLE', ML, 18);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
   doc.setTextColor(...C.white);
@@ -756,233 +922,148 @@ export async function generatePromptPDF(cfg: PromptConfig): Promise<void> {
   hLine(doc, ML, MR, 36, C.purple, 0.3);
 
   if (cfg.modelTip) {
-    sectionLabel(doc, `OPTIMIZACIÓN PARA ${cfg.modelo.toUpperCase()}`, 20, 44);
-    wrapText(doc, cfg.modelTip, 20, 52, 170, 5.5, 9, C.grayL);
+    sectionLabel(doc, `OPTIMIZACIÓN PARA ${cfg.modelo.toUpperCase()}`, ML, 44);
+    paragraph(doc, cfg.modelTip, ML, 52, CW, 5.5, 9);
   }
 
   let sp = cfg.modelTip ? 80 : 44;
-  sectionLabel(doc, 'CAPAS DE SEGURIDAD ACTIVAS', 20, sp);
+  sectionLabel(doc, 'CONTROLES ANTES DE USAR EL RESULTADO', ML, sp);
   sp += 8;
 
-  const secLayers = [
-    { icon: '🧠', title: 'Anti-alucinaciones', desc: 'El prompt incluye instrucciones para que la IA identifique con [VERIFICAR] cualquier dato no confirmado. Nunca inventa normas ni jurisprudencia.' },
-    { icon: '📚', title: 'Fuentes jurídicas chilenas', desc: 'Anclaje al marco normativo chileno: BCN, Poder Judicial, Contraloría y Tribunal Constitucional como fuentes primarias.' },
+  const controls = [
+    { title: 'Verificación de fuentes', desc: 'Contrastar toda norma, sentencia o cita contra la fuente primaria antes de usarla. Marcar como pendiente cualquier dato no confirmado.' },
+    { title: 'Trazabilidad', desc: 'Registrar fuentes, errores, decisiones y correcciones. El resultado debe poder reconstruirse paso a paso.' },
+    { title: 'Supervisión humana', desc: 'La responsabilidad final del contenido jurídico recae siempre en la persona que lo firma, no en la herramienta.' },
   ];
-  secLayers.forEach(sl => {
+  controls.forEach(ct => {
     doc.setFillColor(...C.bgCard);
-    doc.roundedRect(20, sp, 170, 20, 2, 2, 'F');
+    doc.roundedRect(ML, sp, CW, 20, 2, 2, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(...C.cyanL);
-    doc.text(`${sl.icon}  ${sl.title}`, 26, sp + 8);
-    const dl = doc.splitTextToSize(sl.desc, 156) as string[];
+    doc.text(ct.title, ML + 6, sp + 7);
+    const dl = doc.splitTextToSize(ct.desc, CW - 12) as string[];
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...C.gray);
-    dl.slice(0, 2).forEach((d: string, di: number) => doc.text(d, 26, sp + 13 + di * 4.5));
+    dl.slice(0, 2).forEach((d, di) => doc.text(d, ML + 6, sp + 12 + di * 4.5));
     sp += 24;
   });
 
-  // DIAT branding
   hLine(doc, ML, MR, 260, C.muted);
   doc.setFont('courier', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...C.grayD);
-  doc.text('LexPrompt Architect v2.0 · Programa DIAT · Facultad de Derecho PUCV', ML, 268);
-  doc.text('© 2026 · Herramienta pedagógica — Verificar outputs con fuentes primarias', ML, 274);
+  doc.text(`Prompt Lab · ${institution.program} · ${institution.faculty}`, ML, 268);
+  doc.text('© 2026 · Herramienta pedagógica — verificar los resultados con fuentes primarias', ML, 274);
 
-  // Save
   doc.save('prompt-juridico-diat.pdf');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GUÍA JURÍDICA PDF — Tool usage guide
+// GUÍA DE HERRAMIENTAS — recurso complementario del toolkit
 // ─────────────────────────────────────────────────────────────────────────────
 export async function generateGuiaJuridicaPDF(): Promise<void> {
   const JsPDF = await getJsPDF();
   const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // ── PAGE 1: COVER ──────────────────────────────────────────────────────────
   fillPage(doc);
   accentBar(doc, 0, 2);
 
-  badge(doc, 'DIAT 2026', 20, 20);
-  badge(doc, 'GUÍA JURÍDICA', 58, 20);
-  badge(doc, 'FD · PUCV', 116, 20);
+  let bx = ML;
+  ['RECURSO COMPLEMENTARIO', 'DIAT PUCV'].forEach(b => { bx += badge(doc, b, bx, 20) + 4; });
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(36);
+  doc.setFontSize(32);
   doc.setTextColor(...C.white);
-  doc.text('Guía de Usos', 20, 55);
-  doc.text('Jurídicos con IA', 20, 68);
+  doc.text('Guía de uso de', ML, 52);
+  doc.text('herramientas de IA', ML, 66);
 
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   doc.setTextColor(...C.cyanL);
-  doc.text('Prompts, Funciones y Workflows para Abogados', 20, 80);
+  doc.text('Material de apoyo · Facultad y Escuela de Derecho PUCV', ML, 78);
 
-  hLine(doc, ML, MR, 86, C.cyan, 0.4);
+  hLine(doc, ML, MR, 84, C.cyan, 0.4);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...C.gray);
-  const guiaDesc = 'Guía práctica con prompts profesionales para las 5 principales herramientas de IA jurídica. Incluye workflows optimizados, tablas comparativas y protocolos de seguridad para el uso responsable de inteligencia artificial en el ejercicio del derecho.';
-  wrapText(doc, guiaDesc, 20, 96, 170, 5.5, 9.5, C.gray);
+  paragraph(
+    doc,
+    'Guía práctica de referencia para trabajar con herramientas de IA generativa en tareas jurídicas. ' +
+    'Es un recurso complementario de la plataforma: no forma parte de los contenidos obligatorios de las ' +
+    'tres sesiones del taller. Cualquier resultado obtenido con estas herramientas debe verificarse contra ' +
+    'fuentes primarias antes de usarse.',
+    ML, 94, CW, 5.5, 9.5, C.grayL,
+  );
 
-  const tools5 = [
-    { name: 'Claude',      desc: 'Análisis profundo, system prompts', color: C.cyan },
-    { name: 'ChatGPT',     desc: 'Agentes, workflows, GPTs', color: C.indigo },
-    { name: 'Gemini',      desc: 'PDFs directos, Google Workspace', color: C.purple },
-    { name: 'NotebookLM',  desc: 'Investigación con fuentes propias', color: [52,211,153] as [number,number,number] },
-    { name: 'Perplexity',  desc: 'Búsqueda con fuentes actuales', color: [251,191,36] as [number,number,number] },
-  ];
+  doc.setFillColor(...C.bgLight);
+  doc.roundedRect(ML, 130, CW, 26, 2, 2, 'F');
+  doc.setFillColor(...C.cyan);
+  doc.rect(ML, 130, 2, 26, 'F');
+  paragraph(
+    doc,
+    'Ninguna herramienta sustituye la fundamentación jurídica, la verificación de fuentes ni la supervisión humana.',
+    ML + 8, 140, CW - 16, 5, 9.5, C.white, 'bold',
+  );
 
-  let gx = 20;
-  tools5.forEach(t => {
-    doc.setFillColor(...C.bgCard);
-    doc.roundedRect(gx, 130, 32, 26, 2, 2, 'F');
-    doc.setDrawColor(t.color[0], t.color[1], t.color[2]);
-    doc.setLineWidth(0.2);
-    doc.roundedRect(gx, 130, 32, 26, 2, 2, 'S');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(...t.color);
-    doc.text(t.name, gx + 16, 143, { align: 'center' });
-    const dl = doc.splitTextToSize(t.desc, 28) as string[];
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...C.gray);
-    dl.forEach((d: string, di: number) => doc.text(d, gx + 16, 149 + di * 4, { align: 'center' }));
-    gx += 36;
-  });
-
-  // ── PAGE 2: PROMPTS POR HERRAMIENTA ────────────────────────────────────────
+  // ── Prompts de referencia ──────────────────────────────────────────────────
   doc.addPage();
   fillPage(doc);
   accentBar(doc);
 
-  sectionLabel(doc, 'PROMPTS RECOMENDADOS POR HERRAMIENTA', 20, 18);
+  sectionLabel(doc, 'PROMPTS DE REFERENCIA', ML, 18);
 
   const promptGuides = [
     {
-      tool: 'CLAUDE', color: C.cyan,
-      tip: 'Pega el documento completo (hasta 200k tokens). Usa etiquetas <documento> para separar material del prompt. Ideal para contratos extensos y análisis multipasos.',
-      prompt: 'Actúa como abogado senior chileno. Analiza el siguiente [documento/contrato/sentencia] e identifica: (1) puntos clave, (2) riesgos jurídicos, (3) cláusulas problemáticas, (4) recomendaciones accionables. No inventes normas — usa [VERIFICAR] para datos inciertos.',
+      tool: 'ANÁLISIS DE DOCUMENTO', color: C.cyan,
+      tip: 'Entrega el documento completo y separa el material del encargo. Pide que se distinga entre lo que consta en el texto y lo que el modelo infiere.',
+      prompt: 'Actúa como abogado/a senior en Chile. Analiza el documento adjunto e identifica: (1) puntos clave, (2) riesgos jurídicos, (3) cláusulas problemáticas, (4) recomendaciones. No inventes normas ni sentencias: marca como [VERIFICAR] todo dato que no puedas confirmar en el texto entregado.',
     },
     {
-      tool: 'CHATGPT (GPT-4o)', color: C.indigo,
-      tip: 'Configura un GPT personalizado para tu área práctica con hasta 8.000 caracteres de instrucciones. Usa el modo "Reason" para análisis complejos.',
-      prompt: 'Eres un asistente jurídico especializado en [área]. Tu tarea es [finalidad]. Formato de respuesta: (1) Síntesis ejecutiva, (2) Análisis por puntos, (3) Riesgos, (4) Recomendaciones. Cita normas por nombre, número y artículo específico.',
+      tool: 'INVESTIGACIÓN CON FUENTES', color: C.indigo,
+      tip: 'Sube primero tus documentos fuente. Exige cita textual y ubicación exacta. Si la fuente no está, la respuesta correcta es decir que no está.',
+      prompt: '¿Qué dicen los documentos que entregué sobre [institución jurídica]? Cita los párrafos exactos e indica el documento y la página. Si no hay información suficiente en mis fuentes, dilo explícitamente en lugar de completar con conocimiento general.',
     },
     {
-      tool: 'GEMINI', color: C.purple,
-      tip: 'Adjunta PDFs directamente sin copiar texto. Funciona bien en Google Docs con el panel lateral. Usa instrucciones en secciones claras.',
-      prompt: 'Analiza este documento PDF adjunto como experto jurídico chileno. Identifica: hechos relevantes, normas aplicables, riesgos y recomendaciones. Cita los artículos específicos del documento.',
+      tool: 'COMPARACIÓN CRÍTICA', color: C.purple,
+      tip: 'Ejecuta el mismo encargo en dos herramientas o configuraciones y compara. La fluidez del texto no es indicador de corrección jurídica.',
+      prompt: 'Compara estas dos respuestas al mismo problema jurídico. Para cada una indica: fundamento normativo invocado, fuentes verificables, omisiones relevantes y riesgos de error. Señala cuál está mejor fundada y por qué, no cuál está mejor redactada.',
     },
     {
-      tool: 'NOTEBOOKLM', color: [52,211,153] as [number,number,number],
-      tip: 'Primero sube tus documentos fuente (libros, sentencias, apuntes). Luego formula preguntas — responde citando textualmente tus fuentes. Ideal para investigación verificable.',
-      prompt: '¿Qué dice la doctrina sobre [institución jurídica]? Cita los párrafos exactos de los documentos que subí. Si no hay información suficiente en mis documentos, indícalo.',
+      tool: 'PROTOCOLO DE VERIFICACIÓN', color: C.emerald,
+      tip: 'Aplica el protocolo del taller sobre cualquier resultado antes de darlo por bueno.',
+      prompt: 'Revisa tu respuesta anterior aplicando este protocolo: (1) identificar cada afirmación jurídica, (2) contrastarla con la fuente entregada, (3) justificar la conclusión, (4) registrar lo que no pudo verificarse. Devuelve una tabla con el resultado de cada paso.',
     },
   ];
 
   let gy = 26;
   promptGuides.forEach(pg => {
     doc.setFillColor(...C.bgCard);
-    doc.roundedRect(20, gy, 170, 44, 2, 2, 'F');
-    doc.setFillColor(pg.color[0], pg.color[1], pg.color[2]);
-    doc.roundedRect(20, gy, 170, 7, 2, 2, 'F');
+    doc.roundedRect(ML, gy, CW, 50, 2, 2, 'F');
+    doc.setFillColor(...pg.color);
+    doc.roundedRect(ML, gy, CW, 7, 2, 2, 'F');
 
     doc.setFont('courier', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...C.bg);
-    doc.text(pg.tool, 24, gy + 5);
+    doc.text(pg.tool, ML + 4, gy + 5);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...C.gray);
-    const tl = doc.splitTextToSize(pg.tip, 162) as string[];
-    tl.slice(0, 2).forEach((tline: string, ti: number) => doc.text(tline, 24, gy + 12 + ti * 4.5));
+    (doc.splitTextToSize(pg.tip, CW - 8) as string[])
+      .slice(0, 2)
+      .forEach((tline, ti) => doc.text(tline, ML + 4, gy + 12 + ti * 4.5));
 
     doc.setFont('courier', 'normal');
-    doc.setFontSize(7);
+    doc.setFontSize(6.8);
     doc.setTextColor(...C.cyanL);
-    const pl = doc.splitTextToSize(pg.prompt, 162) as string[];
-    pl.slice(0, 4).forEach((pline: string, pi: number) => doc.text(pline, 24, gy + 23 + pi * 4.2));
+    (doc.splitTextToSize(pg.prompt, CW - 8) as string[])
+      .slice(0, 6)
+      .forEach((pline, pi) => doc.text(pline, ML + 4, gy + 23 + pi * 4.2));
 
-    gy += 48;
+    gy += 54;
   });
 
-  // ── PAGE 3: WORKFLOWS ──────────────────────────────────────────────────────
-  doc.addPage();
-  fillPage(doc);
-  accentBar(doc);
+  pageFooter(doc, `Guía de herramientas · recurso complementario · ${institution.faculty}`, '2');
 
-  sectionLabel(doc, 'WORKFLOWS JURÍDICOS CON IA', 20, 18);
-
-  const workflows = [
-    {
-      title: 'Workflow de Análisis Contractual', color: C.cyan,
-      steps: [
-        'PASO 1 — CLAUDE: "Analiza este contrato e identifica todas las cláusulas de riesgo, ordenadas por criticidad."',
-        'PASO 2 — CHATGPT: "Con base en este análisis, genera una tabla comparativa con los cambios recomendados."',
-        'PASO 3 — NOTEBOOKLM: Verifica normas citadas contra tu base documental interna.',
-        'PASO 4 — PERPLEXITY: Verifica si existen modificaciones legales recientes que afecten el contrato.',
-        'RESULTADO: Informe completo con riesgos identificados, doctrina verificada y cambios recomendados.',
-      ],
-    },
-    {
-      title: 'Workflow de Investigación Jurídica', color: C.indigo,
-      steps: [
-        'PASO 1 — NOTEBOOKLM: Sube doctrina y jurisprudencia disponible. Mapea el estado del debate.',
-        'PASO 2 — PERPLEXITY: "Busca sentencias recientes de la Corte Suprema sobre [tema] con URLs exactas."',
-        'PASO 3 — CLAUDE: "Con estos insumos, redacta un informe jurídico nivel académico sobre [institución]."',
-        'RESULTADO: Informe estructurado con fuentes verificadas, doctrina integrada y análisis crítico.',
-      ],
-    },
-    {
-      title: 'Workflow de Preparación de Audiencia', color: C.purple,
-      steps: [
-        'PASO 1 — CLAUDE: "Actúa como contraparte. ¿Cuáles son los 5 argumentos más fuertes en mi contra?"',
-        'PASO 2 — CHATGPT: "Genera un esquema de argumentación con rebates para cada argumento identificado."',
-        'PASO 3 — GEMINI: Analiza la jurisprudencia adjunta para identificar precedentes favorables.',
-        'RESULTADO: Argumentario completo con anticipación de contingencias y plan de contingencia.',
-      ],
-    },
-  ];
-
-  let wy = 26;
-  workflows.forEach(wf => {
-    doc.setFillColor(...C.bgCard);
-    const wh = 14 + wf.steps.length * 11;
-    doc.roundedRect(20, wy, 170, wh, 2, 2, 'F');
-
-    doc.setFillColor(wf.color[0], wf.color[1], wf.color[2]);
-    doc.rect(20, wy, 3, wh, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(...C.white);
-    doc.text(wf.title, 27, wy + 8);
-
-    let wy2 = wy + 14;
-    wf.steps.forEach(step => {
-      const sl = doc.splitTextToSize(step, 158) as string[];
-      const isStep = step.startsWith('PASO');
-      const isResult = step.startsWith('RESULTADO');
-      doc.setFont('helvetica', isStep || isResult ? 'bold' : 'normal');
-      doc.setFontSize(7.5);
-      const wfColor = isResult ? C.cyanL : C.grayL;
-      doc.setTextColor(...wfColor);
-      doc.text(sl[0] || '', 27, wy2);
-      if (sl[1]) doc.text(sl[1], 27, wy2 + 4);
-      wy2 += 11;
-    });
-
-    wy += wh + 8;
-  });
-
-  // Footer
-  pageFooter(doc, 'Guía de Usos Jurídicos con IA · Programa DIAT 2026 · Facultad de Derecho PUCV');
-
-  doc.save('guia-juridica-ia-diat.pdf');
+  doc.save('guia-herramientas-ia-diat.pdf');
 }
