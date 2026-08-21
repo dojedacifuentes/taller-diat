@@ -6,15 +6,42 @@ import {
   identity, institution, schedule, registration, mailto, contact,
 } from '@/data/program';
 
-const navLinks = [
-  { href: '/', label: 'Inicio' },
-  { href: '/modulos', label: 'Las 3 sesiones' },
-  { href: '/dossier', label: 'Dossier' },
-  { href: '/prompt-lab', label: 'Prompt Lab' },
-  { href: '/flashcards', label: 'Flashcards' },
-  { href: '/toolkit', label: 'Toolkit' },
-  { href: '/herramientas', label: 'Herramientas' },
-  { href: '/equipo', label: 'Equipo' },
+// Navegación completa del sitio. En móvil, la barra inferior solo lleva las
+// seis rutas de sala; el mapa completo vive aquí, de modo que ninguna página
+// quede inalcanzable desde un teléfono.
+const navGroups = [
+  {
+    title: 'Programa',
+    links: [
+      { href: '/', label: 'Inicio' },
+      { href: '/modulos', label: 'Las 3 sesiones' },
+      { href: '/sesiones/1', label: 'Sesión 1 · 27 AGO' },
+      { href: '/sesiones/2', label: 'Sesión 2 · 3 SEP' },
+      { href: '/sesiones/3', label: 'Sesión 3 · 10 SEP' },
+      { href: '/dossier', label: 'Dossier' },
+    ],
+  },
+  {
+    title: 'Herramientas de sala',
+    links: [
+      { href: '/prompt-lab', label: 'Prompt Lab' },
+      { href: '/verificacion', label: 'Verificación' },
+      { href: '/flujo', label: 'Flujo' },
+      { href: '/match', label: 'Match Making' },
+    ],
+  },
+  {
+    title: 'Recursos',
+    links: [
+      { href: '/ruta', label: 'Ruta de aprendizaje' },
+      { href: '/materiales', label: 'Materiales' },
+      { href: '/glosario', label: 'Glosario' },
+      { href: '/flashcards', label: 'Flashcards' },
+      { href: '/toolkit', label: 'Toolkit' },
+      { href: '/herramientas', label: 'Herramientas' },
+      { href: '/equipo', label: 'Equipo' },
+    ],
+  },
 ];
 
 export function SiteFooter() {
@@ -59,18 +86,28 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Nav links */}
-        <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.04] pt-6">
-          {navLinks.map(l => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
-            >
-              {l.label}
-            </Link>
+        {/* Mapa del sitio */}
+        <nav className="border-t border-white/[0.04] pt-6 grid gap-6 sm:grid-cols-3" aria-label="Mapa del sitio">
+          {navGroups.map(group => (
+            <div key={group.title}>
+              <div className="text-[10px] text-zinc-700 uppercase tracking-widest mono font-medium mb-2.5">
+                {group.title}
+              </div>
+              <ul className="space-y-1.5">
+                {group.links.map(l => (
+                  <li key={l.href}>
+                    <Link
+                      href={l.href}
+                      className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </div>
+        </nav>
 
         {/* Institutional credits */}
         <div className="border-t border-white/[0.04] pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">

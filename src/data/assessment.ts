@@ -89,7 +89,21 @@ export const rubricLevelOrder = ['Inicial', 'En desarrollo', 'Logrado', 'Destaca
 // ─── Microdiagnóstico de entrada (sesión 1, máx. 5 minutos) ──────────────────
 // Se responde a mano alzada o en papel. No se piden datos personales: ni
 // nombre, ni correo, ni año que cursa de forma identificable.
-export const entryDiagnostic = {
+export interface DiagnosticQuestion {
+  q: string;
+  options: string[];
+  measures: string;
+}
+
+export interface Diagnostic {
+  title: string;
+  when: string;
+  howLong: string;
+  privacy: string;
+  questions: DiagnosticQuestion[];
+}
+
+export const entryDiagnostic: Diagnostic = {
   title: 'Microdiagnóstico de entrada',
   when: 'Sesión 1 · minutos 0–5',
   howLong: '5 minutos',
@@ -121,10 +135,16 @@ export const entryDiagnostic = {
       measures: 'Usos declarados',
     },
   ],
-} as const;
+};
 
 // ─── Exit tickets ────────────────────────────────────────────────────────────
-export const exitTickets = [
+export interface ExitTicket {
+  session: number;
+  when: string;
+  prompts: string[];
+}
+
+export const exitTickets: ExitTicket[] = [
   {
     session: 1,
     when: 'minutos 88–90',
@@ -150,10 +170,22 @@ export const exitTickets = [
       'Algo que mi solución NO debe hacer, y por qué.',
     ],
   },
-] as const;
+];
 
 // ─── Instrumento de salida (al cierre de la sesión 3) ────────────────────────
-export const exitSurvey = {
+export interface SurveyItem {
+  item: string;
+  measures: string;
+}
+
+export const exitSurvey: {
+  title: string;
+  when: string;
+  privacy: string;
+  scale: string;
+  items: SurveyItem[];
+  openQuestion: string;
+} = {
   title: 'Instrumento de salida',
   when: 'Sesión 3 · minutos 87–89',
   privacy: 'Anónimo. Se compara con el diagnóstico de entrada solo de forma agregada.',
@@ -167,7 +199,7 @@ export const exitSurvey = {
     { item: 'Podría explicar mi problema jurídico a alguien de otra disciplina.', measures: 'Traducción interdisciplinaria' },
   ],
   openQuestion: '¿Qué cambiarías del taller? (opcional, una línea)',
-} as const;
+};
 
 // ─── Revisión entre pares, sesión 1 ──────────────────────────────────────────
 export const peerChecklist = [

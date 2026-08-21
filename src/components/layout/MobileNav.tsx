@@ -2,21 +2,23 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, Rocket, Zap, Layers, Wrench, BookOpen } from 'lucide-react';
+import { Home, Zap, Layers, ShieldCheck, Workflow, Users } from 'lucide-react';
 
+// Solo las seis rutas que se usan dentro de la sala. El mapa completo del
+// sitio vive en el pie de página, que se muestra en todas las pantallas.
 const nav = [
   { href: '/', icon: Home, label: 'Inicio' },
   { href: '/modulos', icon: Layers, label: 'Sesiones' },
   { href: '/prompt-lab', icon: Zap, label: 'Lab' },
-  { href: '/flashcards', icon: Rocket, label: 'Cards' },
-  { href: '/toolkit', icon: Wrench, label: 'Toolkit' },
-  { href: '/dossier', icon: BookOpen, label: 'Dossier' },
+  { href: '/verificacion', icon: ShieldCheck, label: 'Verificar' },
+  { href: '/flujo', icon: Workflow, label: 'Flujo' },
+  { href: '/match', icon: Users, label: 'Match' },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[oklch(0.08_0.016_250/0.95)] backdrop-blur-xl">
+    <nav aria-label="Navegación de sala" className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[oklch(0.08_0.016_250/0.95)] backdrop-blur-xl">
       <div className="flex items-center">
         {nav.map(({ href, icon: Icon, label }) => {
           const active = pathname === href;

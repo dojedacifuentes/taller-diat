@@ -25,7 +25,7 @@ export interface PromptConfig {
 }
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
-const C = {
+export const C = {
   bg:      [7,  11,  18]  as [number,number,number],
   bgCard:  [12, 18,  30]  as [number,number,number],
   bgLight: [18, 26,  46]  as [number,number,number],
@@ -42,43 +42,43 @@ const C = {
 };
 
 // ─── Medidas A4 vertical (mm) ────────────────────────────────────────────────
-const PW = 210;
-const PH = 297;
-const ML = 20;
-const MR = 190;
-const CW = MR - ML; // ancho de columna útil
+export const PW = 210;
+export const PH = 297;
+export const ML = 20;
+export const MR = 190;
+export const CW = MR - ML; // ancho de columna útil
 
 // ─── Import perezoso de jsPDF, cacheado ──────────────────────────────────────
 let _jsPDFCache: typeof JsPDFClass | null = null;
-async function getJsPDF(): Promise<typeof JsPDFClass> {
+export async function getJsPDF(): Promise<typeof JsPDFClass> {
   if (!_jsPDFCache) {
     _jsPDFCache = (await import('jspdf')).jsPDF;
   }
   return _jsPDFCache;
 }
 
-type JsPDFDoc = InstanceType<typeof JsPDFClass>;
+export type JsPDFDoc = InstanceType<typeof JsPDFClass>;
 
 // ─── Helpers de dibujo ────────────────────────────────────────────────────────
-function fillPage(doc: JsPDFDoc, color = C.bg) {
+export function fillPage(doc: JsPDFDoc, color = C.bg) {
   doc.setFillColor(...color);
   doc.rect(0, 0, PW, PH, 'F');
 }
 
-function accentBar(doc: JsPDFDoc, y = 0, h = 1.5) {
+export function accentBar(doc: JsPDFDoc, y = 0, h = 1.5) {
   doc.setFillColor(...C.cyan);
   doc.rect(0, y, PW / 2, h, 'F');
   doc.setFillColor(...C.indigo);
   doc.rect(PW / 2, y, PW / 2, h, 'F');
 }
 
-function hLine(doc: JsPDFDoc, x1: number, x2: number, y: number, color = C.muted, width = 0.2) {
+export function hLine(doc: JsPDFDoc, x1: number, x2: number, y: number, color = C.muted, width = 0.2) {
   doc.setDrawColor(...color);
   doc.setLineWidth(width);
   doc.line(x1, y, x2, y);
 }
 
-function badge(doc: JsPDFDoc, text: string, x: number, y: number, borderColor = C.cyan, textColor = C.cyanL) {
+export function badge(doc: JsPDFDoc, text: string, x: number, y: number, borderColor = C.cyan, textColor = C.cyanL) {
   const w = text.length * 1.7 + 8;
   doc.setFillColor(...C.bgCard);
   doc.roundedRect(x, y - 4, w, 6, 1.5, 1.5, 'F');
@@ -92,7 +92,7 @@ function badge(doc: JsPDFDoc, text: string, x: number, y: number, borderColor = 
   return w;
 }
 
-function sectionLabel(doc: JsPDFDoc, label: string, x: number, y: number, color = C.cyan) {
+export function sectionLabel(doc: JsPDFDoc, label: string, x: number, y: number, color = C.cyan) {
   doc.setFont('courier', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(...color);
@@ -101,7 +101,7 @@ function sectionLabel(doc: JsPDFDoc, label: string, x: number, y: number, color 
 }
 
 /** Cabecera estándar: fondo + barra + badges + título + línea. */
-function pageHeader(
+export function pageHeader(
   doc: JsPDFDoc,
   badges: string[],
   title: string,
@@ -123,7 +123,7 @@ function pageHeader(
 }
 
 /** Pie estándar con etiqueta izquierda y número de página a la derecha. */
-function pageFooter(doc: JsPDFDoc, leftText: string, rightText = '') {
+export function pageFooter(doc: JsPDFDoc, leftText: string, rightText = '') {
   hLine(doc, ML, MR, 278, C.muted);
   doc.setFont('courier', 'normal');
   doc.setFontSize(7);
@@ -132,7 +132,7 @@ function pageFooter(doc: JsPDFDoc, leftText: string, rightText = '') {
   if (rightText) doc.text(rightText, MR, 285, { align: 'right' });
 }
 
-function paragraph(
+export function paragraph(
   doc: JsPDFDoc,
   text: string, x: number, y: number,
   maxWidth = CW, lineHeight = 5.2,

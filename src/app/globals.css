@@ -200,3 +200,63 @@
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Accesibilidad
+   Se añade después de las utilidades para que gane a las animaciones locales.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Foco visible en todo elemento interactivo, también con teclado. */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid oklch(0.78 0.15 200);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* Enlace de salto al contenido: invisible hasta recibir foco. */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  background: oklch(0.12 0.02 250);
+  border: 1px solid oklch(0.71 0.17 200 / 0.5);
+  color: oklch(0.85 0.12 200);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: top 0.15s ease-out;
+}
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+/* Contenedor de tablas anchas: el scroll vive aquí, nunca en el body. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Quien pide menos movimiento, recibe menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+}

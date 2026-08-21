@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight, Mail, Download, Building2, Cpu, FlaskConical,
-  ShieldCheck, ScrollText, Users, Target, ClipboardCheck, GitBranch,
+  ShieldCheck, ScrollText, Users, Target, ClipboardCheck, GitBranch, Route,
 } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import { useCountdown } from '@/hooks/useCountdown';
@@ -14,6 +14,7 @@ import {
   organization, background, registration, gmailCompose,
   complementaryResources, complementaryNotice,
 } from '@/data/program';
+import { thesis } from '@/data/pedagogy';
 
 const sessionAccents = [
   { border: 'border-cyan-500/25', bg: 'bg-cyan-500/5', text: 'text-cyan-400', chip: 'border-cyan-500/25 bg-cyan-500/8' },
@@ -147,6 +148,16 @@ export default function LandingPage() {
               {registration.ctaPrimary}
             </motion.button>
           </a>
+          <Link href="/ruta">
+            <motion.button
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-cyan-300 border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Route className="w-4 h-4" />
+              Empezar ruta
+            </motion.button>
+          </Link>
           <Link href="/modulos">
             <motion.button
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm text-cyan-300 border border-cyan-500/30 bg-cyan-500/8 hover:bg-cyan-500/15 transition-all"
@@ -157,16 +168,68 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4" />
             </motion.button>
           </Link>
-          <motion.button
-            onClick={() => generateDossierPDF()}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm text-zinc-300 border border-white/10 hover:border-white/20 hover:bg-white/[0.04] transition-all"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <Download className="w-4 h-4" />
-            Descargar dossier PDF
-          </motion.button>
         </motion.div>
+
+        {/* Accesos secundarios */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.65 }}
+          className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2"
+        >
+          <Link href="/prompt-lab" className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-cyan-300 transition-colors">
+            <FlaskConical className="w-3.5 h-3.5" /> Abrir Prompt Lab
+          </Link>
+          <Link href="/materiales" className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-cyan-300 transition-colors">
+            <Download className="w-3.5 h-3.5" /> Descargar materiales
+          </Link>
+          <button
+            type="button"
+            onClick={() => generateDossierPDF()}
+            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-cyan-300 transition-colors"
+          >
+            <ScrollText className="w-3.5 h-3.5" /> Dossier en PDF
+          </button>
+        </motion.div>
+      </motion.section>
+
+      {/* ── PROGRESIÓN DEL TALLER ────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="space-y-4"
+      >
+        <div className="text-center">
+          <div className="text-[10px] mono font-bold text-cyan-600 uppercase tracking-[0.2em] mb-2">
+            La progresión
+          </div>
+          <p className="text-sm sm:text-base text-zinc-300 max-w-2xl mx-auto leading-relaxed">
+            {thesis.headline}
+          </p>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-4">
+          {thesis.progression.map((p, i) => (
+            <div
+              key={p.label}
+              className={`rounded-xl border p-4 ${
+                i === 3
+                  ? 'border-emerald-500/30 bg-emerald-500/[0.05]'
+                  : `${sessionAccents[i].border} ${sessionAccents[i].bg}`
+              }`}
+            >
+              <div className={`text-[9px] mono font-bold uppercase tracking-widest mb-1.5 ${i === 3 ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                {p.step}
+              </div>
+              <div className={`mono text-sm font-bold mb-2 ${i === 3 ? 'text-emerald-300' : sessionAccents[i].text}`}>
+                {p.label}
+              </div>
+              <p className="text-xs text-zinc-500 leading-relaxed">{p.claim}</p>
+            </div>
+          ))}
+        </div>
       </motion.section>
 
       {/* ── QUÉ ES EL TALLER ─────────────────────── */}
@@ -293,6 +356,13 @@ export default function LandingPage() {
                         <span className="text-zinc-500">Producto: </span>{s.product}
                       </span>
                     </div>
+                    <Link
+                      href={`/sesiones/${s.id}`}
+                      className={`inline-flex items-center gap-1.5 pt-1 text-xs font-semibold ${a.text} hover:underline`}
+                    >
+                      Cronograma, caso y materiales de la sesión
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
               </motion.div>

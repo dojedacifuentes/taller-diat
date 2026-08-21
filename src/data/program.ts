@@ -344,6 +344,11 @@ export const complementaryResources = [
     description: 'Constructor guiado de prompts jurídicos estructurados.',
   },
   {
+    href: '/glosario',
+    label: 'Glosario',
+    description: 'Vocabulario mínimo, con un ejemplo jurídico por término.',
+  },
+  {
     href: '/flashcards',
     label: 'Flashcards',
     description: 'Repaso de vocabulario y conceptos de IA aplicada al Derecho.',

@@ -127,7 +127,19 @@ export const promptLayers = [
 // ─── Progresión del prompt: de nivel 0 a nivel 5 ─────────────────────────────
 // Enseña que la mejora es acumulativa. No existe el «prompt mágico» de 2.000
 // palabras: existe una tarea cada vez mejor especificada.
-export const promptProgression = [
+//
+// El tipo se declara de forma explícita en vez de usar `as const`: con `as
+// const`, `adds` sería una unión de tuplas distintas y recorrerla con .map()
+// no compila bajo `strict`.
+export interface PromptLevel {
+  level: number;
+  label: string;
+  prompt: string;
+  problem: string;
+  adds: string[];
+}
+
+export const promptProgression: PromptLevel[] = [
   {
     level: 0,
     label: 'Orden vaga',
@@ -174,7 +186,7 @@ export const promptProgression = [
     problem: 'Este es el punto de llegada del taller: no un prompt más largo, sino uno que puede revisarse línea por línea.',
     adds: ['Control', 'Trazabilidad'],
   },
-] as const;
+];
 
 // ─── Protocolo de verificación ───────────────────────────────────────────────
 export const verificationProtocol = [
