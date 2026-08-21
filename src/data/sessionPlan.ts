@@ -1,0 +1,461 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RUN OF SHOW — reparto minuto a minuto de las tres sesiones.
+//
+// La propuesta académica («Taller Prompting 2026») fija objetivo, contenidos,
+// producto y el horario 15:00–16:30. NO reparte los 90 minutos entre
+// actividades: ese reparto es diseño instruccional del equipo ejecutor y vive
+// aquí, en un único lugar, para que la web, los guiones, las presentaciones y
+// los PDF no puedan contradecirse entre sí.
+//
+// Dos invariantes se verifican en tiempo de ejecución más abajo:
+//   1. Cada sesión suma exactamente 90 minutos, sin huecos ni solapes.
+//   2. Diego conduce ≈30 % y la facilitación estudiantil ≈70 %.
+// ─────────────────────────────────────────────────────────────────────────────
+import type { SessionPlan, RunBlock, BlockOwner } from '@/lib/types';
+
+/** Minuto 0 del cronograma. Todas las horas mostradas se derivan de aquí. */
+export const CLOCK_START = { hour: 15, minute: 0 } as const;
+
+/** Convierte un minuto relativo (0–90) en hora de reloj («15:27»). */
+export function clockAt(minute: number): string {
+  const total = CLOCK_START.hour * 60 + CLOCK_START.minute + minute;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/** Etiqueta de rango de reloj para un bloque («15:27 – 15:35»). */
+export function clockRange(block: Pick<RunBlock, 'from' | 'to'>): string {
+  return `${clockAt(block.from)} – ${clockAt(block.to)}`;
+}
+
+export const ownerLabels: Record<BlockOwner, string> = {
+  diego: 'Diego · Subdirección',
+  relatores: 'Relatoría estudiantil',
+  equipos: 'Equipos + facilitación',
+};
+
+/** Etiqueta corta para las notas del presentador y los guiones. */
+export const ownerTags: Record<BlockOwner, string> = {
+  diego: '[DIEGO]',
+  relatores: '[RELATOR A / RELATOR B]',
+  equipos: '[ACTIVIDAD]',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESIÓN 1 · 27 de agosto — Del prompt aislado al razonamiento jurídico asistido
+// ─────────────────────────────────────────────────────────────────────────────
+const session1: SessionPlan = {
+  sessionId: 1,
+  spine: 'Una respuesta puede sonar impecable y estar equivocada. Aprender a formular la tarea es aprender a poder revisarla.',
+  successCriterion:
+    'Sé cómo estructurar una tarea y comprobar qué partes de la respuesta necesitan verificación.',
+  blocks: [
+    {
+      from: 0, to: 5,
+      title: 'Apertura y pregunta inicial',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Bienvenida, encuadre de las tres sesiones y pregunta al grupo: ¿qué hace que una respuesta de IA parezca correcta aunque no lo sea? Se levanta el microdiagnóstico de entrada por votación a mano alzada.',
+      needs: ['Microdiagnóstico de entrada', 'Proyector'],
+      tool: '/sesiones/1',
+    },
+    {
+      from: 5, to: 12,
+      title: 'Qué hace y qué no hace un modelo de lenguaje',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Explicación mínima y sin jerga: el modelo produce lenguaje a partir de patrones; no consulta un registro de verdad, no garantiza vigencia y no responde por el resultado. Una sola visual técnica.',
+      needs: ['Presentación sesión 1'],
+    },
+    {
+      from: 12, to: 20,
+      title: 'Demostración: el prompt insuficiente',
+      owner: 'diego', mode: 'Demostración',
+      detail:
+        '«¿Es válida esta cláusula?» produce una respuesta competente en apariencia. Se muestra en vivo qué falta: jurisdicción, hechos, finalidad, fuente, fecha, restricciones, nivel de certeza y formato.',
+      needs: ['Caso troncal CT-01', 'Herramienta de IA proyectada'],
+      tool: '/sesiones/1',
+    },
+    {
+      from: 20, to: 27,
+      title: 'La estructura DIAT, construida en pantalla',
+      owner: 'diego', mode: 'Demostración',
+      detail:
+        'El mismo prompt se reescribe capa por capa —contexto, rol, tarea, fuentes, restricciones, formato, control— hasta que la diferencia es visible. Transición: «desde ahora ustedes trabajan como revisores, no como consumidores de respuestas».',
+      needs: ['Prompt Lab proyectado'],
+      tool: '/prompt-lab',
+    },
+    {
+      from: 27, to: 35,
+      title: 'Autopsia de un mal prompt',
+      owner: 'relatores', mode: 'Actividad',
+      detail:
+        'En grupos de tres, cada equipo recibe un prompt defectuoso y marca las siete capas ausentes. Puesta en común de 2 minutos: qué falta con más frecuencia.',
+      needs: ['Ficha 01 · Estructura del prompt', 'Prompts defectuosos impresos'],
+      tool: '/sesiones/1',
+    },
+    {
+      from: 35, to: 50,
+      title: 'Laboratorio guiado: construir el prompt',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Cada equipo toma el caso troncal y completa las siete capas en el Prompt Lab. Los relatores circulan por las mesas; se corrige capa a capa, no al final.',
+      needs: ['Computador por equipo', 'Caso troncal CT-01'],
+      tool: '/prompt-lab',
+    },
+    {
+      from: 50, to: 62,
+      title: 'Ejecutar y registrar la respuesta',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Se ejecuta el prompt en la herramienta disponible y se pega la respuesta en el registro. Nadie corrige todavía: primero se recoge el material en bruto.',
+      needs: ['Herramienta de IA', 'Registro de la sesión'],
+    },
+    {
+      from: 62, to: 72,
+      title: 'Cazador de alucinaciones',
+      owner: 'equipos', mode: 'Actividad',
+      detail:
+        'Cada equipo clasifica las afirmaciones de su respuesta: verificada, no verificada, dudosa, sin fuente o inferencia. Regla del ejercicio: no se verifica el estilo, se verifican las afirmaciones.',
+      needs: ['Ficha 03 · Checklist anti-alucinaciones'],
+      tool: '/verificacion',
+    },
+    {
+      from: 72, to: 82,
+      title: 'Matriz de verificación',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Se completa la matriz: afirmación, fuente indicada por la IA, fuente real, coincidencia, nivel de confianza y corrección. Al menos tres filas contrastadas contra fuente oficial.',
+      needs: ['Ficha 02 · Matriz de verificación', 'Acceso a BCN/LeyChile'],
+      tool: '/verificacion',
+    },
+    {
+      from: 82, to: 88,
+      title: 'Revisión entre pares',
+      owner: 'relatores', mode: 'Revisión',
+      detail:
+        'El equipo A revisa la matriz del equipo B con cinco preguntas fijas. Se devuelve una observación concreta, no una impresión general.',
+      needs: ['Checklist de cinco preguntas'],
+    },
+    {
+      from: 88, to: 90,
+      title: 'Exit ticket',
+      owner: 'equipos', mode: 'Cierre',
+      detail:
+        'Cada participante escribe tres líneas: algo que ahora verificará siempre, un error que detectó y una regla que añadirá a su próximo prompt.',
+      needs: ['Exit ticket sesión 1'],
+      tool: '/sesiones/1',
+    },
+  ],
+  contingencies: [
+    {
+      when: 'No hay internet en la sala',
+      then: 'Se trabaja con las respuestas precalculadas del caso troncal (incluidas en el PDF del caso guiado) y la matriz se completa en papel. El laboratorio no depende de conexión.',
+    },
+    {
+      when: 'La herramienta de IA no responde o exige cuenta',
+      then: 'Se usa la respuesta precalculada CT-01/R1 y se anuncia explícitamente que se trabaja sobre un output registrado. El objetivo de la sesión —verificar— no cambia.',
+    },
+    {
+      when: 'Asisten menos de 8 personas',
+      then: 'Se trabaja en duplas en vez de tríos y la revisión entre pares pasa a ser plenaria conducida por un relator.',
+    },
+    {
+      when: 'Asisten más de 40 personas',
+      then: 'Mesas de cinco, un facilitador cada tres mesas, y la puesta en común del minuto 33 se reduce a dos intervenciones.',
+    },
+    {
+      when: 'El nivel del grupo es más bajo de lo previsto',
+      then: 'Se entrega el prompt del caso troncal ya escrito hasta la capa «tarea» y el equipo solo completa fuentes, restricciones, formato y control.',
+    },
+    {
+      when: 'El nivel del grupo es más alto de lo previsto',
+      then: 'Desafío opcional: pedir a la IA que se autoevalúe distinguiendo afirmación textual, inferencia y recomendación, y contrastar esa autoevaluación con la matriz del equipo.',
+    },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESIÓN 2 · 3 de septiembre — Del prompt al flujo verificable
+// ─────────────────────────────────────────────────────────────────────────────
+const session2: SessionPlan = {
+  sessionId: 2,
+  spine: 'No se trata de preguntarle todo a la IA de una vez. Se trata de organizar el trabajo en pasos que puedan revisarse.',
+  successCriterion: 'Sé dividir un trabajo en etapas con fuentes y revisión humana.',
+  blocks: [
+    {
+      from: 0, to: 5,
+      title: 'Recuperación activa',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Se proyecta un prompt real de la sesión anterior y se pregunta: ¿qué ocurre después de obtener la respuesta? Se recogen dos o tres respuestas del grupo.',
+      needs: ['Prompt de la sesión 1'],
+    },
+    {
+      from: 5, to: 15,
+      title: 'Prompt aislado frente a flujo',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Ocho pasos en pantalla: identificar el problema, ordenar los hechos, identificar las preguntas jurídicas, identificar fuentes, analizar, verificar, redactar y revisar humanamente. Cada paso es revisable por separado.',
+      needs: ['Presentación sesión 2'],
+    },
+    {
+      from: 15, to: 23,
+      title: 'Demostración en vivo del flujo',
+      owner: 'diego', mode: 'Demostración',
+      detail:
+        'El caso troncal se recorre por etapas delimitadas. Se muestra deliberadamente un paso que sale mal y cómo el control humano lo detiene antes de la salida.',
+      needs: ['Caso troncal CT-01', 'Herramienta de IA proyectada'],
+    },
+    {
+      from: 23, to: 27,
+      title: 'El canvas del flujo jurídico',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Entrada → IA → Fuente → Control humano → Salida → Registro. Seis casillas, ninguna opcional. Se entrega la ficha 04.',
+      needs: ['Ficha 04 · Canvas de flujo'],
+      tool: '/flujo',
+    },
+    {
+      from: 27, to: 37,
+      title: 'Reconstrucción de un flujo defectuoso',
+      owner: 'relatores', mode: 'Actividad',
+      detail:
+        'Cada equipo recibe los pasos de un flujo desordenado, con un control humano faltante y una fuente puesta después del análisis. Debe reordenarlos y justificar dos decisiones.',
+      needs: ['Tarjetas de flujo desordenado'],
+      tool: '/flujo',
+    },
+    {
+      from: 37, to: 55,
+      title: 'Laboratorio: mi problema como flujo',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Cada equipo convierte el problema con el que trabajó en la sesión 1 en un flujo de seis casillas, con al menos dos puntos de control humano explícitos.',
+      needs: ['Computador por equipo', 'Ficha 04'],
+      tool: '/flujo',
+    },
+    {
+      from: 55, to: 67,
+      title: 'Comparación crítica',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Se ejecuta el mismo paso del flujo en dos herramientas, dos configuraciones o dos variantes de instrucción. La pregunta no es cuál escribe mejor, sino cuál resulta más verificable y por qué.',
+      needs: ['Dos herramientas o dos variantes de prompt'],
+    },
+    {
+      from: 67, to: 78,
+      title: 'Registro de validación',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Se completa el registro: fecha, herramienta, tarea, input, fuente, output, error, corrección, decisión humana y estado final. El registro es el entregable, no la respuesta.',
+      needs: ['Ficha 05 · Registro de validación'],
+      tool: '/flujo',
+    },
+    {
+      from: 78, to: 86,
+      title: 'Auditoría cruzada',
+      owner: 'relatores', mode: 'Revisión',
+      detail:
+        'El equipo A audita el flujo del equipo B buscando una sola cosa: un punto donde la salida podría publicarse sin que nadie la haya revisado.',
+      needs: ['Pauta de auditoría cruzada'],
+    },
+    {
+      from: 86, to: 90,
+      title: 'Cierre: el límite declarado',
+      owner: 'equipos', mode: 'Cierre',
+      detail:
+        'Cada equipo escribe y lee en voz alta una frase: «Nuestra IA puede hacer X, pero no puede decidir Y sin revisión humana».',
+      needs: ['Exit ticket sesión 2'],
+    },
+  ],
+  contingencies: [
+    {
+      when: 'Solo hay una herramienta de IA disponible',
+      then: 'La comparación se hace entre dos variantes de instrucción sobre la misma herramienta: una con fuentes acotadas y otra sin ellas. El aprendizaje —qué hace verificable a un resultado— se conserva íntegro.',
+    },
+    {
+      when: 'No hay internet',
+      then: 'Se usan los dos outputs precalculados del caso troncal (CT-01/R2-A y CT-01/R2-B) impresos en el PDF del laboratorio, y la comparación se hace sobre ellos.',
+    },
+    {
+      when: 'Un equipo no llegó a la sesión 1',
+      then: 'Se le asigna el caso troncal ya diagnosticado (ficha 10, sección «punto de partida») para que entre directamente en la construcción del flujo.',
+    },
+    {
+      when: 'El laboratorio se atrasa',
+      then: 'Se recorta la comparación crítica a 8 minutos y se conserva íntegro el registro de validación: el registro es el producto de la sesión.',
+    },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESIÓN 3 · 10 de septiembre — Match Making
+// ─────────────────────────────────────────────────────────────────────────────
+const session3: SessionPlan = {
+  sessionId: 3,
+  spine: 'El valor no está en que Derecho aprenda a programar, sino en que sepa explicar el problema con la precisión suficiente para que otra disciplina pueda resolverlo.',
+  successCriterion:
+    'Sé explicar un problema jurídico a otra disciplina, establecer límites y defender una solución.',
+  blocks: [
+    {
+      from: 0, to: 8,
+      title: 'Recapitulación: prompt → flujo → solución',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Se recorre el arco de las tres sesiones y se presenta a los equipos invitados de otras disciplinas. Encuadre explícito: nadie viene a sustituir el criterio del otro.',
+      needs: ['Presentación sesión 3'],
+    },
+    {
+      from: 8, to: 17,
+      title: 'Cómo se traduce un problema jurídico',
+      owner: 'diego', mode: 'Exposición',
+      detail:
+        'Contraste directo: «quiero una IA que revise contratos» frente a una especificación con tarea, input, fuente autorizada, salida, incertidumbre y derivación a revisión humana. La diferencia es lo que hace posible el trabajo conjunto.',
+      needs: ['Presentación sesión 3'],
+    },
+    {
+      from: 17, to: 26,
+      title: 'Ejemplo de desafío y canvas de Match Making',
+      owner: 'diego', mode: 'Demostración',
+      detail:
+        'Se completa un desafío de ejemplo en los doce campos de la ficha, en pantalla, incluido el campo que más cuesta: lo que la solución NO debe hacer.',
+      needs: ['Ficha 06 · Ficha de desafío'],
+      tool: '/match',
+    },
+    {
+      from: 26, to: 35,
+      title: 'Match Making: formación de equipos',
+      owner: 'relatores', mode: 'Actividad',
+      detail:
+        'Cada estudiante de Derecho presenta su problema en 45 segundos. Los equipos se forman por afinidad de problema, no por amistad. Cada equipo mixto queda con un canvas y un facilitador asignado.',
+      needs: ['Tarjetas de problema', 'Cronómetro'],
+      tool: '/match',
+    },
+    {
+      from: 35, to: 53,
+      title: 'Trabajo interdisciplinario',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Se completan los doce campos de la ficha de desafío. Regla de mesa: si Ingeniería no entiende el problema, el problema todavía no está bien enunciado.',
+      needs: ['Ficha 06 impresa por equipo', 'Computador'],
+      tool: '/match',
+    },
+    {
+      from: 53, to: 63,
+      title: 'Preparación del pitch',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'Cuatro minutos, cuatro cosas: problema y persona usuaria, qué hace la solución, qué controles tiene, qué no debe hacer. Se ensaya una vez con el temporizador.',
+      needs: ['Rúbrica de pitch', 'Pitch timer'],
+      tool: '/match',
+    },
+    {
+      from: 63, to: 87,
+      title: 'Pitch de equipos',
+      owner: 'equipos', mode: 'Actividad',
+      detail:
+        'Cuatro minutos por equipo, sin excepción. El formato de sala se decide por número de equipos (plenaria, dos estaciones o rondas paralelas con síntesis).',
+      needs: ['Pitch timer', 'Rúbrica 07', 'Retroalimentación externa'],
+      tool: '/match',
+    },
+    {
+      from: 87, to: 89,
+      title: 'Síntesis de los equipos',
+      owner: 'equipos', mode: 'Cierre',
+      detail:
+        'Cada equipo entrega una frase: qué se llevan sobre trabajar con otra disciplina. Se aplica el instrumento de salida.',
+      needs: ['Instrumento de salida'],
+    },
+    {
+      from: 89, to: 90,
+      title: 'Cierre del taller',
+      owner: 'diego', mode: 'Cierre',
+      detail:
+        'Continuidad LMIL PUCV e Innova Day 2026 para los proyectos con mayor potencial, y cierre del arco de las tres sesiones.',
+    },
+  ],
+  contingencies: [
+    {
+      when: 'No llegan estudiantes de Ingeniería u otras disciplinas',
+      then: 'Match Making interno con roles simulados: en cada equipo, dos personas asumen el rol de «disciplina técnica» y solo pueden hacer preguntas, no proponer soluciones jurídicas. El ejercicio de traducción se conserva.',
+    },
+    {
+      when: 'Llegan menos personas de otras disciplinas que de Derecho',
+      then: 'Estaciones rotativas: cada persona de otra disciplina atiende dos equipos durante 9 minutos cada uno, con el canvas como guion de la conversación.',
+    },
+    {
+      when: 'Llegan más personas de otras disciplinas que de Derecho',
+      then: 'Equipos mixtos pequeños de cuatro, con dos problemas jurídicos por mesa y un solo pitch por mesa que elija el problema mejor especificado.',
+    },
+    {
+      when: 'Hay hasta 6 equipos',
+      then: 'Pitch en plenaria completa: 6 × 4 = 24 minutos, que es exactamente el bloque previsto.',
+    },
+    {
+      when: 'Hay entre 7 y 12 equipos',
+      then: 'Dos estaciones paralelas con un facilitador cada una; 6 pitches de 4 minutos por estación en el mismo bloque de 24 minutos.',
+    },
+    {
+      when: 'Hay más de 12 equipos',
+      then: 'Primera ronda en tres estaciones paralelas (8 minutos por estación para pitches de 4 minutos en dos turnos) y selección de tres proyectos por estación para una síntesis plenaria. El pitch individual sigue siendo de 4 minutos.',
+    },
+  ],
+};
+
+export const sessionPlans: SessionPlan[] = [session1, session2, session3];
+
+export function planFor(sessionId: number): SessionPlan {
+  const plan = sessionPlans.find(p => p.sessionId === sessionId);
+  if (!plan) throw new Error(`No existe plan para la sesión ${sessionId}`);
+  return plan;
+}
+
+// ─── Cómputo del 30/70 ───────────────────────────────────────────────────────
+export interface OwnerSplit {
+  minutes: Record<BlockOwner, number>;
+  total: number;
+  /** Minutos conducidos por Diego. */
+  diego: number;
+  /** Minutos de facilitación estudiantil (relatoría + trabajo de equipos). */
+  facilitated: number;
+  diegoPct: number;
+  facilitatedPct: number;
+}
+
+export function splitFor(plan: SessionPlan): OwnerSplit {
+  const minutes: Record<BlockOwner, number> = { diego: 0, relatores: 0, equipos: 0 };
+  for (const b of plan.blocks) minutes[b.owner] += b.to - b.from;
+  const total = minutes.diego + minutes.relatores + minutes.equipos;
+  const facilitated = minutes.relatores + minutes.equipos;
+  return {
+    minutes,
+    total,
+    diego: minutes.diego,
+    facilitated,
+    diegoPct: Math.round((minutes.diego / total) * 1000) / 10,
+    facilitatedPct: Math.round((facilitated / total) * 1000) / 10,
+  };
+}
+
+export const splits = sessionPlans.map(splitFor);
+
+// ─── Invariantes ─────────────────────────────────────────────────────────────
+// Se comprueban al importar el módulo: si alguien edita un bloque y rompe la
+// suma de 90 minutos, el error aparece en el build y no en la sala de clases.
+for (const plan of sessionPlans) {
+  const total = plan.blocks.reduce((sum, b) => sum + (b.to - b.from), 0);
+  if (total !== 90) {
+    throw new Error(
+      `Sesión ${plan.sessionId}: el cronograma suma ${total} minutos y debe sumar exactamente 90.`,
+    );
+  }
+  for (let i = 0; i < plan.blocks.length; i++) {
+    const expectedStart = i === 0 ? 0 : plan.blocks[i - 1].to;
+    if (plan.blocks[i].from !== expectedStart) {
+      throw new Error(
+        `Sesión ${plan.sessionId}: el bloque «${plan.blocks[i].title}» empieza en el minuto ${plan.blocks[i].from} y debería empezar en ${expectedStart}.`,
+      );
+    }
+  }
+}
