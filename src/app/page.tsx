@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight, Mail, Download, Building2, Cpu, FlaskConical,
-  ShieldCheck, ScrollText, Users, Target, ClipboardCheck, GitBranch, Route,
+  ShieldCheck, ScrollText, Users, Target, ClipboardCheck, GitBranch, Route, Play,
 } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import { useCountdown } from '@/hooks/useCountdown';
@@ -138,6 +138,16 @@ export default function LandingPage() {
           transition={{ delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap"
         >
+          <Link href="/clase-1">
+            <motion.span
+              className="flex items-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-black bg-emerald-400 hover:bg-emerald-300 transition-colors shadow-[0_0_28px_rgba(52,211,153,0.2)]"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Play className="w-4 h-4 fill-current" />
+              Entrar a la Clase 1
+            </motion.span>
+          </Link>
           <a href={gmailCompose} target="_blank" rel="noopener noreferrer">
             <motion.button
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-black bg-cyan-400 hover:bg-cyan-300 transition-colors glow-cyan"
@@ -356,13 +366,24 @@ export default function LandingPage() {
                         <span className="text-zinc-500">Producto: </span>{s.product}
                       </span>
                     </div>
-                    <Link
-                      href={`/sesiones/${s.id}`}
-                      className={`inline-flex items-center gap-1.5 pt-1 text-xs font-semibold ${a.text} hover:underline`}
-                    >
-                      Cronograma, caso y materiales de la sesión
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+                      {s.id === 1 && (
+                        <Link
+                          href="/clase-1"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300 transition-colors hover:bg-emerald-500/20"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          Abrir Clase 1 interactiva
+                        </Link>
+                      )}
+                      <Link
+                        href={`/sesiones/${s.id}`}
+                        className={`inline-flex items-center gap-1.5 text-xs font-semibold ${a.text} hover:underline`}
+                      >
+                        Cronograma, caso y materiales de la sesión
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>

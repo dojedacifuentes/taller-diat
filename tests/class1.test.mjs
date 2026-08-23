@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { createJiti } from 'jiti';
 
@@ -14,6 +15,13 @@ const {
 const { blockProgress, computeProgress } = await jiti.import('../src/lib/class1/progress.ts');
 const { bitacoraData, bitacoraFilename, generateBitacoraPDF } = await jiti.import('../src/lib/class1/bitacoraPdf.ts');
 const { deliveryMailto, deliverySubject } = await jiti.import('../src/lib/class1/delivery.ts');
+
+test('la portada ofrece accesos visibles a la experiencia de Clase 1', () => {
+  const landingPage = readFileSync(path.resolve(process.cwd(), 'src/app/page.tsx'), 'utf8');
+  assert.match(landingPage, /href="\/clase-1"/);
+  assert.match(landingPage, /Entrar a la Clase 1/);
+  assert.match(landingPage, /Abrir Clase 1 interactiva/);
+});
 
 test('el manifest define B00–B09 una sola vez y cubre 90 minutos', () => {
   assert.equal(BLOCKS.length, 10);
