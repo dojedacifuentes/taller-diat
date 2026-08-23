@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RotateCcw, Check, X, Rocket } from 'lucide-react';
 import { flashcards, categories } from '@/data/flashcards';
@@ -27,7 +27,6 @@ export default function FlashcardsPage() {
   const [known, setKnown] = useState<Set<number>>(new Set());
   const [toReview, setToReview] = useState<Set<number>>(new Set());
   const [funMsg, setFunMsg] = useState('');
-  const [direction, setDirection] = useState(1);
 
   const filtered = selectedCat === 'Todos'
     ? flashcards
@@ -35,13 +34,12 @@ export default function FlashcardsPage() {
 
   const card = filtered[index];
 
-  const go = useCallback((dir: number) => {
-    setDirection(dir);
+  const go = (dir: number) => {
     setFlipped(false);
     setTimeout(() => {
       setIndex(i => (i + dir + filtered.length) % filtered.length);
     }, 80);
-  }, [filtered.length]);
+  };
 
   const markKnown = () => {
     setKnown(prev => new Set([...prev, card.id]));
@@ -63,18 +61,19 @@ export default function FlashcardsPage() {
   };
 
   useEffect(() => {
-    setIndex(0); setFlipped(false);
-  }, [selectedCat]);
-
-  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') go(1);
-      if (e.key === 'ArrowLeft') go(-1);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        setFlipped(false);
+        setTimeout(() => {
+          setIndex(i => (i + dir + filtered.length) % filtered.length);
+        }, 80);
+      }
       if (e.key === ' ') { e.preventDefault(); setFlipped(v => !v); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go]);
+  }, [filtered.length]);
 
   const progress = filtered.length > 0 ? (known.size / filtered.length) * 100 : 0;
 
@@ -107,7 +106,7 @@ export default function FlashcardsPage() {
         {categories.map(cat => (
           <button
             key={cat}
-            onClick={() => setSelectedCat(cat)}
+            onClick={() => { setSelectedCat(cat); setIndex(0); setFlipped(false); }}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
               selectedCat === cat
                 ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-400'

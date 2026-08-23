@@ -251,7 +251,8 @@ export default function ToolkitPage() {
                   key={i}
                   onClick={() => setCheckedCyber(prev => {
                     const n = new Set(prev);
-                    checked ? n.delete(i) : n.add(i);
+                    if (checked) n.delete(i);
+                    else n.add(i);
                     return n;
                   })}
                   className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
@@ -291,7 +292,8 @@ export default function ToolkitPage() {
                   key={i}
                   onClick={() => setCheckedHallu(prev => {
                     const n = new Set(prev);
-                    checked ? n.delete(i) : n.add(i);
+                    if (checked) n.delete(i);
+                    else n.add(i);
                     return n;
                   })}
                   className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
@@ -369,7 +371,7 @@ export default function ToolkitPage() {
           Usa la IA para ir <span className="text-cyan-400 font-semibold">10x más rápido</span>
           — no para eliminar tu criterio jurídico.
         </p>
-        <p className="text-xs text-zinc-600 mt-3 italic">"El derecho exige exactitud. La IA amplifica tu capacidad de alcanzarla."</p>
+        <p className="text-xs text-zinc-600 mt-3 italic">“El derecho exige exactitud. La IA amplifica tu capacidad de alcanzarla.”</p>
       </motion.div>
     </div>
   );

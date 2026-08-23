@@ -118,7 +118,13 @@ function Builder() {
   const [steps, setSteps] = useLocalStorage<BuiltStep[]>('diat.flow.v1', []);
 
   function add(kind: FlowKind) {
-    setSteps([...steps, { id: `${kind}-${steps.length}-${Math.random().toString(36).slice(2, 7)}`, kind, label: '' }]);
+    let suffix = steps.length;
+    let id = `${kind}-${suffix}`;
+    while (steps.some(step => step.id === id)) {
+      suffix += 1;
+      id = `${kind}-${suffix}`;
+    }
+    setSteps([...steps, { id, kind, label: '' }]);
   }
   function update(id: string, label: string) {
     setSteps(steps.map(s => (s.id === id ? { ...s, label } : s)));

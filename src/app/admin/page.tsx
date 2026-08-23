@@ -113,7 +113,7 @@ export default function AdminPage() {
             Ponderación de la evaluación
           </div>
           <div style={{ width: '100%', height: 240 }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer initialDimension={{ width: 640, height: 240 }}>
               <BarChart data={evaluationChart} layout="vertical" margin={{ left: 8, right: 16 }}>
                 <CartesianGrid stroke={chartTheme.grid} horizontal={false} />
                 <XAxis type="number" domain={[0, 30]} stroke={chartTheme.axis} fontSize={10} />

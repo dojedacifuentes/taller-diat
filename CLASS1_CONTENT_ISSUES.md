@@ -38,4 +38,3 @@ Este archivo separa los conflictos editoriales de los defectos de software. No d
 - **C1-15 · B05 (8 min).** Depende de la disponibilidad de una herramienta externa. El puente reduce fricción, pero debe existir demostración docente de respaldo si no hay acceso o conectividad.
 - **C1-16 · B08 (15 min).** Dos afirmaciones con fuente, localizador, estado y acción constituyen el mínimo de completitud. Agregar más filas es opcional y no debe desplazar el cierre B09.
 - **C1-17 · Carga global.** El ajuste es estructural, no una medición con usuarios. Antes de la sesión final se requiere ensayo cronometrado de punta a punta en móvil y notebook.
-

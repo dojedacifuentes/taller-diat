@@ -6,7 +6,7 @@ import {
   Zap, Shield, Brain, BookOpen, FileText, Code2, GitBranch, Cpu,
 } from 'lucide-react';
 import {
-  purposes, areas, depthLevels, targetAIs, outputFormats, enhancements,
+  purposes, areas, depthLevels, outputFormats, enhancements,
   legalObjectives, audiences, cognitiveModes, riskTolerances, proceduralStages,
   jurisdictions, documentContextModes,
   generatePrompt, generateSystemPrompt, generateGPTInstructions, generateClaudeProject,
@@ -85,13 +85,6 @@ const GEN_PHASES = [
 ];
 
 // ── Accent maps ────────────────────────────────────────────────────────────────
-const ACCENT_BY_STEP: Record<FlowStep, string> = {
-  finalidad: 'cyan', objetivo: 'indigo', area: 'purple',
-  audiencia: 'cyan', cognitivo: 'indigo', procesal: 'purple',
-  profundidad: 'cyan', formato: 'indigo', capas: 'purple',
-  documentos: 'cyan', contexto: 'indigo', recomendacion: 'purple',
-  generating: 'cyan', resultado: 'cyan',
-};
 const accentMap: Record<string, string> = {
   cyan:   'border-cyan-500/60 bg-cyan-500/[0.08] shadow-[0_0_20px_rgba(6,182,212,0.12)]',
   indigo: 'border-indigo-500/60 bg-indigo-500/[0.08] shadow-[0_0_20px_rgba(129,140,248,0.12)]',
@@ -105,7 +98,6 @@ const hoverMap: Record<string, string> = {
 const textMap:  Record<string, string> = { cyan: 'text-cyan-400', indigo: 'text-indigo-400', purple: 'text-purple-400' };
 const bgMap:    Record<string, string> = { cyan: 'bg-cyan-500', indigo: 'bg-indigo-500', purple: 'bg-purple-500' };
 const ringMap:  Record<string, string> = { cyan: 'text-cyan-400/60', indigo: 'text-indigo-400/60', purple: 'text-purple-400/60' };
-const borderAccent: Record<string, string> = { cyan: 'border-cyan-500/40', indigo: 'border-indigo-500/40', purple: 'border-purple-500/40' };
 
 // ── FlowCard ───────────────────────────────────────────────────────────────────
 interface CardProps {
@@ -524,6 +516,7 @@ export default function PromptLabPage() {
 
   // ── Navigation ───────────────────────────────────────────────────────────────
   const goTo = useCallback((next: FlowStep) => {
+    if (next === 'generating') setGenPhase(0);
     setTimeout(() => setStep(next), 260);
   }, []);
 
@@ -582,7 +575,6 @@ export default function PromptLabPage() {
   // ── Generating ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (step !== 'generating') return;
-    setGenPhase(0);
     let phase = 0;
     let doneTimer: ReturnType<typeof setTimeout>;
     const id = setInterval(() => {
@@ -677,8 +669,6 @@ export default function PromptLabPage() {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   const stepIdx     = STEP_ORDER.indexOf(step);
-  const activeAccent = ACCENT_BY_STEP[step] ?? 'cyan';
-
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-[#04060c]">

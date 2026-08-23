@@ -7,14 +7,6 @@ import type { Tool } from '@/lib/types';
 import { generateGuiaJuridicaPDF } from '@/lib/pdfGenerators';
 import { complementaryNotice } from '@/data/program';
 
-const toolIcons: Record<string, React.ReactNode> = {
-  claude: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3c1.657 0 3 1.343 3 3s-1.343 3-3 3-3-1.343-3-3 1.343-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-    </svg>
-  ),
-};
-
 const categories = ['Todas', 'LLM Jurídico', 'LLM General', 'LLM Multimodal', 'Investigación IA', 'Búsqueda IA', 'Automatización', 'Infraestructura'];
 const levels = ['Todos', 'Básico', 'Intermedio', 'Avanzado'];
 

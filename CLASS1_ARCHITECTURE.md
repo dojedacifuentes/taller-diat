@@ -25,4 +25,3 @@ El esquema está versionado. Las migraciones preservan respuestas antiguas (incl
 ## Reglas de extensión
 
 La secuencia temporal vive una sola vez en `manifest.ts`. Los criterios ejecutables viven en `progress.ts`; su texto humano en el manifest debe mantenerse alineado. El contenido jurídico pendiente se resuelve en `document.ts`, no dentro de componentes. Toda discrepancia editorial se registra en `CLASS1_CONTENT_ISSUES.md`.
-
