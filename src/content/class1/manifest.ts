@@ -184,7 +184,7 @@ export const BLOCKS: readonly Class1Block[] = [
     concepts: ['especificación progresiva', 'cobertura DIAT', 'decisiones justificadas'],
     anchor: 'No lo hagan más largo. Háganlo menos ambiguo.',
     product: 'A',
-    completeWhen: 'Producto A con tarea, riesgo, prompt y al menos una decisión justificada.',
+    completeWhen: 'Producto A con tarea, riesgo, decisiones no delegadas, prompt y tres decisiones justificadas.',
   },
   {
     id: 'b05',
@@ -201,7 +201,7 @@ export const BLOCKS: readonly Class1Block[] = [
       'Lleva su Producto A a su propia herramienta de IA, trae la auditoría y decide qué acepta y qué rechaza con fundamento.',
     concepts: ['auditor / entrevistador / generador', 'inflación de requisitos', 'auditar ≠ verificar'],
     anchor: 'Auditar no es verificar.',
-    completeWhen: 'Hay una sugerencia aceptada y una rechazada, ambas fundamentadas.',
+    completeWhen: 'La auditoría está pegada y hay una sugerencia aceptada y otra rechazada, ambas fundamentadas.',
   },
   {
     id: 'b06',

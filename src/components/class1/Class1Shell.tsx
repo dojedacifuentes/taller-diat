@@ -13,7 +13,8 @@ import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BookOpen, ChevronLeft, ChevronRight, ClipboardList, LayoutGrid, X, Check, Circle, Clock,
+  BookOpen, ChevronLeft, ChevronRight, ClipboardList, LayoutGrid, Library,
+  ListChecks, X, Check, Circle, Clock,
 } from 'lucide-react';
 import {
   BLOCKS, PHASES, blockClock, class1Meta, getBlock, nextBlock, phaseMeta, prevBlock,
@@ -143,7 +144,7 @@ export function Class1Shell({ children }: { children: ReactNode }) {
   const current = currentId ? getBlock(currentId) : undefined;
 
   return (
-    <div className="mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 lg:py-8">
+    <div className="mx-auto w-full max-w-[88rem] px-4 pb-28 pt-6 sm:px-6 lg:py-8">
       <div className="lg:flex lg:gap-8">
         {/* Rail lateral — desktop */}
         <div className="hidden w-64 shrink-0 lg:block">
@@ -169,18 +170,25 @@ export function Class1Shell({ children }: { children: ReactNode }) {
 
             <div className="space-y-1 border-t border-white/[0.06] pt-3">
               <Link
+                href="/clase-1#progreso"
+                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+              >
+                <ListChecks className="h-3.5 w-3.5" aria-hidden />
+                Mi progreso
+              </Link>
+              <Link
                 href="/clase-1/manual"
                 className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
               >
                 <BookOpen className="h-3.5 w-3.5" aria-hidden />
-                Manual y recursos
+                Manual
               </Link>
               <Link
-                href="/clase-1/mi-trabajo"
+                href="/clase-1/manual#recursos"
                 className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
               >
-                <ClipboardList className="h-3.5 w-3.5" aria-hidden />
-                Mi trabajo
+                <Library className="h-3.5 w-3.5" aria-hidden />
+                Recursos
               </Link>
             </div>
           </div>
@@ -289,6 +297,30 @@ export function Class1Shell({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
+
+      {/* Cuatro accesos persistentes de trabajo — móvil */}
+      <nav
+        aria-label="Accesos de la Clase 1"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-white/[0.12] bg-[oklch(0.075_0.016_250)]/95 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-12px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl lg:hidden"
+      >
+        <div className="mx-auto grid max-w-lg grid-cols-4 gap-0.5">
+          {[
+            { href: '/clase-1/mi-trabajo', label: 'Mi Bitácora', Icon: ClipboardList },
+            { href: '/clase-1#progreso', label: 'Mi progreso', Icon: ListChecks },
+            { href: '/clase-1/manual', label: 'Manual', Icon: BookOpen },
+            { href: '/clase-1/manual#recursos', label: 'Recursos', Icon: Library },
+          ].map(({ href, label, Icon }) => (
+            <Link
+              key={label}
+              href={href}
+              className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-[10px] leading-tight text-zinc-400 transition-colors hover:bg-white/[0.05] hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cyan-400"
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+              <span className="max-w-full truncate">{label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

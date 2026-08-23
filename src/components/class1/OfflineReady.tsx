@@ -11,11 +11,22 @@
 // Si el navegador no soporta service workers, no pasa nada: todo el trabajo vive
 // en localStorage y las actividades son client-side.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { WifiOff } from 'lucide-react';
 
 export function OfflineReady() {
-  const [offline, setOffline] = useState(false);
+  const offline = useSyncExternalStore(
+    callback => {
+      window.addEventListener('online', callback);
+      window.addEventListener('offline', callback);
+      return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+      };
+    },
+    () => navigator.onLine === false,
+    () => false,
+  );
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return;
@@ -28,18 +39,6 @@ export function OfflineReady() {
       });
     }, 2000);
     return () => window.clearTimeout(id);
-  }, []);
-
-  useEffect(() => {
-    function on() { setOffline(false); }
-    function off() { setOffline(true); }
-    setOffline(typeof navigator !== 'undefined' && navigator.onLine === false);
-    window.addEventListener('online', on);
-    window.addEventListener('offline', off);
-    return () => {
-      window.removeEventListener('online', on);
-      window.removeEventListener('offline', off);
-    };
   }, []);
 
   if (!offline) return null;

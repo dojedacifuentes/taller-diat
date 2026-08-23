@@ -13,7 +13,7 @@ import type {
 import type { RiskLevel } from '@/content/class1/prompts';
 
 export const STORAGE_KEY = 'diat.class1';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 // ─── Sub-estados por bloque ──────────────────────────────────────────────────
 
@@ -83,8 +83,8 @@ export interface B05State {
   acceptedWhy: string;
   rejected: string;
   rejectedWhy: string;
-  /** Fragmento de la auditoría que el estudiante quiere conservar. Opcional. */
-  excerpt: string;
+  /** Auditoría devuelta por la herramienta externa. */
+  audit: string;
 }
 
 export interface B06State {
@@ -178,7 +178,7 @@ export function createInitialState(): Class1State {
       decisions: ['', '', ''],
       reasons: ['', '', ''],
     },
-    b05: { tool: null, accepted: '', acceptedWhy: '', rejected: '', rejectedWhy: '', excerpt: '' },
+    b05: { tool: null, accepted: '', acceptedWhy: '', rejected: '', rejectedWhy: '', audit: '' },
     b06: {
       cases: {},
       committed: {},
@@ -206,8 +206,9 @@ export function migrate(raw: unknown): Class1State {
   if (!raw || typeof raw !== 'object') return base;
   const parsed = raw as Partial<Class1State>;
 
-  // v0 → v1: no hay versiones anteriores publicadas. Cualquier objeto sin
-  // schemaVersion se trata como parcial y se fusiona campo a campo.
+  // v0/v1 → v2: cualquier objeto sin versión o con la forma previa se trata
+  // como parcial y se fusiona campo a campo, sin borrar trabajo del estudiante.
+  const legacyB05 = (parsed.b05 ?? {}) as Partial<B05State> & { excerpt?: unknown };
   const merged: Class1State = {
     ...base,
     ...parsed,
@@ -218,7 +219,16 @@ export function migrate(raw: unknown): Class1State {
     b02: { ...base.b02, ...(parsed.b02 ?? {}) },
     b03: { ...base.b03, ...(parsed.b03 ?? {}) },
     productA: { ...base.productA, ...(parsed.productA ?? {}) },
-    b05: { ...base.b05, ...(parsed.b05 ?? {}) },
+    b05: {
+      ...base.b05,
+      ...legacyB05,
+      audit:
+        typeof legacyB05.audit === 'string'
+          ? legacyB05.audit
+          : typeof legacyB05.excerpt === 'string'
+            ? legacyB05.excerpt
+            : '',
+    },
     b06: { ...base.b06, ...(parsed.b06 ?? {}) },
     b07: { ...base.b07, ...(parsed.b07 ?? {}) },
     b08: { ...base.b08, ...(parsed.b08 ?? {}) },
@@ -235,8 +245,11 @@ export function migrate(raw: unknown): Class1State {
   }
   if (!Array.isArray(merged.productA.components)) merged.productA.components = [];
   if (!Array.isArray(merged.b01.explored)) merged.b01.explored = [];
-  if (!Array.isArray(merged.b08.claims) || merged.b08.claims.length === 0) {
+  if (!Array.isArray(merged.b08.claims)) {
     merged.b08.claims = [emptyClaim('c1'), emptyClaim('c2')];
+  }
+  while (merged.b08.claims.length < 2) {
+    merged.b08.claims.push(emptyClaim(`c${merged.b08.claims.length + 1}`));
   }
   return merged;
 }

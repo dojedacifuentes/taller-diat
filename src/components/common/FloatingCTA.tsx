@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { Mail, X, Calendar, Copy, Check, ExternalLink } from 'lucide-react';
 
 import {
@@ -12,14 +13,17 @@ const MAILTO = mailto;
 const GMAIL_URL = gmailCompose;
 
 export function FloatingCTA() {
+  const pathname = usePathname();
+  const isClass1 = pathname.startsWith('/clase-1');
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    if (isClass1) return;
     const t = setTimeout(() => setVisible(true), 2200);
     return () => clearTimeout(t);
-  }, []);
+  }, [isClass1]);
 
   const copyEmail = async () => {
     try {
@@ -39,7 +43,7 @@ export function FloatingCTA() {
     }
   };
 
-  if (dismissed) return null;
+  if (dismissed || isClass1) return null;
 
   return (
     <>

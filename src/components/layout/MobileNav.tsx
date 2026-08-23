@@ -17,6 +17,7 @@ const nav = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  if (pathname.startsWith('/clase-1')) return null;
   return (
     <nav aria-label="Navegación de sala" className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[oklch(0.08_0.016_250/0.95)] backdrop-blur-xl">
       <div className="flex items-center">

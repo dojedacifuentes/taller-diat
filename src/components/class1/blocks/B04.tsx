@@ -45,8 +45,12 @@ export function B04() {
         </p>
       </Prose>
 
-      <section aria-labelledby="progresion" className="space-y-3">
-        <h2 id="progresion" className="text-lg font-bold text-white">De tres palabras a un encargo controlable</h2>
+      <details className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+        <summary id="progresion" className="cursor-pointer text-sm font-semibold text-zinc-200 marker:text-cyan-400">
+          Antes de escribir · ver cómo se construye el prompt por capas
+        </summary>
+        <div className="mt-4 space-y-3">
+        <h2 className="text-lg font-bold text-white">De tres palabras a un encargo controlable</h2>
         <PromptBlock label="Punto de partida · Prompt 0" text={PROMPT_DIAGNOSTICO.text} />
         <div className="space-y-2">
           {promptLabSteps.map(s => (
@@ -87,7 +91,8 @@ export function B04() {
             </Callout>
           </>
         )}
-      </section>
+        </div>
+      </details>
 
       <hr className="border-white/[0.08]" />
 
@@ -232,8 +237,11 @@ export function B04() {
         </div>
       </section>
 
-      <section aria-labelledby="rubrica">
-        <h2 id="rubrica" className="mb-1 text-lg font-bold text-white">Rúbrica DIAT de autoevaluación</h2>
+      <details className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+        <summary className="cursor-pointer text-sm font-semibold text-zinc-200 marker:text-cyan-400">
+          Consulta opcional · rúbrica DIAT de autoevaluación
+        </summary>
+        <div className="mt-3">
         <p className="mb-3 text-xs text-zinc-500">{rubricNote}</p>
         <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
           <table className="w-full min-w-[34rem] text-left text-sm">
@@ -259,7 +267,8 @@ export function B04() {
             </tbody>
           </table>
         </div>
-      </section>
+        </div>
+      </details>
 
       <Callout kind="idea">
         <p>

@@ -74,29 +74,33 @@ export function blockProgress(state: Class1State, id: BlockId): BlockProgress {
     }
     case 'b04': {
       const a = state.productA;
-      const decisionsDone = a.decisions.filter(nonEmpty).length;
-      total = 5;
+      const decisionsDone = a.decisions.filter((d, i) => nonEmpty(d) && nonEmpty(a.reasons[i])).length;
+      total = 8;
       done =
         (nonEmpty(a.task) ? 1 : 0) +
         (a.risk ? 1 : 0) +
+        (nonEmpty(a.notDelegating) ? 1 : 0) +
         (a.components.length > 0 ? 1 : 0) +
         (nonEmpty(a.prompt) ? 1 : 0) +
-        (decisionsDone >= 1 ? 1 : 0);
+        decisionsDone;
       if (!nonEmpty(a.task)) missing.push('Describir tu tarea jurídica.');
       if (!a.risk) missing.push('Elegir el nivel de riesgo.');
+      if (!nonEmpty(a.notDelegating)) missing.push('Precisar qué decisiones no vas a delegar.');
       if (a.components.length === 0) missing.push('Marcar los componentes pertinentes.');
       if (!nonEmpty(a.prompt)) missing.push('Escribir tu prompt.');
-      if (decisionsDone === 0) missing.push('Justificar al menos una decisión de diseño.');
+      if (decisionsDone < 3) missing.push(`Justificar ${3 - decisionsDone} decisión(es) de diseño más.`);
       break;
     }
     case 'b05': {
       const b = state.b05;
-      total = 3;
+      total = 4;
       done =
         (b.tool ? 1 : 0) +
+        (nonEmpty(b.audit) ? 1 : 0) +
         (nonEmpty(b.accepted) && nonEmpty(b.acceptedWhy) ? 1 : 0) +
         (nonEmpty(b.rejected) && nonEmpty(b.rejectedWhy) ? 1 : 0);
       if (!b.tool) missing.push('Indicar qué herramienta usaste.');
+      if (!nonEmpty(b.audit)) missing.push('Pegar la auditoría obtenida en la herramienta externa.');
       if (!nonEmpty(b.accepted) || !nonEmpty(b.acceptedWhy)) missing.push('Registrar una sugerencia aceptada y su razón.');
       if (!nonEmpty(b.rejected) || !nonEmpty(b.rejectedWhy)) missing.push('Registrar una sugerencia rechazada y su fundamento.');
       break;
@@ -117,11 +121,19 @@ export function blockProgress(state: Class1State, id: BlockId): BlockProgress {
     }
     case 'b08': {
       const complete = state.b08.claims.filter(
-        c => nonEmpty(c.claim) && c.status && c.state && c.action,
+        c =>
+          nonEmpty(c.claim) &&
+          c.status &&
+          nonEmpty(c.source) &&
+          nonEmpty(c.locator) &&
+          c.state &&
+          c.action,
       ).length;
       total = 2;
       done = Math.min(complete, 2);
-      if (complete < 2) missing.push(`Completar ${2 - complete} afirmación(es) con estatus, estado y acción.`);
+      if (complete < 2) {
+        missing.push(`Completar ${2 - complete} afirmación(es) con estatus, fuente, localizador, estado y acción.`);
+      }
       break;
     }
     case 'b09': {
@@ -151,6 +163,7 @@ export interface Class1Progress {
   productA: boolean;
   productB: boolean;
   productC: boolean;
+  identityReady: boolean;
   /** La Bitácora puede generarse aunque falten piezas; esto solo avisa. */
   readyToDeliver: boolean;
 }
@@ -173,6 +186,10 @@ export function computeProgress(state: Class1State): Class1Progress {
   const productA = blocks.b04.status === 'completado';
   const productB = blocks.b08.status === 'completado';
   const productC = blocks.b09.status === 'completado';
+  const identityReady =
+    nonEmpty(state.student.firstName) &&
+    nonEmpty(state.student.lastName) &&
+    nonEmpty(state.student.email);
 
   return {
     blocks,
@@ -183,7 +200,8 @@ export function computeProgress(state: Class1State): Class1Progress {
     productA,
     productB,
     productC,
-    readyToDeliver: productA && productB && productC,
+    identityReady,
+    readyToDeliver: identityReady && productA && productB && productC,
   };
 }
 

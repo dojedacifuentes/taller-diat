@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Mail, Shield } from 'lucide-react';
 import { InstitutionalLogoRow } from '@/components/common/InstitutionalLogos';
 import {
@@ -45,6 +46,8 @@ const navGroups = [
 ];
 
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname.startsWith('/clase-1')) return null;
   return (
     <footer className="border-t border-white/[0.06] bg-[oklch(0.075_0.015_250)] mt-8">
       <div className="max-w-5xl mx-auto px-4 lg:px-8 py-10 space-y-8">

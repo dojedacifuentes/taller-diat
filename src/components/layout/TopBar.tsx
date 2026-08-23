@@ -24,7 +24,9 @@ const titles: Record<string, { title: string; subtitle: string }> = {
 
 export function TopBar() {
   const pathname = usePathname();
-  const info = titles[pathname] ?? { title: institution.program, subtitle: '' };
+  const info = pathname.startsWith('/clase-1')
+    ? { title: 'Clase 1 · Razonamiento jurídico asistido', subtitle: 'Trabajo individual guiado · 27 de agosto de 2026' }
+    : titles[pathname] ?? { title: institution.program, subtitle: '' };
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[oklch(0.07_0.015_250/0.8)] backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 lg:px-6 h-14">

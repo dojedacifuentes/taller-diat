@@ -80,13 +80,13 @@ export function B05() {
 
         <StepHeading n={2}>Volver con el resultado</StepHeading>
         <Field
-          label="Fragmento de la auditoría que quieres conservar (opcional)"
-          hint="No pegues la salida completa: conserva solo lo que vas a discutir. La Bitácora es una evidencia de razonamiento, no un volcado."
-          value={s.excerpt}
-          onChange={v => update(d => ({ ...d, b05: { ...d.b05, excerpt: v } }))}
-          rows={4}
-          maxLength={1200}
-          placeholder="El auditor observó que…"
+          label="Pega la auditoría"
+          hint="Pega el resultado que obtuviste fuera de DIAT. Después decidirás qué aceptar y qué rechazar."
+          value={s.audit}
+          onChange={v => update(d => ({ ...d, b05: { ...d.b05, audit: v } }))}
+          rows={7}
+          maxLength={12000}
+          placeholder="Pega aquí la auditoría devuelta por tu herramienta…"
         />
 
         <StepHeading n={3}>Decidir</StepHeading>

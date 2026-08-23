@@ -69,8 +69,8 @@ export function Class1Home() {
         </ol>
       </section>
 
-      <section aria-labelledby="mapa" className="space-y-4">
-        <h2 id="mapa" className="text-lg font-bold text-white">Mapa de la clase</h2>
+      <section id="progreso" aria-labelledby="mapa" className="scroll-mt-20 space-y-4">
+        <h2 id="mapa" className="text-lg font-bold text-white">Mi progreso · mapa de la clase</h2>
         {PHASES.map(phase => {
           const blocks = BLOCKS.filter(b => b.phase === phase);
           const meta = phaseMeta[phase];

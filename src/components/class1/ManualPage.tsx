@@ -3,6 +3,7 @@
 // páginas del Manual del Estudiante.
 import { useState } from 'react';
 import Link from 'next/link';
+import { Download, ExternalLink } from 'lucide-react';
 import { concepts, glossary } from '@/content/class1/concepts';
 import { CANONICAL_PROMPTS } from '@/content/class1/prompts';
 import { class1Meta, getBlock } from '@/content/class1/manifest';
@@ -33,6 +34,28 @@ export function ManualPage() {
           Manual del Estudiante; aquí solo lo consultable durante la sesión.
         </p>
       </header>
+
+      <section id="recursos" aria-labelledby="manual-completo" className="scroll-mt-20 rounded-xl border border-cyan-500/25 bg-cyan-500/[0.05] p-4">
+        <h2 id="manual-completo" className="text-sm font-bold text-white">Manual completo · 36 páginas</h2>
+        <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+          La plataforma muestra solo lo necesario en cada decisión. Abre el PDF cuando quieras profundizar o conservar la referencia completa.
+        </p>
+        <a
+          href="/materiales/DIAT_2026_CLASE_1_MANUAL_DEL_ESTUDIANTE_v1.0.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg border border-cyan-500/35 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/20"
+        >
+          <ExternalLink className="h-4 w-4" aria-hidden /> Abrir manual
+        </a>
+        <a
+          href="/materiales/DIAT_2026_CLASE_1_MANUAL_DEL_ESTUDIANTE_v1.0.pdf"
+          download
+          className="ml-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/[0.12] px-3.5 py-2 text-xs font-medium text-zinc-300 hover:border-cyan-500/35 hover:text-cyan-300"
+        >
+          <Download className="h-4 w-4" aria-hidden /> Descargar PDF
+        </a>
+      </section>
 
       <div role="tablist" aria-label="Secciones del manual" className="flex flex-wrap gap-1.5">
         {tabs.map(t => (

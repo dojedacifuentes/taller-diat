@@ -1,6 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Taller DIAT 2026
 
-## Getting Started
+Plataforma de aprendizaje del taller de prompting y razonamiento jurídico asistido.
+
+## Clase 1
+
+`/clase-1` implementa un recorrido individual guiado B00–B09. Conserva el trabajo en el navegador, genera la Bitácora en PDF y no requiere backend ni claves de IA.
+
+- Arquitectura y extensión: [`CLASS1_ARCHITECTURE.md`](./CLASS1_ARCHITECTURE.md)
+- Conflictos editoriales y decisiones abiertas: [`CLASS1_CONTENT_ISSUES.md`](./CLASS1_CONTENT_ISSUES.md)
+- Pruebas focalizadas: `npm run test:class1`
+
+## Desarrollo
 
 First, run the development server:
 

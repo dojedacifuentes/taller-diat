@@ -36,8 +36,13 @@ export function Class1Provider({ children }: { children: ReactNode }) {
   const dirty = useRef(false);
 
   useEffect(() => {
-    setState(loadState());
-    setHydrated(true);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setState(loadState());
+      setHydrated(true);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   // Solo se escribe tras la hidratación y tras un cambio real: así una visita

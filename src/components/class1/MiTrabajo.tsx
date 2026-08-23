@@ -6,9 +6,12 @@
 // aprendizaje que se construye durante los 90 minutos. Esta pantalla la muestra
 // completa, permite editar antes de entregar y produce el PDF.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Download, FileText, Mail, RotateCcw } from 'lucide-react';
+import {
+  AlertTriangle, Check, Download, Eye, FilePlus2, FileText, Mail, Pencil,
+  RotateCcw, Send, X,
+} from 'lucide-react';
 import {
   blameOptions, claimActions, claimStates, componentStates, diatComponents,
   epistemicStatuses, errorTypes, myths, riskLevels,
@@ -64,23 +67,72 @@ export function MiTrabajo() {
   const { state, progress, awards, hydrated, update, reset } = useClass1();
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [downloadConfirmed, setDownloadConfirmed] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const pdfUrlRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
 
   const a = state.productA;
   const name = fullName(state.student);
 
-  async function onGenerate() {
+  useEffect(() => () => {
+    if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current);
+  }, []);
+
+  function replacePdfUrl(next: string | null) {
+    if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current);
+    pdfUrlRef.current = next;
+    setPdfUrl(next);
+  }
+
+  function invalidatePdf() {
+    replacePdfUrl(null);
+    setGenerated(false);
+    setDownloaded(false);
+    setDownloadConfirmed(false);
+  }
+
+  async function buildPdf(): Promise<string | null> {
     setError(null);
     setGenerating(true);
     try {
-      await generateBitacoraPDF(state, progress);
+      const blob = await generateBitacoraPDF(state, progress);
+      const next = URL.createObjectURL(blob);
+      replacePdfUrl(next);
       setGenerated(true);
+      setDownloaded(false);
+      setDownloadConfirmed(false);
+      return next;
     } catch {
       setError('No se pudo generar el PDF. Vuelve a intentarlo; si persiste, revisa que el navegador permita descargas.');
+      return null;
     } finally {
       setGenerating(false);
     }
+  }
+
+  async function onPreview() {
+    const url = pdfUrl ?? await buildPdf();
+    if (url) setPreviewOpen(true);
+  }
+
+  async function onDownload() {
+    const url = pdfUrl ?? await buildPdf();
+    if (!url) return;
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = bitacoraFilename(state);
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setDownloaded(true);
+  }
+
+  function prepareDelivery() {
+    document.getElementById('entrega')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   if (!hydrated) {
@@ -128,6 +180,50 @@ export function MiTrabajo() {
         </div>
       </header>
 
+      <nav
+        aria-label="Acciones de la Bitácora"
+        className="sticky top-16 z-20 -mx-1 flex gap-2 overflow-x-auto rounded-xl border border-white/[0.10] bg-[oklch(0.085_0.016_250/0.96)] p-2 shadow-xl backdrop-blur-xl"
+      >
+        <button
+          type="button"
+          onClick={onPreview}
+          disabled={generating}
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-50"
+        >
+          <Eye className="h-4 w-4" aria-hidden /> Vista previa
+        </button>
+        <Link
+          href={`/clase-1/${progress.nextBlock}`}
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300"
+        >
+          <Pencil className="h-4 w-4" aria-hidden /> Editar
+        </Link>
+        <button
+          type="button"
+          onClick={buildPdf}
+          disabled={generating}
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-cyan-500/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50"
+        >
+          {generating ? <FileText className="h-4 w-4 animate-pulse" aria-hidden /> : <FilePlus2 className="h-4 w-4" aria-hidden />}
+          {generating ? 'Generando…' : 'Generar PDF'}
+        </button>
+        <button
+          type="button"
+          onClick={onDownload}
+          disabled={generating}
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-50"
+        >
+          <Download className="h-4 w-4" aria-hidden /> Descargar PDF
+        </button>
+        <button
+          type="button"
+          onClick={prepareDelivery}
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-indigo-500/35 bg-indigo-500/10 px-3 py-2 text-xs font-semibold text-indigo-200 hover:bg-indigo-500/20"
+        >
+          <Send className="h-4 w-4" aria-hidden /> Preparar entrega
+        </button>
+      </nav>
+
       {/* Identificación */}
       <section aria-labelledby="ident" className="rounded-xl border border-white/[0.10] bg-white/[0.02] p-4 sm:p-5">
         <h2 id="ident" className="mb-3 text-base font-bold text-white">Identificación</h2>
@@ -135,18 +231,28 @@ export function MiTrabajo() {
           <TextField
             label="Nombre"
             value={state.student.firstName}
-            onChange={v => update(d => ({ ...d, student: { ...d.student, firstName: v } }))}
+            onChange={v => {
+              invalidatePdf();
+              update(d => ({ ...d, student: { ...d.student, firstName: v } }));
+            }}
           />
           <TextField
             label="Apellido"
             value={state.student.lastName}
-            onChange={v => update(d => ({ ...d, student: { ...d.student, lastName: v } }))}
+            onChange={v => {
+              invalidatePdf();
+              update(d => ({ ...d, student: { ...d.student, lastName: v } }));
+            }}
           />
           <TextField
-            label="Correo"
+            label="Correo PUCV"
             type="email"
             value={state.student.email}
-            onChange={v => update(d => ({ ...d, student: { ...d.student, email: v } }))}
+            onChange={v => {
+              invalidatePdf();
+              update(d => ({ ...d, student: { ...d.student, email: v } }));
+            }}
+            hint="Se usará en la identificación y en el cierre del correo preparado."
           />
         </div>
         <p className="mt-2.5 text-xs text-zinc-500">
@@ -252,6 +358,9 @@ export function MiTrabajo() {
         <Row label="Herramienta">
           {[...AI_TOOLS, AI_TOOL_NOTEBOOK].find(t => t.id === state.b05.tool)?.label ?? '—'}
         </Row>
+        <Row label="Auditoría">
+          {state.b05.audit || <Empty href="/clase-1/b05" what="B05" />}
+        </Row>
         <Row label="Sugerencia aceptada">
           {state.b05.accepted || <Empty href="/clase-1/b05" what="B05" />}
           {state.b05.acceptedWhy && <p className="mt-1 text-xs text-zinc-500">{state.b05.acceptedWhy}</p>}
@@ -351,8 +460,8 @@ export function MiTrabajo() {
       </section>
 
       {/* Entrega */}
-      <section aria-labelledby="entrega" className="space-y-4 rounded-xl border border-cyan-500/30 bg-cyan-500/[0.05] p-4 sm:p-5">
-        <h2 id="entrega" className="text-lg font-bold text-white">
+      <section id="entrega" aria-labelledby="entrega-titulo" className="scroll-mt-20 space-y-4 rounded-xl border border-cyan-500/30 bg-cyan-500/[0.05] p-4 sm:p-5">
+        <h2 id="entrega-titulo" className="text-lg font-bold text-white">
           {progress.readyToDeliver ? 'Tu Bitácora está lista' : 'Preparar entrega'}
         </h2>
 
@@ -363,6 +472,12 @@ export function MiTrabajo() {
               que sí hiciste—, pero conviene revisar primero:
             </p>
             <ul className="space-y-0.5 text-xs">
+              {!progress.identityReady && (
+                <li>
+                  <a href="#ident" className="underline underline-offset-2">Identificación</a>
+                  {' — '}Completar nombre, apellido y correo PUCV.
+                </li>
+              )}
               {BLOCKS.filter(b => progress.blocks[b.id].missing.length > 0).map(b => (
                 <li key={b.id}>
                   <Link href={`/clase-1/${b.id}`} className="underline underline-offset-2">
@@ -379,17 +494,25 @@ export function MiTrabajo() {
         <ol className="space-y-3">
           <li className="rounded-lg border border-white/[0.10] bg-white/[0.02] p-3.5">
             <div className="mono mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-              Paso 1 · Generar y descargar
+              Paso 1 · Generar el PDF
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={onGenerate}
+                onClick={buildPdf}
                 disabled={generating}
                 className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-cyan-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:opacity-60"
               >
-                {generating ? <FileText className="h-4 w-4 animate-pulse" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
-                {generating ? 'Generando…' : 'Generar y descargar PDF'}
+                {generating ? <FileText className="h-4 w-4 animate-pulse" aria-hidden /> : <FilePlus2 className="h-4 w-4" aria-hidden />}
+                {generating ? 'Generando…' : generated ? 'Regenerar PDF' : 'Generar PDF'}
+              </button>
+              <button
+                type="button"
+                onClick={onPreview}
+                disabled={generating}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/[0.14] px-4 py-2.5 text-sm font-medium text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-50"
+              >
+                <Eye className="h-4 w-4" aria-hidden /> Vista previa
               </button>
               <span className="mono text-[11px] text-zinc-500">{bitacoraFilename(state)}</span>
             </div>
@@ -401,22 +524,52 @@ export function MiTrabajo() {
             {error && <p className="mt-2 text-xs text-rose-300">{error}</p>}
             {generated && (
               <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-300">
-                PDF generado correctamente. Búscalo en tu carpeta de descargas.
+                <Check className="h-3.5 w-3.5" aria-hidden /> PDF generado y listo para descargar.
               </p>
             )}
           </li>
 
           <li className={`rounded-lg border p-3.5 ${generated ? 'border-white/[0.10] bg-white/[0.02]' : 'border-white/[0.06] bg-white/[0.01]'}`}>
             <div className="mono mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-              Paso 2 · Abrir el correo preparado
+              Paso 2 · Descargar y confirmar
             </div>
-            <a
-              href={deliveryMailto(state)}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.14] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:border-cyan-500/40 hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+            <button
+              type="button"
+              onClick={onDownload}
+              disabled={generating}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.14] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-50"
             >
-              <Mail className="h-4 w-4" aria-hidden />
-              Abrir correo preparado
-            </a>
+              <Download className="h-4 w-4" aria-hidden /> Descargar PDF
+            </button>
+            {downloaded && (
+              <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-lg border border-white/[0.10] bg-white/[0.02] px-3 py-2.5 text-xs text-zinc-300">
+                <input
+                  type="checkbox"
+                  checked={downloadConfirmed}
+                  onChange={event => setDownloadConfirmed(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-cyan-400"
+                />
+                Confirmo que el PDF quedó descargado y listo para adjuntarlo.
+              </label>
+            )}
+          </li>
+
+          <li className={`rounded-lg border p-3.5 ${downloadConfirmed ? 'border-white/[0.10] bg-white/[0.02]' : 'border-white/[0.06] bg-white/[0.01]'}`}>
+            <div className="mono mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+              Paso 3 · Abrir el correo preparado
+            </div>
+            {downloadConfirmed ? (
+              <a
+                href={deliveryMailto(state)}
+                className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-cyan-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+              >
+                <Mail className="h-4 w-4" aria-hidden /> Abrir correo preparado
+              </a>
+            ) : (
+              <span aria-disabled="true" className="inline-flex items-center gap-2 rounded-lg border border-white/[0.08] px-4 py-2.5 text-sm text-zinc-600">
+                <Mail className="h-4 w-4" aria-hidden /> Confirma primero la descarga
+              </span>
+            )}
             <dl className="mt-3 space-y-1 text-xs text-zinc-500">
               <div><span className="mono uppercase tracking-widest">Para</span> · {delivery.to}</div>
               <div><span className="mono uppercase tracking-widest">CC</span> · {delivery.cc}</div>
@@ -432,6 +585,33 @@ export function MiTrabajo() {
           </li>
         </ol>
       </section>
+
+      {previewOpen && pdfUrl && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+          <div className="flex h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/[0.14] bg-[oklch(0.08_0.016_250)] shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-white/[0.10] px-4 py-3">
+              <div>
+                <h2 id="preview-title" className="text-sm font-bold text-white">Vista previa de la Bitácora</h2>
+                <p className="mono mt-0.5 text-[10px] text-zinc-500">{bitacoraFilename(state)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(false)}
+                aria-label="Cerrar vista previa"
+                className="rounded-lg border border-white/[0.12] p-2 text-zinc-400 hover:text-white"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+            <iframe title="Vista previa PDF de la Bitácora" src={pdfUrl} className="min-h-0 flex-1 bg-white" />
+            <div className="flex justify-end border-t border-white/[0.10] p-3">
+              <button type="button" onClick={onDownload} className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/25">
+                <Download className="h-4 w-4" aria-hidden /> Descargar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reinicio */}
       <section aria-labelledby="reinicio" className="rounded-xl border border-white/[0.08] p-4">
@@ -455,7 +635,7 @@ export function MiTrabajo() {
             <div className="mt-2.5 flex gap-2">
               <button
                 type="button"
-                onClick={() => { reset(); setConfirmReset(false); setGenerated(false); }}
+                onClick={() => { reset(); setConfirmReset(false); invalidatePdf(); }}
                 className="rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
               >
                 Sí, borrar todo

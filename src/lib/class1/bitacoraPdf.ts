@@ -321,6 +321,39 @@ function cover(ctx: Ctx, state: Class1State, progress: Class1Progress) {
 
 // ─── Documento ───────────────────────────────────────────────────────────────
 
+/** Proyección pura de los datos que alimentan las secciones críticas del PDF. */
+export function bitacoraData(state: Class1State) {
+  return {
+    identity: {
+      name: fullName(state.student),
+      email: state.student.email,
+      date: class1Meta.date,
+    },
+    productA: {
+      task: state.productA.task,
+      risk: state.productA.risk,
+      notDelegating: state.productA.notDelegating,
+      components: [...state.productA.components],
+      prompt: state.productA.prompt,
+      decisions: state.productA.decisions.map((decision, index) => ({
+        decision,
+        reason: state.productA.reasons[index],
+      })),
+    },
+    audit: { ...state.b05 },
+    icjr: {
+      claims: state.b08.claims.map(claim => ({ ...claim })),
+      verifiedBy: state.b08.verifiedBy,
+      verifiedAt: state.b08.verifiedAt,
+      notes: state.b08.notes,
+    },
+    productC: {
+      initial: { ...state.b00 },
+      final: { ...state.b09 },
+    },
+  };
+}
+
 export function bitacoraFilename(state: Class1State): string {
   const clean = (s: string) =>
     s.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]/g, '') || 'Estudiante';
@@ -332,10 +365,11 @@ export function bitacoraFilename(state: Class1State): string {
 export async function generateBitacoraPDF(
   state: Class1State,
   progress: Class1Progress,
-): Promise<void> {
+): Promise<Blob> {
+  const data = bitacoraData(state);
   const JsPDF = await getJsPDF();
   const doc = new JsPDF({ unit: 'mm', format: 'a4' });
-  const ctx: Ctx = { doc, y: 22, page: 1, student: fullName(state.student) };
+  const ctx: Ctx = { doc, y: 22, page: 1, student: data.identity.name };
 
   cover(ctx, state, progress);
   newPage(ctx);
@@ -372,7 +406,7 @@ export async function generateBitacoraPDF(
 
   // 4 · Producto A
   sectionTitle(ctx, '04', 'Producto A · prompt jurídico estructurado · B04');
-  const a = state.productA;
+  const a = data.productA;
   keyValue(ctx, 'Tarea', a.task);
   keyValue(ctx, 'Nivel de riesgo', riskLevels.find(r => r.id === a.risk)?.label ?? '—');
   keyValue(
@@ -389,7 +423,7 @@ export async function generateBitacoraPDF(
 
   label(ctx, 'Tres decisiones de diseño justificadas');
   const decRows = a.decisions
-    .map((d, i) => [String(i + 1), d, a.reasons[i]])
+    .map((item, i) => [String(i + 1), item.decision, item.reason])
     .filter(r => r[1].trim() || r[2].trim());
   if (decRows.length) {
     table(ctx, ['#', 'Decisión', 'Por qué'], decRows, [6, 44, 50]);
@@ -400,20 +434,18 @@ export async function generateBitacoraPDF(
   // 5 · Auditoría
   sectionTitle(ctx, '05', 'Auditoría del propio prompt · B05');
   const toolName =
-    [...AI_TOOLS, AI_TOOL_NOTEBOOK].find(t => t.id === state.b05.tool)?.label ?? '—';
+    [...AI_TOOLS, AI_TOOL_NOTEBOOK].find(t => t.id === data.audit.tool)?.label ?? '—';
   keyValue(ctx, 'Herramienta', toolName);
+  label(ctx, 'Auditoría obtenida');
+  quoteCard(ctx, data.audit.audit);
   label(ctx, 'Sugerencia aceptada');
-  quoteCard(ctx, state.b05.accepted);
+  quoteCard(ctx, data.audit.accepted);
   label(ctx, 'Por qué la acepto');
-  quoteCard(ctx, state.b05.acceptedWhy);
+  quoteCard(ctx, data.audit.acceptedWhy);
   label(ctx, 'Sugerencia rechazada');
-  quoteCard(ctx, state.b05.rejected);
+  quoteCard(ctx, data.audit.rejected);
   label(ctx, 'Con qué fundamento la rechazo');
-  quoteCard(ctx, state.b05.rejectedWhy);
-  if (state.b05.excerpt.trim()) {
-    label(ctx, 'Fragmento conservado de la auditoría');
-    quoteCard(ctx, state.b05.excerpt);
-  }
+  quoteCard(ctx, data.audit.rejectedWhy);
 
   // 6 · Error Lab
   sectionTitle(ctx, '06', 'Error Lab · B06');
@@ -455,7 +487,7 @@ export async function generateBitacoraPDF(
 
   // 8 · Producto B
   sectionTitle(ctx, '08', 'Producto B · matriz ICJR · B08');
-  const icjrRows = state.b08.claims
+  const icjrRows = data.icjr.claims
     .filter(c => c.claim.trim())
     .map(c => [
       c.claim,
@@ -472,34 +504,34 @@ export async function generateBitacoraPDF(
   } else {
     body(ctx, 'Sin afirmaciones registradas.', { color: C.grayD });
   }
-  if (state.b08.verifiedBy.trim() || state.b08.verifiedAt.trim()) {
-    keyValue(ctx, 'Verificó', `${state.b08.verifiedBy || '—'}${state.b08.verifiedAt ? ` · ${state.b08.verifiedAt}` : ''}`);
+  if (data.icjr.verifiedBy.trim() || data.icjr.verifiedAt.trim()) {
+    keyValue(ctx, 'Verificó', `${data.icjr.verifiedBy || '—'}${data.icjr.verifiedAt ? ` · ${data.icjr.verifiedAt}` : ''}`);
   }
-  if (state.b08.notes.trim()) {
+  if (data.icjr.notes.trim()) {
     label(ctx, 'Registro (paso R)');
-    quoteCard(ctx, state.b08.notes);
+    quoteCard(ctx, data.icjr.notes);
   }
 
   // 9 · Producto C
   sectionTitle(ctx, '09', 'Producto C · desplazamiento conceptual · B09');
-  const beforeLabel = blameOptions.find(o => o.id === state.b00.blame)?.label ?? '—';
-  const afterLabel = blameOptions.find(o => o.id === state.b09.blame)?.label ?? '—';
+  const beforeLabel = blameOptions.find(o => o.id === data.productC.initial.blame)?.label ?? '—';
+  const afterLabel = blameOptions.find(o => o.id === data.productC.final.blame)?.label ?? '—';
   table(
     ctx,
     ['', 'Respuesta', 'Confianza'],
     [
-      ['Antes (B00)', beforeLabel, state.b00.confidence ?? '—'],
-      ['Ahora (B09)', afterLabel, state.b09.confidence ?? '—'],
+      ['Antes (B00)', beforeLabel, data.productC.initial.confidence ?? '—'],
+      ['Ahora (B09)', afterLabel, data.productC.final.confidence ?? '—'],
     ],
     [20, 55, 25],
   );
   label(ctx, 'Antes de esta clase pensaba que el problema era');
-  quoteCard(ctx, state.b09.before);
+  quoteCard(ctx, data.productC.final.before);
   label(ctx, 'Ahora agregaría');
-  quoteCard(ctx, state.b09.after);
-  if (state.b09.doubt.trim()) {
+  quoteCard(ctx, data.productC.final.after);
+  if (data.productC.final.doubt.trim()) {
     label(ctx, 'Todavía tengo una duda sobre');
-    quoteCard(ctx, state.b09.doubt);
+    quoteCard(ctx, data.productC.final.doubt);
   }
 
   // 10 · Cierre
@@ -534,5 +566,5 @@ export async function generateBitacoraPDF(
   ctx.y += 24;
 
   footer(ctx);
-  doc.save(bitacoraFilename(state));
+  return doc.output('blob');
 }

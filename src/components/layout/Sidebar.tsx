@@ -85,6 +85,7 @@ function NavGroup({ title, items, pathname }: { title: string; items: NavItem[];
 
 export function Sidebar() {
   const pathname = usePathname();
+  if (pathname.startsWith('/clase-1')) return null;
   return (
     <aside
       className="hidden lg:flex flex-col w-60 h-screen sticky top-0 border-r border-white/[0.06] bg-[oklch(0.08_0.016_250)] shrink-0"
