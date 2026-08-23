@@ -2,12 +2,17 @@
   "name": "diat-prompting-hub",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "packageManager": "npm@10.9.3",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:class1": "node --test tests/class1.test.mjs"
+    "test:class1": "node --test tests/class1.test.mjs",
+    "vercel:build": "npm run test:class1 && npm run lint && next build"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

@@ -34,7 +34,7 @@ export function OfflineReady() {
     // El registro se pospone hasta que la página esté ociosa: no compite con el
     // primer render, que en clase presencial es lo que se nota.
     const id = window.setTimeout(() => {
-      navigator.serviceWorker.register('/clase1-sw.js').catch(() => {
+      navigator.serviceWorker.register('/clase1-sw.js', { scope: '/clase-1/' }).catch(() => {
         // Sin service worker la experiencia sigue funcionando con red.
       });
     }, 2000);
