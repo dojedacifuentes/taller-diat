@@ -1,256 +1,113 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CLASE 1 · PROGRESO
 //
-// El progreso mide operaciones intelectuales realizadas, no páginas abiertas.
-// No produce notas, puntajes ni predicciones de competencia: solo dice qué
-// hitos de la Bitácora están completos y cuáles faltan.
+// Cinco etapas y un estado por etapa. Sin porcentajes de dominio, sin XP, sin
+// niveles cognitivos: el progreso dice dónde estás y qué falta para seguir, y
+// nada más.
 // ─────────────────────────────────────────────────────────────────────────────
-import { BLOCKS, type BlockId } from '@/content/class1/manifest';
-import { myths, b01Checks, errorCases, groundingDecisions, diatComponents } from '@/content/class1/activities';
+import { STAGES, type StageId } from '@/content/class1/stages';
+import { compilePrompt } from '@/content/class1/lab';
 import type { Class1State } from './state';
 
-export type BlockStatus = 'pendiente' | 'en-curso' | 'completado';
+export type StageStatus = 'pendiente' | 'en-curso' | 'completada';
 
-export interface BlockProgress {
-  id: BlockId;
-  status: BlockStatus;
-  /** 0–1. Solo alimenta la barra; nunca se muestra como calificación. */
-  ratio: number;
-  /** Qué falta, en lenguaje del estudiante. */
+export interface StageProgress {
+  id: StageId;
+  status: StageStatus;
+  /** Qué falta, en lenguaje del estudiante. Vacío si la etapa está completa. */
   missing: string[];
-}
-
-function ratioOf(done: number, total: number): number {
-  return total === 0 ? 0 : Math.min(1, done / total);
-}
-
-function statusOf(ratio: number, started: boolean): BlockStatus {
-  if (ratio >= 1) return 'completado';
-  return started || ratio > 0 ? 'en-curso' : 'pendiente';
 }
 
 function nonEmpty(s: string | null | undefined): boolean {
   return typeof s === 'string' && s.trim().length > 0;
 }
 
-export function blockProgress(state: Class1State, id: BlockId): BlockProgress {
+function statusOf(done: boolean, started: boolean): StageStatus {
+  if (done) return 'completada';
+  return started ? 'en-curso' : 'pendiente';
+}
+
+export function stageProgress(state: Class1State, id: StageId): StageProgress {
   const missing: string[] = [];
-  let done = 0;
-  let total = 1;
-  let started = state.visited.includes(id);
+  let done = false;
+  let started = false;
 
   switch (id) {
-    case 'b00': {
-      total = 1;
-      done = state.b00.committed ? 1 : 0;
-      if (!state.b00.committed) missing.push('Confirmar tu respuesta y tu nivel de confianza.');
-      started = started || state.b00.blame !== null;
+    case 'pregunta': {
+      done = state.initialQuestion.committed;
+      started = state.initialQuestion.blame !== null;
+      if (!done) missing.push('Responde y registra tu respuesta.');
       break;
     }
-    case 'b01': {
-      const checksDone = b01Checks.filter(c => state.b01.committed[c.id]).length;
-      const exploredEnough = Math.min(state.b01.explored.length, 3);
-      total = 3 + b01Checks.length;
-      done = exploredEnough + checksDone;
-      if (state.b01.explored.length < 3) missing.push('Explorar al menos tres capas del producto.');
-      if (checksDone < b01Checks.length) missing.push('Responder las dos comprobaciones.');
+    case 'prompt': {
+      // Una edición manual vale tanto como un compilado válido: lo que importa
+      // es que exista un prompt ejecutable, no cómo se produjo.
+      const compiled = compilePrompt(state.promptV1.draft);
+      done = compiled.ready || nonEmpty(state.promptV1.manual);
+      started = state.promptV1.draft.task !== null || nonEmpty(state.promptV1.manual);
+      if (!done) missing.push('Completa las decisiones que faltan para poder exportar tu prompt.');
       break;
     }
-    case 'b02': {
-      total = myths.length;
-      done = myths.filter(m => state.b02.committed[m.id]).length;
-      if (done < total) missing.push(`Confirmar ${total - done} afirmación(es).`);
+    case 'auditoria': {
+      const a = state.audit;
+      done = nonEmpty(a.accepted) && nonEmpty(a.rejected) && nonEmpty(a.why);
+      started = nonEmpty(a.accepted) || nonEmpty(a.rejected) || a.tool !== null;
+      if (!nonEmpty(a.accepted)) missing.push('Anota una sugerencia que aceptaste.');
+      if (!nonEmpty(a.rejected)) missing.push('Anota una sugerencia que rechazaste.');
+      if (!nonEmpty(a.why)) missing.push('Explica por qué.');
       break;
     }
-    case 'b03': {
-      const assigned = diatComponents.filter(c => state.b03.states[c.id]).length;
-      total = diatComponents.length + 1;
-      done = assigned + (nonEmpty(state.b03.implicitDecisions) ? 1 : 0);
-      if (assigned < diatComponents.length) {
-        missing.push(`Asignar estado a ${diatComponents.length - assigned} componente(s).`);
+    case 'verificacion': {
+      const first = state.verification.claims[0];
+      done = Boolean(first && nonEmpty(first.claim) && nonEmpty(first.source) && first.action);
+      started = Boolean(first && (nonEmpty(first.claim) || nonEmpty(first.source)));
+      if (!first || !nonEmpty(first.claim)) missing.push('Pega la afirmación que vas a comprobar.');
+      if (!first || !nonEmpty(first.source)) missing.push('Indica con qué fuente la comprobaste.');
+      if (!first || !first.action) missing.push('Decide qué haces con la afirmación.');
+      break;
+    }
+    case 'cierre': {
+      done = state.finalQuestion.committed && nonEmpty(state.reflection.before) && nonEmpty(state.reflection.after);
+      started = state.finalQuestion.blame !== null;
+      if (!state.finalQuestion.committed) missing.push('Responde otra vez a la pregunta guía.');
+      if (!nonEmpty(state.reflection.before) || !nonEmpty(state.reflection.after)) {
+        missing.push('Completa la frase final.');
       }
-      if (!nonEmpty(state.b03.implicitDecisions)) missing.push('Describir la decisión implícita que detectaste.');
-      break;
-    }
-    case 'b04': {
-      const a = state.productA;
-      const decisionsDone = a.decisions.filter((d, i) => nonEmpty(d) && nonEmpty(a.reasons[i])).length;
-      total = 8;
-      done =
-        (nonEmpty(a.task) ? 1 : 0) +
-        (a.risk ? 1 : 0) +
-        (nonEmpty(a.notDelegating) ? 1 : 0) +
-        (a.components.length > 0 ? 1 : 0) +
-        (nonEmpty(a.prompt) ? 1 : 0) +
-        decisionsDone;
-      if (!nonEmpty(a.task)) missing.push('Describir tu tarea jurídica.');
-      if (!a.risk) missing.push('Elegir el nivel de riesgo.');
-      if (!nonEmpty(a.notDelegating)) missing.push('Precisar qué decisiones no vas a delegar.');
-      if (a.components.length === 0) missing.push('Marcar los componentes pertinentes.');
-      if (!nonEmpty(a.prompt)) missing.push('Escribir tu prompt.');
-      if (decisionsDone < 3) missing.push(`Justificar ${3 - decisionsDone} decisión(es) de diseño más.`);
-      break;
-    }
-    case 'b05': {
-      const b = state.b05;
-      total = 4;
-      done =
-        (b.tool ? 1 : 0) +
-        (nonEmpty(b.audit) ? 1 : 0) +
-        (nonEmpty(b.accepted) && nonEmpty(b.acceptedWhy) ? 1 : 0) +
-        (nonEmpty(b.rejected) && nonEmpty(b.rejectedWhy) ? 1 : 0);
-      if (!b.tool) missing.push('Indicar qué herramienta usaste.');
-      if (!nonEmpty(b.audit)) missing.push('Pegar la auditoría obtenida en la herramienta externa.');
-      if (!nonEmpty(b.accepted) || !nonEmpty(b.acceptedWhy)) missing.push('Registrar una sugerencia aceptada y su razón.');
-      if (!nonEmpty(b.rejected) || !nonEmpty(b.rejectedWhy)) missing.push('Registrar una sugerencia rechazada y su fundamento.');
-      break;
-    }
-    case 'b06': {
-      const casesDone = errorCases.filter(c => state.b06.committed[c.id]).length;
-      total = errorCases.length + 1;
-      done = casesDone + (state.b06.revealCommitted ? 1 : 0);
-      if (casesDone < errorCases.length) missing.push(`Clasificar ${errorCases.length - casesDone} caso(s).`);
-      if (!state.b06.revealCommitted) missing.push('Resolver el caso de revelación progresiva.');
-      break;
-    }
-    case 'b07': {
-      total = groundingDecisions.length;
-      done = groundingDecisions.filter(d => state.b07.committed[d.id]).length;
-      if (done < total) missing.push(`Tomar ${total - done} decisión(es) guiada(s).`);
-      break;
-    }
-    case 'b08': {
-      const complete = state.b08.claims.filter(
-        c =>
-          nonEmpty(c.claim) &&
-          c.status &&
-          nonEmpty(c.source) &&
-          nonEmpty(c.locator) &&
-          c.state &&
-          c.action,
-      ).length;
-      total = 2;
-      done = Math.min(complete, 2);
-      if (complete < 2) {
-        missing.push(`Completar ${2 - complete} afirmación(es) con estatus, fuente, localizador, estado y acción.`);
-      }
-      break;
-    }
-    case 'b09': {
-      const b = state.b09;
-      total = 3;
-      done =
-        (b.committed ? 1 : 0) + (nonEmpty(b.before) ? 1 : 0) + (nonEmpty(b.after) ? 1 : 0);
-      if (!b.committed) missing.push('Volver a responder «¿quién falló?».');
-      if (!nonEmpty(b.before) || !nonEmpty(b.after)) missing.push('Completar las dos frases del Producto C.');
       break;
     }
   }
 
-  const ratio = ratioOf(done, total);
-  return { id, status: statusOf(ratio, started), ratio, missing };
+  return { id, status: statusOf(done, started), missing };
 }
 
 export interface Class1Progress {
-  blocks: Record<BlockId, BlockProgress>;
-  /** 0–100, redondeado. Es el porcentaje de la Bitácora, no una nota. */
-  percent: number;
-  completedBlocks: number;
-  totalBlocks: number;
-  /** Primer bloque no completado: el sitio al que lleva «Continuar». */
-  nextBlock: BlockId;
-  /** Hitos de la Bitácora. */
-  productA: boolean;
-  productB: boolean;
-  productC: boolean;
-  identityReady: boolean;
-  /** La Bitácora puede generarse aunque falten piezas; esto solo avisa. */
+  stages: Record<StageId, StageProgress>;
+  /** Etapas completadas, para el indicador «3 de 5». */
+  completed: number;
+  total: number;
+  /** Primera etapa no completada: el sitio al que lleva «Continuar». */
+  next: StageId;
+  /** Todo lo esencial está hecho. Solo informa; nunca bloquea la entrega. */
   readyToDeliver: boolean;
 }
 
 export function computeProgress(state: Class1State): Class1Progress {
-  const blocks = {} as Record<BlockId, BlockProgress>;
-  let sum = 0;
+  const stages = {} as Record<StageId, StageProgress>;
   let completed = 0;
 
-  for (const b of BLOCKS) {
-    const p = blockProgress(state, b.id);
-    blocks[b.id] = p;
-    sum += p.ratio;
-    if (p.status === 'completado') completed += 1;
+  for (const s of STAGES) {
+    const p = stageProgress(state, s.id);
+    stages[s.id] = p;
+    if (p.status === 'completada') completed += 1;
   }
 
-  const percent = Math.round((sum / BLOCKS.length) * 100);
-  const next = BLOCKS.find(b => blocks[b.id].status !== 'completado')?.id ?? 'b09';
-
-  const productA = blocks.b04.status === 'completado';
-  const productB = blocks.b08.status === 'completado';
-  const productC = blocks.b09.status === 'completado';
-  const identityReady =
-    nonEmpty(state.student.firstName) &&
-    nonEmpty(state.student.lastName) &&
-    nonEmpty(state.student.email);
+  const next = STAGES.find(s => stages[s.id].status !== 'completada')?.id ?? 'cierre';
 
   return {
-    blocks,
-    percent,
-    completedBlocks: completed,
-    totalBlocks: BLOCKS.length,
-    nextBlock: next,
-    productA,
-    productB,
-    productC,
-    identityReady,
-    readyToDeliver: identityReady && productA && productB && productC,
+    stages,
+    completed,
+    total: STAGES.length,
+    next,
+    readyToDeliver: completed === STAGES.length,
   };
-}
-
-// ─── Hitos discretos ─────────────────────────────────────────────────────────
-//
-// Se otorgan por una operación pedagógica significativa, nunca por navegar.
-
-export interface Milestone {
-  id: string;
-  label: string;
-  description: string;
-  earned: boolean;
-}
-
-export function milestones(state: Class1State, p: Class1Progress): Milestone[] {
-  const a = state.productA;
-  return [
-    {
-      id: 'especificador',
-      label: 'Especificador',
-      description: 'Diagnosticaste las decisiones que un prompt deja implícitas.',
-      earned: p.blocks.b03.status === 'completado',
-    },
-    {
-      id: 'arquitecto',
-      label: 'Arquitecto',
-      description: 'Construiste un encargo proporcional al riesgo y justificaste tus decisiones.',
-      earned: p.productA && a.decisions.filter(d => d.trim()).length >= 3,
-    },
-    {
-      id: 'esceptico',
-      label: 'Escéptico competente',
-      description: 'Distinguiste una fuente real de una proposición sostenida por esa fuente.',
-      earned: p.blocks.b06.status === 'completado',
-    },
-    {
-      id: 'verificador',
-      label: 'Verificador',
-      description: 'Ejecutaste ICJR sobre dos afirmaciones y dejaste registro.',
-      earned: p.productB,
-    },
-    {
-      id: 'criterio',
-      label: 'Criterio profesional',
-      description: 'Rechazaste con fundamento una sugerencia de la IA y cerraste tu Bitácora.',
-      earned:
-        p.productC &&
-        state.b05.rejected.trim().length > 0 &&
-        state.b05.rejectedWhy.trim().length > 0,
-    },
-  ];
 }

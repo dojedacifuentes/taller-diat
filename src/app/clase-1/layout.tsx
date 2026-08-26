@@ -4,7 +4,7 @@ import { class1Meta } from '@/content/class1/manifest';
 
 export const metadata: Metadata = {
   title: 'Clase 1 · Laboratorio de razonamiento jurídico asistido',
-  description: `${class1Meta.title}. Experiencia individual guiada: cada estudiante formula un encargo, detecta errores jurídicos generativos, verifica con el protocolo ICJR y produce su Bitácora.`,
+  description: `${class1Meta.title}. Superficie de ejecución: construye un prompt, hazlo auditar, ejecútalo, comprueba una afirmación y entrega tu trabajo.`,
 };
 
 export default function Clase1Layout({ children }: { children: React.ReactNode }) {

@@ -1,31 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// BITÁCORA DE RAZONAMIENTO JURÍDICO ASISTIDO · PDF
+// CLASE 1 · PDF DE LA ENTREGA
 //
-// Generación client-side con jsPDF, reutilizando las primitivas y la paleta ya
-// establecidas en @/lib/pdfGenerators. Texto vectorial real —no captura del
-// DOM—: se puede seleccionar, buscar y pesa una fracción.
+// Segundo formato de la misma entrega: lee el objeto que produce
+// `buildClass1Submission`, igual que la descarga en Markdown y que el correo.
+// Ninguno puede decir algo distinto de los otros.
 //
-// El PDF no contiene notas, puntajes ni predicciones de competencia. Contiene lo
-// que el estudiante decidió, escribió y verificó.
+// jsPDF ya estaba en el proyecto; el PDF es texto vectorial, no captura del DOM.
+// El formato principal sigue siendo el `.md`: si esto falla, la entrega no se
+// bloquea.
 // ─────────────────────────────────────────────────────────────────────────────
-import {
-  C, CW, ML, MR, PW, accentBar, fillPage, getJsPDF, hLine,
-  type JsPDFDoc,
-} from '@/lib/pdfGenerators';
-import { class1Meta } from '@/content/class1/manifest';
-import {
-  blameOptions, claimActions, claimStates, epistemicStatuses, errorTypes, myths,
-  componentStates, diatComponents, riskLevels,
-} from '@/content/class1/activities';
-import { AI_TOOLS, AI_TOOL_NOTEBOOK } from '@/content/class1/prompts';
-import type { Class1State } from './state';
-import { fullName } from './state';
-import type { Class1Progress } from './progress';
+import { C, CW, ML, MR, accentBar, fillPage, getJsPDF, hLine, type JsPDFDoc } from '@/lib/pdfGenerators';
+import type { Class1Submission } from './submission';
+import { submissionFilename } from './submission';
 
-const FOOT = 'Programa DIAT · Escuela de Derecho PUCV';
-const TITLE = 'Bitácora de Razonamiento Jurídico Asistido';
-
-/** Margen inferior a partir del cual se salta de página. */
 const Y_LIMIT = 268;
 
 interface Ctx {
@@ -40,7 +27,7 @@ function footer(ctx: Ctx) {
   ctx.doc.setFont('courier', 'normal');
   ctx.doc.setFontSize(7);
   ctx.doc.setTextColor(...C.grayD);
-  ctx.doc.text(`${TITLE} · Clase 1 · ${ctx.student || 'Sin nombre'}`, ML, 285);
+  ctx.doc.text(`Clase 1 · ${ctx.student || 'Sin nombre'}`, ML, 285);
   ctx.doc.text(String(ctx.page), MR, 285, { align: 'right' });
 }
 
@@ -53,13 +40,13 @@ function newPage(ctx: Ctx) {
   ctx.y = 22;
 }
 
-/** Reserva espacio vertical; salta de página si no cabe. */
 function ensure(ctx: Ctx, needed: number) {
   if (ctx.y + needed > Y_LIMIT) newPage(ctx);
 }
 
 function sectionTitle(ctx: Ctx, n: string, title: string) {
-  ensure(ctx, 18);
+  ensure(ctx, 20);
+  ctx.y += 4;
   ctx.doc.setFont('courier', 'bold');
   ctx.doc.setFontSize(7.5);
   ctx.doc.setTextColor(...C.cyan);
@@ -85,486 +72,147 @@ function label(ctx: Ctx, text: string) {
 function body(
   ctx: Ctx,
   text: string,
-  opts: { size?: number; color?: [number, number, number]; indent?: number; style?: string } = {},
+  opts: { size?: number; color?: [number, number, number]; indent?: number; mono?: boolean } = {},
 ) {
-  const { size = 9, color = C.grayL, indent = 0, style = 'normal' } = opts;
+  const { size = 9, color = C.grayL, indent = 0, mono = false } = opts;
+  const font = mono ? 'courier' : 'helvetica';
   const x = ML + indent;
   const width = CW - indent;
-  ctx.doc.setFont('helvetica', style);
+  ctx.doc.setFont(font, 'normal');
   ctx.doc.setFontSize(size);
-  ctx.doc.setTextColor(...color);
-  const lines = ctx.doc.splitTextToSize(text, width) as string[];
-  const lh = size * 0.52;
+  const lines = ctx.doc.splitTextToSize(text || '—', width) as string[];
+  const lh = size * 0.55;
   for (const line of lines) {
     ensure(ctx, lh + 1);
-    ctx.doc.setFont('helvetica', style);
+    ctx.doc.setFont(font, 'normal');
     ctx.doc.setFontSize(size);
     ctx.doc.setTextColor(...color);
     ctx.doc.text(line, x, ctx.y);
     ctx.y += lh;
   }
-  ctx.y += 1.5;
+  ctx.y += 2;
 }
 
-/** Bloque de texto del estudiante, sobre tarjeta. */
-function quoteCard(ctx: Ctx, text: string, opts: { mono?: boolean } = {}) {
+function field(ctx: Ctx, name: string, value: string) {
+  label(ctx, name);
+  body(ctx, value.trim() || '—');
+}
+
+/** Bloque de prompt sobre tarjeta, en monoespaciada. */
+function promptCard(ctx: Ctx, text: string) {
   const value = text.trim() || '— sin completar —';
-  const size = opts.mono ? 7.8 : 8.6;
-  const font = opts.mono ? 'courier' : 'helvetica';
-  ctx.doc.setFont(font, 'normal');
-  ctx.doc.setFontSize(size);
+  ctx.doc.setFont('courier', 'normal');
+  ctx.doc.setFontSize(7.6);
   const lines = ctx.doc.splitTextToSize(value, CW - 8) as string[];
-  const lh = size * 0.55;
+  const lh = 3.6;
 
   let i = 0;
   while (i < lines.length) {
-    const remaining = Y_LIMIT - ctx.y - 6;
-    const fit = Math.max(1, Math.floor(remaining / lh));
-    if (fit < 1) { newPage(ctx); continue; }
-    const chunk = lines.slice(i, i + fit);
-    const h = chunk.length * lh + 5;
-
-    ctx.doc.setFillColor(...C.bgCard);
-    ctx.doc.roundedRect(ML, ctx.y, CW, h, 1.5, 1.5, 'F');
-    ctx.doc.setDrawColor(...C.muted);
-    ctx.doc.setLineWidth(0.15);
-    ctx.doc.roundedRect(ML, ctx.y, CW, h, 1.5, 1.5, 'S');
-
-    ctx.doc.setFont(font, 'normal');
-    ctx.doc.setFontSize(size);
-    ctx.doc.setTextColor(...(text.trim() ? C.grayL : C.grayD));
-    chunk.forEach((l, k) => ctx.doc.text(l, ML + 4, ctx.y + 4.5 + k * lh));
-
-    ctx.y += h + 3;
-    i += fit;
-    if (i < lines.length) newPage(ctx);
-  }
-}
-
-function keyValue(ctx: Ctx, k: string, v: string) {
-  ensure(ctx, 6);
-  ctx.doc.setFont('courier', 'bold');
-  ctx.doc.setFontSize(7.2);
-  ctx.doc.setTextColor(...C.gray);
-  ctx.doc.text(k.toUpperCase(), ML, ctx.y);
-  ctx.doc.setFont('helvetica', 'normal');
-  ctx.doc.setFontSize(8.6);
-  ctx.doc.setTextColor(...C.white);
-  const lines = ctx.doc.splitTextToSize(v || '—', CW - 45) as string[];
-  lines.forEach((l, i) => {
-    if (i > 0) ensure(ctx, 4.6);
-    ctx.doc.setFont('helvetica', 'normal');
-    ctx.doc.setFontSize(8.6);
-    ctx.doc.setTextColor(...C.white);
-    ctx.doc.text(l, ML + 45, ctx.y);
-    if (i < lines.length - 1) ctx.y += 4.6;
-  });
-  ctx.y += 6;
-}
-
-/** Tabla simple con anchos proporcionales y salto de página por fila. */
-function table(ctx: Ctx, head: string[], rows: string[][], widths: number[]) {
-  const total = widths.reduce((a, b) => a + b, 0);
-  const cols = widths.map(w => (w / total) * CW);
-
-  function drawHead() {
-    ensure(ctx, 10);
-    ctx.doc.setFillColor(...C.bgLight);
-    ctx.doc.rect(ML, ctx.y - 4, CW, 6.5, 'F');
-    ctx.doc.setFont('courier', 'bold');
-    ctx.doc.setFontSize(6.5);
-    ctx.doc.setTextColor(...C.cyanL);
-    let x = ML + 2;
-    head.forEach((h, i) => {
-      ctx.doc.text(h.toUpperCase(), x, ctx.y);
-      x += cols[i];
-    });
-    ctx.y += 5;
-  }
-
-  drawHead();
-
-  for (const row of rows) {
-    ctx.doc.setFont('helvetica', 'normal');
-    ctx.doc.setFontSize(7.6);
-    const cells = row.map((cell, i) => ctx.doc.splitTextToSize(cell || '—', cols[i] - 4) as string[]);
-    const h = Math.max(...cells.map(c => c.length)) * 3.9 + 3;
-
-    if (ctx.y + h > Y_LIMIT) {
+    const available = Math.floor((Y_LIMIT - ctx.y - 6) / lh);
+    if (available < 3) {
       newPage(ctx);
-      drawHead();
+      continue;
     }
-
-    let x = ML + 2;
-    cells.forEach((c, i) => {
-      c.forEach((l, k) => {
-        ctx.doc.setFont('helvetica', 'normal');
-        ctx.doc.setFontSize(7.6);
-        ctx.doc.setTextColor(...C.grayL);
-        ctx.doc.text(l, x, ctx.y + k * 3.9);
-      });
-      x += cols[i];
-    });
-
-    ctx.y += h;
-    hLine(ctx.doc, ML, MR, ctx.y - 1.5, C.muted, 0.1);
-  }
-  ctx.y += 3;
-}
-
-// ─── Portada ─────────────────────────────────────────────────────────────────
-
-function cover(ctx: Ctx, state: Class1State, progress: Class1Progress) {
-  fillPage(ctx.doc);
-  accentBar(ctx.doc, 0, 2);
-
-  ctx.doc.setFont('courier', 'bold');
-  ctx.doc.setFontSize(8);
-  ctx.doc.setTextColor(...C.cyan);
-  ctx.doc.text('PROGRAMA DIAT · ESCUELA DE DERECHO PUCV', ML, 30);
-
-  ctx.doc.setFont('courier', 'normal');
-  ctx.doc.setFontSize(7.5);
-  ctx.doc.setTextColor(...C.gray);
-  ctx.doc.text('TALLER DE IA Y PROMPTING JURÍDICO · CLASE 1', ML, 36);
-
-  ctx.doc.setFont('helvetica', 'bold');
-  ctx.doc.setFontSize(26);
-  ctx.doc.setTextColor(...C.white);
-  const t = ctx.doc.splitTextToSize(TITLE, CW) as string[];
-  let y = 58;
-  t.forEach(l => { ctx.doc.text(l, ML, y); y += 11; });
-
-  ctx.doc.setFillColor(...C.cyan);
-  ctx.doc.rect(ML, y + 2, 32, 1.2, 'F');
-  y += 14;
-
-  ctx.doc.setFont('helvetica', 'normal');
-  ctx.doc.setFontSize(12);
-  ctx.doc.setTextColor(...C.grayL);
-  ctx.doc.text('Del prompt aislado al razonamiento jurídico asistido', ML, y);
-  y += 22;
-
-  // Ficha del estudiante
-  ctx.doc.setFillColor(...C.bgCard);
-  ctx.doc.roundedRect(ML, y, CW, 40, 2, 2, 'F');
-  ctx.doc.setDrawColor(...C.cyan);
-  ctx.doc.setLineWidth(0.25);
-  ctx.doc.roundedRect(ML, y, CW, 40, 2, 2, 'S');
-
-  const rows: [string, string][] = [
-    ['ESTUDIANTE', fullName(state.student) || '—'],
-    ['CORREO', state.student.email || '—'],
-    ['SESIÓN', `${class1Meta.date} · ${class1Meta.time}`],
-  ];
-  rows.forEach((r, i) => {
-    const ry = y + 11 + i * 10;
-    ctx.doc.setFont('courier', 'bold');
-    ctx.doc.setFontSize(7);
-    ctx.doc.setTextColor(...C.gray);
-    ctx.doc.text(r[0], ML + 6, ry);
-    ctx.doc.setFont('helvetica', 'bold');
-    ctx.doc.setFontSize(10);
-    ctx.doc.setTextColor(...C.white);
-    ctx.doc.text(r[1], ML + 40, ry);
-  });
-  y += 52;
-
-  // Hitos
-  ctx.doc.setFont('courier', 'bold');
-  ctx.doc.setFontSize(7);
-  ctx.doc.setTextColor(...C.gray);
-  ctx.doc.text('HITOS DE LA BITÁCORA', ML, y);
-  y += 7;
-
-  const hitos: [string, boolean][] = [
-    ['Producto A · prompt jurídico estructurado', progress.productA],
-    ['Producto B · matriz ICJR aplicada', progress.productB],
-    ['Producto C · desplazamiento conceptual', progress.productC],
-  ];
-  hitos.forEach(([labelText, ok]) => {
-    ctx.doc.setFillColor(...(ok ? C.emerald : C.grayD));
-    ctx.doc.circle(ML + 2, y - 1.2, 1.4, 'F');
-    ctx.doc.setFont('helvetica', 'normal');
-    ctx.doc.setFontSize(9);
-    ctx.doc.setTextColor(...(ok ? C.white : C.grayD));
-    ctx.doc.text(labelText, ML + 7, y);
+    const chunk = lines.slice(i, i + available);
+    const h = chunk.length * lh + 6;
+    ctx.doc.setFillColor(...C.bgCard);
+    ctx.doc.roundedRect(ML, ctx.y, CW, h, 2, 2, 'F');
     ctx.doc.setFont('courier', 'normal');
-    ctx.doc.setFontSize(7);
-    ctx.doc.setTextColor(...(ok ? C.emerald : C.grayD));
-    ctx.doc.text(ok ? 'COMPLETO' : 'INCOMPLETO', MR, y, { align: 'right' });
-    y += 7;
-  });
-
-  y += 8;
-  ctx.doc.setFont('helvetica', 'italic');
-  ctx.doc.setFontSize(8.5);
-  ctx.doc.setTextColor(...C.gray);
-  const thesis = ctx.doc.splitTextToSize(`«${class1Meta.thesis}»`, CW) as string[];
-  thesis.forEach(l => { ctx.doc.text(l, ML, y); y += 4.8; });
-
-  hLine(ctx.doc, ML, MR, 262, C.muted);
-  ctx.doc.setFont('courier', 'normal');
-  ctx.doc.setFontSize(7);
-  ctx.doc.setTextColor(...C.grayD);
-  ctx.doc.text(FOOT, ML, 268);
-  ctx.doc.text(
-    `Generado el ${new Date().toLocaleDateString('es-CL')}`,
-    MR, 268, { align: 'right' },
-  );
-  ctx.doc.setFontSize(6.5);
-  ctx.doc.text(
-    'Documento producido por el estudiante. No constituye certificación de competencia.',
-    PW / 2, 274, { align: 'center' },
-  );
+    ctx.doc.setFontSize(7.6);
+    ctx.doc.setTextColor(...C.grayL);
+    chunk.forEach((l, li) => ctx.doc.text(l, ML + 4, ctx.y + 5 + li * lh));
+    ctx.y += h + 3;
+    i += chunk.length;
+  }
 }
 
-// ─── Documento ───────────────────────────────────────────────────────────────
-
-/** Proyección pura de los datos que alimentan las secciones críticas del PDF. */
-export function bitacoraData(state: Class1State) {
-  return {
-    identity: {
-      name: fullName(state.student),
-      email: state.student.email,
-      date: class1Meta.date,
-    },
-    productA: {
-      task: state.productA.task,
-      risk: state.productA.risk,
-      notDelegating: state.productA.notDelegating,
-      components: [...state.productA.components],
-      prompt: state.productA.prompt,
-      decisions: state.productA.decisions.map((decision, index) => ({
-        decision,
-        reason: state.productA.reasons[index],
-      })),
-    },
-    audit: { ...state.b05 },
-    icjr: {
-      claims: state.b08.claims.map(claim => ({ ...claim })),
-      verifiedBy: state.b08.verifiedBy,
-      verifiedAt: state.b08.verifiedAt,
-      notes: state.b08.notes,
-    },
-    productC: {
-      initial: { ...state.b00 },
-      final: { ...state.b09 },
-    },
-  };
+export function class1PdfFilename(submission: Class1Submission): string {
+  return submissionFilename(submission).replace(/\.md$/, '.pdf');
 }
 
-export function bitacoraFilename(state: Class1State): string {
-  const clean = (s: string) =>
-    s.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]/g, '') || 'Estudiante';
-  const last = clean(state.student.lastName);
-  const first = clean(state.student.firstName);
-  return `DIAT_CLASE1_${last}_${first}_2026-08-27.pdf`;
-}
-
-export async function generateBitacoraPDF(
-  state: Class1State,
-  progress: Class1Progress,
-): Promise<Blob> {
-  const data = bitacoraData(state);
+/** Genera y descarga el PDF de la entrega. */
+export async function generateClass1PDF(submission: Class1Submission): Promise<void> {
   const JsPDF = await getJsPDF();
-  const doc = new JsPDF({ unit: 'mm', format: 'a4' });
-  const ctx: Ctx = { doc, y: 22, page: 1, student: data.identity.name };
+  const doc = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const student = submission.identity.name || 'Sin nombre';
+  const ctx: Ctx = { doc, y: 0, page: 1, student };
 
-  cover(ctx, state, progress);
-  newPage(ctx);
+  // Portada compacta: sin página completa desperdiciada.
+  fillPage(doc);
+  accentBar(doc, 0, 2);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.cyan);
+  doc.text(`${submission.meta.classCode} · ${submission.meta.classDate}`, ML, 24);
 
-  // 1 · Diagnóstico inicial
-  sectionTitle(ctx, '01', 'Diagnóstico inicial · B00');
-  keyValue(ctx, 'Respuesta', blameOptions.find(o => o.id === state.b00.blame)?.label ?? '—');
-  keyValue(ctx, 'Confianza', state.b00.confidence ?? '—');
-  body(ctx, 'Pregunta: un escrito contiene una cita doctrinal perfectamente formateada, pero el libro no existe. ¿Dónde está el fallo?', { size: 8, color: C.gray });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.setTextColor(...C.white);
+  const titleLines = doc.splitTextToSize(submission.meta.classTitle, CW) as string[];
+  let ty = 36;
+  titleLines.forEach(l => { doc.text(l, ML, ty); ty += 9; });
 
-  // 2 · Mitos
-  sectionTitle(ctx, '02', 'Cinco mitos · B02');
-  const mythRows = myths
-    .filter(m => state.b02.committed[m.id])
-    .map(m => {
-      const mine = state.b02.answers[m.id];
-      return [m.statement, mine ?? '—', m.answer, mine === m.answer ? 'Coincide' : 'Contrasta'];
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.grayL);
+  doc.text(student, ML, ty + 2);
+  if (submission.identity.email) {
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.gray);
+    doc.text(submission.identity.email, ML, ty + 8);
+  }
+  hLine(doc, ML, MR, ty + 14, C.cyan, 0.3);
+  ctx.y = ty + 24;
+
+  sectionTitle(ctx, '01', `Pregunta guía · ${submission.guidingQuestion}`);
+  field(ctx, 'Al comenzar', submission.initialQuestion.answerLabel);
+  field(ctx, 'Confianza', submission.initialQuestion.confidence ?? '—');
+
+  sectionTitle(ctx, '02', 'Prompt V1');
+  for (const row of submission.promptV1.config) field(ctx, row.label, row.value);
+  label(ctx, 'Texto');
+  promptCard(ctx, submission.promptV1.text);
+
+  sectionTitle(ctx, '03', 'Auditoría del prompt');
+  field(ctx, 'Herramienta', submission.audit.tool);
+  field(ctx, 'Sugerencia que acepté', submission.audit.accepted);
+  field(ctx, 'Sugerencia que rechacé', submission.audit.rejected);
+  field(ctx, 'Por qué', submission.audit.why);
+
+  sectionTitle(ctx, '04', 'Prompt V2 · auditado');
+  promptCard(ctx, submission.promptV2.text);
+
+  sectionTitle(ctx, '05', 'Verificación (ICJR)');
+  if (submission.verification.claims.length === 0) {
+    body(ctx, '— sin completar —');
+  } else {
+    submission.verification.claims.forEach((c, i) => {
+      label(ctx, `Afirmación ${i + 1} · identificar`);
+      body(ctx, c.claim, { mono: true, size: 8 });
+      field(ctx, 'Contrastar', c.source);
+      field(ctx, 'Justificar', c.locator);
+      field(ctx, 'Registrar', c.action);
     });
-  if (mythRows.length) {
-    table(ctx, ['Afirmación', 'Tu respuesta', 'Respuesta', 'Resultado'], mythRows, [50, 16, 16, 16]);
-  } else {
-    body(ctx, 'Sin respuestas registradas.', { color: C.grayD });
   }
 
-  // 3 · Diagnóstico DIAT
-  sectionTitle(ctx, '03', 'Diagnóstico DIAT · B03');
-  const compRows = diatComponents.map(c => [
-    c.label,
-    componentStates.find(s => s.id === state.b03.states[c.id])?.label ?? '—',
-  ]);
-  table(ctx, ['Componente', 'Estado diagnosticado'], compRows, [30, 70]);
-  label(ctx, 'Decisión implícita detectada');
-  quoteCard(ctx, state.b03.implicitDecisions);
-
-  // 4 · Producto A
-  sectionTitle(ctx, '04', 'Producto A · prompt jurídico estructurado · B04');
-  const a = data.productA;
-  keyValue(ctx, 'Tarea', a.task);
-  keyValue(ctx, 'Nivel de riesgo', riskLevels.find(r => r.id === a.risk)?.label ?? '—');
-  keyValue(
+  sectionTitle(ctx, '06', `Vuelta a la pregunta guía · ${submission.guidingQuestion}`);
+  field(
     ctx,
-    'Componentes',
-    a.components.length
-      ? a.components.map(id => diatComponents.find(c => c.id === id)?.label ?? id).join(' · ')
-      : '—',
+    'Al comenzar',
+    `${submission.initialQuestion.answerLabel} (confianza: ${submission.initialQuestion.confidence ?? '—'})`,
   );
-  label(ctx, 'Decisiones que no delego');
-  quoteCard(ctx, a.notDelegating);
-  label(ctx, 'Prompt');
-  quoteCard(ctx, a.prompt, { mono: true });
-
-  label(ctx, 'Tres decisiones de diseño justificadas');
-  const decRows = a.decisions
-    .map((item, i) => [String(i + 1), item.decision, item.reason])
-    .filter(r => r[1].trim() || r[2].trim());
-  if (decRows.length) {
-    table(ctx, ['#', 'Decisión', 'Por qué'], decRows, [6, 44, 50]);
-  } else {
-    body(ctx, 'Sin decisiones registradas.', { color: C.grayD });
-  }
-
-  // 5 · Auditoría
-  sectionTitle(ctx, '05', 'Auditoría del propio prompt · B05');
-  const toolName =
-    [...AI_TOOLS, AI_TOOL_NOTEBOOK].find(t => t.id === data.audit.tool)?.label ?? '—';
-  keyValue(ctx, 'Herramienta', toolName);
-  label(ctx, 'Auditoría obtenida');
-  quoteCard(ctx, data.audit.audit);
-  label(ctx, 'Sugerencia aceptada');
-  quoteCard(ctx, data.audit.accepted);
-  label(ctx, 'Por qué la acepto');
-  quoteCard(ctx, data.audit.acceptedWhy);
-  label(ctx, 'Sugerencia rechazada');
-  quoteCard(ctx, data.audit.rejected);
-  label(ctx, 'Con qué fundamento la rechazo');
-  quoteCard(ctx, data.audit.rejectedWhy);
-
-  // 6 · Error Lab
-  sectionTitle(ctx, '06', 'Error Lab · B06');
-  keyValue(
+  field(
     ctx,
-    'Fuente real ≠ conclusión',
-    state.b06.revealCommitted
-      ? `Respuesta: ${state.b06.revealAnswer === 'no' ? 'no basta con que el rol exista' : 'la daba por verificada'} · confianza declarada: ${state.b06.revealConfidence ?? '—'}`
-      : 'Sin registrar',
+    'Ahora',
+    `${submission.finalQuestion.answerLabel} (confianza: ${submission.finalQuestion.confidence ?? '—'})`,
   );
-  const errRows = Object.entries(state.b06.cases)
-    .filter(([id]) => state.b06.committed[id])
-    .map(([id, chosen]) => {
-      const def = errorTypes.find(t => t.id === chosen);
-      return [id.toUpperCase(), def ? `Tipo ${def.n} · ${def.label}` : String(chosen)];
-    });
-  if (errRows.length) table(ctx, ['Caso', 'Clasificación'], errRows, [14, 86]);
-  if (state.b06.takeaway.trim()) {
-    label(ctx, 'Qué me llevo del contraste tipo 2 / tipo 4');
-    quoteCard(ctx, state.b06.takeaway);
-  }
 
-  // 7 · Grounding
-  sectionTitle(ctx, '07', 'Grounding · B07');
-  keyValue(
+  sectionTitle(ctx, '07', 'Microreflexión');
+  body(
     ctx,
-    'Procedencia',
-    state.b07.committed['g1'] ? (state.b07.decisions['g1'] === 'b' ? 'Un localizador no valida la conclusión' : 'Respuesta registrada') : 'Sin registrar',
+    `Antes pensaba que el problema era ${submission.reflection.before || '—'}. Ahora agregaría ${submission.reflection.after || '—'}.`,
   );
-  keyValue(
-    ctx,
-    'Interpretación',
-    state.b07.committed['g2'] ? (state.b07.decisions['g2'] === 'b' ? 'Identificada como inferencia' : 'Respuesta registrada') : 'Sin registrar',
-  );
-  if (state.b07.note.trim()) {
-    label(ctx, 'Nota de la demostración');
-    quoteCard(ctx, state.b07.note);
-  }
-
-  // 8 · Producto B
-  sectionTitle(ctx, '08', 'Producto B · matriz ICJR · B08');
-  const icjrRows = data.icjr.claims
-    .filter(c => c.claim.trim())
-    .map(c => [
-      c.claim,
-      c.status ? `${c.status} · ${epistemicStatuses.find(e => e.id === c.status)?.label ?? ''}` : '—',
-      c.source,
-      c.locator,
-      [
-        claimStates.find(s => s.id === c.state)?.label,
-        claimActions.find(x => x.id === c.action)?.label,
-      ].filter(Boolean).join(' → ') || '—',
-    ]);
-  if (icjrRows.length) {
-    table(ctx, ['Afirmación', 'Estatus', 'Fuente', 'Localizador', 'Estado → Acción'], icjrRows, [30, 16, 18, 16, 20]);
-  } else {
-    body(ctx, 'Sin afirmaciones registradas.', { color: C.grayD });
-  }
-  if (data.icjr.verifiedBy.trim() || data.icjr.verifiedAt.trim()) {
-    keyValue(ctx, 'Verificó', `${data.icjr.verifiedBy || '—'}${data.icjr.verifiedAt ? ` · ${data.icjr.verifiedAt}` : ''}`);
-  }
-  if (data.icjr.notes.trim()) {
-    label(ctx, 'Registro (paso R)');
-    quoteCard(ctx, data.icjr.notes);
-  }
-
-  // 9 · Producto C
-  sectionTitle(ctx, '09', 'Producto C · desplazamiento conceptual · B09');
-  const beforeLabel = blameOptions.find(o => o.id === data.productC.initial.blame)?.label ?? '—';
-  const afterLabel = blameOptions.find(o => o.id === data.productC.final.blame)?.label ?? '—';
-  table(
-    ctx,
-    ['', 'Respuesta', 'Confianza'],
-    [
-      ['Antes (B00)', beforeLabel, data.productC.initial.confidence ?? '—'],
-      ['Ahora (B09)', afterLabel, data.productC.final.confidence ?? '—'],
-    ],
-    [20, 55, 25],
-  );
-  label(ctx, 'Antes de esta clase pensaba que el problema era');
-  quoteCard(ctx, data.productC.final.before);
-  label(ctx, 'Ahora agregaría');
-  quoteCard(ctx, data.productC.final.after);
-  if (data.productC.final.doubt.trim()) {
-    label(ctx, 'Todavía tengo una duda sobre');
-    quoteCard(ctx, data.productC.final.doubt);
-  }
-
-  // 10 · Cierre
-  sectionTitle(ctx, '10', 'Tres reglas para recordar');
-  class1Meta.rules.forEach((r, i) => {
-    ensure(ctx, 12);
-    ctx.doc.setFont('courier', 'bold');
-    ctx.doc.setFontSize(9);
-    ctx.doc.setTextColor(...C.cyan);
-    ctx.doc.text(String(i + 1), ML, ctx.y);
-    body(ctx, r, { indent: 8, size: 9.5, color: C.white });
-  });
-
-  ensure(ctx, 26);
-  ctx.y += 4;
-  ctx.doc.setFillColor(...C.bgCard);
-  ctx.doc.roundedRect(ML, ctx.y, CW, 18, 2, 2, 'F');
-  ctx.doc.setDrawColor(...C.cyan);
-  ctx.doc.setLineWidth(0.25);
-  ctx.doc.roundedRect(ML, ctx.y, CW, 18, 2, 2, 'S');
-  ctx.doc.setFont('helvetica', 'bold');
-  ctx.doc.setFontSize(13);
-  ctx.doc.setTextColor(...C.white);
-  ctx.doc.text('LA IA NO COMPARECE ANTE EL TRIBUNAL.', PW / 2, ctx.y + 8, { align: 'center' });
-  ctx.doc.setFont('helvetica', 'normal');
-  ctx.doc.setFontSize(7.5);
-  ctx.doc.setTextColor(...C.gray);
-  ctx.doc.text(
-    'La responsabilidad profesional sobre lo que se afirma, cita y firma sigue siendo humana.',
-    PW / 2, ctx.y + 14, { align: 'center' },
-  );
-  ctx.y += 24;
 
   footer(ctx);
-  return doc.output('blob');
+  doc.save(class1PdfFilename(submission));
 }

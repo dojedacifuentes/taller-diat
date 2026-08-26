@@ -4,11 +4,35 @@ Plataforma de aprendizaje del taller de prompting y razonamiento jurídico asist
 
 ## Clase 1
 
-`/clase-1` implementa un recorrido individual guiado B00–B09. Conserva el trabajo en el navegador, genera la Bitácora en PDF y no requiere backend ni claves de IA.
+`/clase-1` es una superficie de ejecución de cinco etapas:
+**pregunta → prompt → auditoría → verificación → cierre**. El estudiante decide,
+construye un prompt que se pega y se ejecuta, lo hace auditar por su propia IA,
+comprueba una afirmación contra su fuente y entrega. El trabajo se conserva en el
+navegador; no hay cuenta, ni backend de usuarios, ni API generativa.
 
 - Arquitectura y extensión: [`CLASS1_ARCHITECTURE.md`](./CLASS1_ARCHITECTURE.md)
 - Conflictos editoriales y decisiones abiertas: [`CLASS1_CONTENT_ISSUES.md`](./CLASS1_CONTENT_ISSUES.md)
-- Pruebas focalizadas: `npm run test:class1`
+- Pruebas: `npm test` (estado, reparto y entrega + regla dura del compilador)
+
+### Entrega por correo
+
+La descarga funciona siempre. El envío por correo es opcional y **server-side**:
+sin las variables de [`.env.example`](./.env.example) configuradas, el botón
+«Enviar Clase 1» informa de que no está disponible y el estudiante entrega
+descargando el archivo. Nunca se muestra un éxito falso.
+
+| Variable | Obligatoria | Para qué |
+| --- | --- | --- |
+| `RESEND_API_KEY` | sí | Clave del proveedor de correo. |
+| `CLASS1_SUBMISSION_FROM` | sí | Remitente de un dominio verificado. |
+| `CLASS1_SUBMISSION_EMAIL` | no | Destinatario. Por defecto, el del programa. |
+| `CLASS1_SUBMISSION_CC` | no | Copia. Por defecto, la del programa. |
+
+### Artefactos de sala
+
+El PPT se genera desde el mismo canon que la plataforma, de modo que no puedan
+contradecirse: `npm run build:class1-ppt` compila, renderiza y audita las 30
+diapositivas. Requiere PowerPoint y solo se ejecuta en local.
 
 ## Desarrollo
 

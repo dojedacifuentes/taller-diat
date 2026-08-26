@@ -1,0 +1,456 @@
+{
+  "schemaVersion": "1.0.0",
+  "canonVersion": "1.0",
+  "guionVersion": "2.0",
+  "class": {
+    "code": "Clase 1",
+    "title": "Del prompt aislado al razonamiento jurídico asistido",
+    "program": "Programa de Postítulo en Derecho, Inteligencia Artificial y Tecnología (DIAT)",
+    "institution": "Escuela de Derecho · Pontificia Universidad Católica de Valparaíso",
+    "date": "Jueves 27 de agosto de 2026",
+    "dateShort": "27 ago 2026",
+    "startTime": "15:00",
+    "endTime": "16:30",
+    "duration": 90,
+    "route": "/clase-1",
+    "mode": "Presencial · aprendizaje individual guiado por plataforma con conducción docente y puesta en común colectiva",
+    "thesis": "Una buena instrucción mejora la pertinencia; una buena fuente mejora el fundamento; ninguna de las dos elimina el deber de verificar.",
+    "idea": "PROMPT + CONTEXTO Y FUENTES + VERIFICACIÓN = RAZONAMIENTO JURÍDICO ASISTIDO",
+    "publicProduct": "prompt estructurado + matriz de verificación",
+    "classroomRule": "No se suben a ninguna herramienta datos personales, antecedentes de clientes, expedientes privados ni información confidencial. Se trabaja exclusivamente con material público o anonimizado."
+  },
+  "canonical": {
+    "designQuestions": [
+      "Contexto",
+      "Rol",
+      "Tarea",
+      "Fuentes",
+      "Restricciones",
+      "Formato",
+      "Control"
+    ],
+    "preferredLabel": "siete preguntas de diseño",
+    "icjr": [
+      "Identificar",
+      "Contrastar",
+      "Justificar",
+      "Registrar"
+    ],
+    "epistemicStatus": [
+      "A — Respaldada por fuente",
+      "B — Síntesis de fuente",
+      "C — Inferencia",
+      "D — Hipótesis",
+      "E — Información externa no verificada"
+    ],
+    "verificationState": [
+      "Confirmada",
+      "Parcialmente respaldada",
+      "No respaldada",
+      "Contradictoria",
+      "No verificable con las fuentes disponibles"
+    ],
+    "professionalAction": [
+      "Mantener",
+      "Matizar",
+      "Corregir",
+      "Eliminar",
+      "Investigar"
+    ],
+    "flow": [
+      "TAREA",
+      "INSTRUCCIÓN",
+      "CONTEXTO Y FUENTES",
+      "RESPUESTA",
+      "VERIFICACIÓN",
+      "DECISIÓN HUMANA"
+    ],
+    "taughtErrors": [
+      "Fuente inexistente",
+      "Fuente real, proposición falsa",
+      "Cita alterada",
+      "Descontextualización"
+    ],
+    "complementaryErrors": [
+      "Inferencia no declarada",
+      "Omisión relevante"
+    ],
+    "products": {
+      "A": "Prompt jurídico estructurado",
+      "B": "Matriz ICJR aplicada",
+      "C": "Desplazamiento conceptual: Antes de esta clase pensaba que el problema era ___; ahora agregaría ___."
+    },
+    "bitacora": "Bitácora de Razonamiento Jurídico Asistido",
+    "geminiNotebook": {
+      "name": "Gemini Notebook",
+      "formerName": "NotebookLM",
+      "renamedOn": "16 de julio de 2026",
+      "warning": "Gemini Notebook can make mistakes and its answers don’t reflect Google’s views. Always consult a qualified professional for medical, legal, or financial advice.",
+      "warningCheckedOn": "22 de agosto de 2026"
+    },
+    "finalRules": [
+      "Un prompt mejor reduce ambigüedad; no garantiza verdad.",
+      "Una fuente delimitada mejora la trazabilidad; no garantiza interpretación correcta.",
+      "Si una afirmación importa jurídicamente, verifícala antes de asumirla como propia."
+    ],
+    "retiredTerms": [
+      "anti-alucinaciones",
+      "cazador de alucinaciones",
+      "siete capas",
+      "siete casillas",
+      "checklist ICJR",
+      "ficha de verificación"
+    ]
+  },
+  "blocks": [
+    {
+      "id": "b00",
+      "block": "B00",
+      "title": "Una cita perfecta que no existe",
+      "subtitle": "Diagnóstico inicial",
+      "phase": "COMPRENDER",
+      "startTime": "15:00",
+      "endTime": "15:08",
+      "duration": 7,
+      "slides": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "route": "/clase-1/b00",
+      "objective": "Exponer la diferencia entre plausibilidad formal y respaldo, y registrar una línea base individual recuperable en B09.",
+      "professorRole": "Enuncia la regla de aula, proyecta la ficha falsa, lanza la pregunta, guarda silencio y revela después la línea disciplinaria chilena de 2026.",
+      "studentAction": "Examina la ficha, decide quién falló, declara confianza y confirma; recupera la decisión al cierre.",
+      "product": null,
+      "output": "Registro individual inicial",
+      "anchorPhrase": "La IA no comparece ante el tribunal.",
+      "concepts": [
+        "responsabilidad profesional",
+        "plausibilidad formal",
+        "línea disciplinaria 2026"
+      ],
+      "canonicalTerms": [
+        "responsabilidad profesional",
+        "decisión individual",
+        "nivel de confianza"
+      ],
+      "visualPurpose": "Caso de apertura, votación silenciosa, evidencia y sustitución del flujo incompleto.",
+      "completeWhen": "El estudiante confirmó una respuesta y un nivel de confianza."
+    },
+    {
+      "id": "b01",
+      "block": "B01",
+      "title": "Qué hace un modelo de lenguaje",
+      "subtitle": "Modelo mental mínimo",
+      "phase": "COMPRENDER",
+      "startTime": "15:08",
+      "endTime": "15:18",
+      "duration": 10,
+      "slides": [
+        6,
+        7,
+        8
+      ],
+      "route": "/clase-1/b01",
+      "objective": "Explicar un modelo mental mínimo, distinguir modelo de producto y separar fluidez de verdad.",
+      "professorRole": "Explica las distinciones esenciales y realiza una demostración breve sin fuentes; no explica la interfaz de la plataforma.",
+      "studentAction": "Explora el diagrama modelo/producto y resuelve dos comprobaciones breves sobre capacidades y límites.",
+      "product": null,
+      "output": "Dos comprobaciones de comprensión",
+      "anchorPhrase": "Fluidez ≠ verdad.",
+      "concepts": [
+        "IA vs. IA generativa",
+        "modelo vs. producto",
+        "variabilidad de las respuestas"
+      ],
+      "canonicalTerms": [
+        "modelo de lenguaje",
+        "producto",
+        "continuación probable"
+      ],
+      "visualPurpose": "Diagrama de mecanismo, arquitectura de producto y ancla a pantalla completa.",
+      "completeWhen": "Exploró al menos tres nodos del diagrama y respondió las dos comprobaciones."
+    },
+    {
+      "id": "b02",
+      "block": "B02",
+      "title": "Cinco mitos",
+      "subtitle": "Desmontaje de intuiciones",
+      "phase": "COMPRENDER",
+      "startTime": "15:18",
+      "endTime": "15:22",
+      "duration": 5,
+      "slides": [
+        9
+      ],
+      "route": "/clase-1/b02",
+      "objective": "Desmontar cinco intuiciones erróneas mediante respuesta individual anterior al feedback.",
+      "professorRole": "Introduce la consigna, observa en silencio y comenta solo después de la confirmación individual.",
+      "studentAction": "Responde las cinco afirmaciones una a una y confirma antes de ver la explicación.",
+      "product": null,
+      "output": "Cinco decisiones confirmadas",
+      "anchorPhrase": "Un buen prompt reduce decisiones implícitas.",
+      "concepts": [
+        "commit before feedback",
+        "grounding no es infalibilidad",
+        "rol como componente prescindible"
+      ],
+      "canonicalTerms": [
+        "mito",
+        "feedback individual",
+        "confirmar antes de ver"
+      ],
+      "visualPurpose": "Consigna única sin respuestas proyectadas.",
+      "completeWhen": "Las cinco afirmaciones fueron confirmadas."
+    },
+    {
+      "id": "b03",
+      "block": "B03",
+      "title": "Diagnóstico DIAT",
+      "subtitle": "Siete preguntas de diseño",
+      "phase": "INSTRUIR",
+      "startTime": "15:22",
+      "endTime": "15:28",
+      "duration": 15,
+      "slides": [
+        10,
+        11,
+        12
+      ],
+      "route": "/clase-1/b03",
+      "objective": "Diagnosticar qué decisiones deja implícitas un prompt y ajustar la estructura al riesgo de la tarea.",
+      "professorRole": "Presenta los siete componentes como preguntas, destaca Fuentes y Control y cierra con proporcionalidad al riesgo.",
+      "studentAction": "Diagnostica un prompt de riesgo medio, asigna estado a los siete componentes y nombra una decisión implícita.",
+      "product": null,
+      "output": "Insumo del Producto A",
+      "anchorPhrase": "Son siete preguntas de diseño, no siete casillas obligatorias.",
+      "concepts": [
+        "siete componentes DIAT",
+        "decisión implícita",
+        "proporcionalidad al riesgo"
+      ],
+      "canonicalTerms": [
+        "Contexto",
+        "Rol",
+        "Tarea",
+        "Fuentes",
+        "Restricciones",
+        "Formato",
+        "Control"
+      ],
+      "visualPurpose": "Circuito de siete componentes, consigna diagnóstica y semáforo de riesgo.",
+      "completeWhen": "Los siete componentes tienen estado y existe al menos una decisión implícita descrita."
+    },
+    {
+      "id": "b04",
+      "block": "B04",
+      "title": "Prompt Lab",
+      "subtitle": "Construcción del encargo",
+      "phase": "INSTRUIR",
+      "startTime": "15:28",
+      "endTime": "15:44",
+      "duration": 10,
+      "slides": [
+        13,
+        14
+      ],
+      "route": "/clase-1/b04",
+      "objective": "Transformar una instrucción vaga en un prompt jurídico estructurado y justificar decisiones de diseño.",
+      "professorRole": "Enmarca el Producto A durante 60 segundos, se detiene, circula y revela el Prompt DIAT de referencia después del trabajo.",
+      "studentAction": "Construye individualmente tarea, riesgo, decisiones no delegadas, componentes pertinentes, prompt y tres justificaciones.",
+      "product": "A",
+      "output": "Prompt jurídico estructurado",
+      "anchorPhrase": "No lo hagan más largo. Háganlo menos ambiguo.",
+      "concepts": [
+        "especificación progresiva",
+        "cobertura DIAT",
+        "decisiones justificadas"
+      ],
+      "canonicalTerms": [
+        "Prompt Lab",
+        "Producto A",
+        "prompt jurídico estructurado"
+      ],
+      "visualPurpose": "Estado de trabajo inequívoco seguido de revelación comparativa del prompt de referencia.",
+      "completeWhen": "Producto A con tarea, riesgo, prompt y al menos una decisión justificada."
+    },
+    {
+      "id": "b05",
+      "block": "B05",
+      "title": "Metaprompting",
+      "subtitle": "Auditar antes de ejecutar",
+      "phase": "INSTRUIR",
+      "startTime": "15:44",
+      "endTime": "15:55",
+      "duration": 8,
+      "slides": [
+        15,
+        16
+      ],
+      "route": "/clase-1/b05",
+      "objective": "Auditar el Producto A sin delegar el propósito profesional ni confundir auditoría con verificación.",
+      "professorRole": "Señala las dos líneas decisivas del metaprompt, recuerda la regla de datos y cierra con cinco límites.",
+      "studentAction": "Ejecuta el metaprompt sobre A en su herramienta, vuelve y fundamenta una sugerencia aceptada y una rechazada.",
+      "product": "A",
+      "output": "Producto A refinado",
+      "anchorPhrase": "Auditar no es verificar.",
+      "concepts": [
+        "auditor",
+        "entrevistador",
+        "generador",
+        "inflación de requisitos"
+      ],
+      "canonicalTerms": [
+        "metaprompting",
+        "auditoría de instrucciones",
+        "Producto A refinado"
+      ],
+      "visualPurpose": "Metaprompt íntegro con dos líneas resaltadas y regla de orden.",
+      "completeWhen": "Existe una sugerencia aceptada y una rechazada, ambas fundamentadas."
+    },
+    {
+      "id": "b06",
+      "block": "B06",
+      "title": "Error Lab",
+      "subtitle": "Cuatro errores jurídicos generativos",
+      "phase": "DESCONFIAR",
+      "startTime": "15:55",
+      "endTime": "16:03",
+      "duration": 10,
+      "slides": [
+        17,
+        18,
+        19
+      ],
+      "route": "/clase-1/b06",
+      "objective": "Reconocer cuatro errores de aula, con el tipo 2 como núcleo, y diferenciar detección de mera existencia de fuente.",
+      "professorRole": "Expone los cuatro tipos, deja el tipo 2 para la actividad y cierra con siete señales de alerta.",
+      "studentAction": "Clasifica casos breves y atraviesa una revelación progresiva sobre una fuente real que no sostiene la proposición.",
+      "product": null,
+      "output": "Clasificación individual de errores",
+      "anchorPhrase": "Fuente real ≠ conclusión correcta.",
+      "concepts": [
+        "fuente inexistente",
+        "fuente real, proposición falsa",
+        "cita alterada",
+        "descontextualización"
+      ],
+      "canonicalTerms": [
+        "error jurídico generativo",
+        "tipo 2",
+        "señales de alerta"
+      ],
+      "visualPurpose": "Taxonomía de cuatro tarjetas, ancla del tipo 2 y tarjeta de señales.",
+      "completeWhen": "Resolución de los casos y de la revelación progresiva."
+    },
+    {
+      "id": "b07",
+      "block": "B07",
+      "title": "Grounding Lab",
+      "subtitle": "Procedencia e interpretación",
+      "phase": "DESCONFIAR",
+      "startTime": "16:03",
+      "endTime": "16:12",
+      "duration": 10,
+      "slides": [
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "route": "/clase-1/b07",
+      "objective": "Distinguir procedencia de interpretación y aplicar reglas de confidencialidad al trabajo sobre corpus cerrado.",
+      "professorRole": "Conduce seis movimientos sobre corpus cerrado, preserva la conclusión discutible y enmarca confidencialidad y Ley 21.719.",
+      "studentAction": "Decide en plataforma mientras observa si un localizador basta para verificar una conclusión.",
+      "product": null,
+      "output": "Dos decisiones guiadas",
+      "anchorPhrase": "Grounding mejora la procedencia, no garantiza la interpretación.",
+      "concepts": [
+        "tres modos de trabajo",
+        "grounding",
+        "localizador",
+        "confidencialidad"
+      ],
+      "canonicalTerms": [
+        "Gemini Notebook",
+        "entorno basado en fuentes",
+        "corpus cerrado",
+        "Ley 21.719"
+      ],
+      "visualPurpose": "Comparación de modos, ancla, demostración en seis movimientos, evidencia del proveedor y línea de tiempo legal.",
+      "completeWhen": "Las dos decisiones guiadas fueron confirmadas."
+    },
+    {
+      "id": "b08",
+      "block": "B08",
+      "title": "ICJR Studio",
+      "subtitle": "Identificar · Contrastar · Justificar · Registrar",
+      "phase": "COMPROBAR",
+      "startTime": "16:12",
+      "endTime": "16:22",
+      "duration": 10,
+      "slides": [
+        25,
+        26,
+        27
+      ],
+      "route": "/clase-1/b08",
+      "objective": "Aplicar ICJR a afirmaciones concretas y separar estatus epistémico, estado del contraste y acción profesional.",
+      "professorRole": "Explica las cuatro operaciones, muestra una fila resuelta y circula preguntando si se leyó el pasaje o solo se comprobó existencia.",
+      "studentAction": "Completa dos afirmaciones con estatus, fuente, localizador, estado y acción.",
+      "product": "B",
+      "output": "Matriz ICJR aplicada",
+      "anchorPhrase": "Control ex ante; ICJR ex post.",
+      "concepts": [
+        "ICJR",
+        "cinco estatus epistémicos",
+        "no verificable como resultado válido"
+      ],
+      "canonicalTerms": [
+        "Matriz ICJR",
+        "estatus",
+        "estado",
+        "acción"
+      ],
+      "visualPurpose": "Protocolo, clasificación A–E y estado de trabajo con una fila resuelta persistente.",
+      "completeWhen": "Dos afirmaciones tienen estatus, fuente, localizador, estado y acción."
+    },
+    {
+      "id": "b09",
+      "block": "B09",
+      "title": "Cierre",
+      "subtitle": "Volver a la primera pregunta",
+      "phase": "INTEGRAR",
+      "startTime": "16:22",
+      "endTime": "16:30",
+      "duration": 5,
+      "slides": [
+        28,
+        29,
+        30
+      ],
+      "route": "/clase-1/b09",
+      "objective": "Integrar el sistema completo, comparar antes/ahora y formular el desplazamiento conceptual del Producto C.",
+      "professorRole": "Recupera la pregunta inicial, integra la respuesta y enuncia las tres reglas de salida.",
+      "studentAction": "Vuelve a decidir, compara con B00, completa Producto C y cierra la Bitácora.",
+      "product": "C",
+      "output": "Desplazamiento conceptual y Bitácora integrada",
+      "anchorPhrase": "La IA no comparece ante el tribunal.",
+      "concepts": [
+        "metacognición",
+        "tres reglas",
+        "decisión humana"
+      ],
+      "canonicalTerms": [
+        "Producto C",
+        "Bitácora de Razonamiento Jurídico Asistido",
+        "responsabilidad profesional"
+      ],
+      "visualPurpose": "Síntesis del flujo, consigna de cierre y ancla final institucional.",
+      "completeWhen": "Respondió de nuevo, declaró confianza y completó el Producto C."
+    }
+  ]
+}

@@ -1,205 +1,182 @@
 'use client';
 // ─────────────────────────────────────────────────────────────────────────────
-// CLASE 1 · SISTEMA DE INTERFAZ DE APRENDIZAJE
+// CLASE 1 · PIEZAS DE INTERFAZ
 //
-// Piezas específicas de la experiencia guiada. Reutilizan el lenguaje visual del
-// sitio (superficies oscuras, acento cian, etiquetas mono) y añaden solo lo que
-// una actividad necesita: comprometerse, recibir feedback, copiar, registrar.
+// Superficie de ejecución, no manual. Lo que hay aquí sirve para decidir rápido,
+// copiar, escribir poco y seguir: botones grandes, áreas táctiles cómodas y
+// ningún cuadro explicativo.
 //
 // Regla de accesibilidad transversal: ninguna decisión se comunica solo por
-// color; siempre hay texto o marca visible que la acompaña.
+// color; siempre hay marca o texto que la acompaña.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Check, Copy, Lock, AlertTriangle, Lightbulb, Scale, ShieldCheck, PenLine } from 'lucide-react';
-
-// ─── Callouts ────────────────────────────────────────────────────────────────
-
-const calloutStyles = {
-  idea: {
-    label: 'Idea clave',
-    icon: Lightbulb,
-    box: 'border-cyan-500/25 bg-cyan-500/[0.06]',
-    text: 'text-cyan-300',
-  },
-  ejemplo: {
-    label: 'Ejemplo jurídico',
-    icon: Scale,
-    box: 'border-indigo-500/25 bg-indigo-500/[0.06]',
-    text: 'text-indigo-300',
-  },
-  alerta: {
-    label: 'Alerta',
-    icon: AlertTriangle,
-    box: 'border-rose-500/30 bg-rose-500/[0.07]',
-    text: 'text-rose-300',
-  },
-  verifica: {
-    label: 'Verifica',
-    icon: ShieldCheck,
-    box: 'border-emerald-500/25 bg-emerald-500/[0.06]',
-    text: 'text-emerald-300',
-  },
-  aplicalo: {
-    label: 'Aplícalo',
-    icon: PenLine,
-    box: 'border-white/[0.12] bg-white/[0.03]',
-    text: 'text-zinc-300',
-  },
-} as const;
-
-export type CalloutKind = keyof typeof calloutStyles;
-
-export function Callout({
-  kind, title, children,
-}: { kind: CalloutKind; title?: string; children: ReactNode }) {
-  const s = calloutStyles[kind];
-  const Icon = s.icon;
-  return (
-    <div className={`rounded-xl border ${s.box} px-4 py-3.5`}>
-      <div className={`flex items-center gap-1.5 mono text-[10px] font-bold uppercase tracking-[0.14em] ${s.text} mb-2`}>
-        <Icon className="w-3 h-3" aria-hidden />
-        {title ?? s.label}
-      </div>
-      <div className="text-sm text-zinc-300 leading-relaxed space-y-2">{children}</div>
-    </div>
-  );
-}
-
-/** Declaración a pantalla completa: FLUIDEZ ≠ VERDAD. */
-export function Statement({
-  children, caption, tone = 'ink',
-}: { children: ReactNode; caption?: string; tone?: 'ink' | 'accent' }) {
-  const box =
-    tone === 'accent'
-      ? 'border-cyan-500/40 bg-cyan-500/[0.08]'
-      : 'border-white/[0.10] bg-[oklch(0.12_0.02_250)]';
-  return (
-    <div className={`rounded-xl border ${box} px-5 py-6 text-center`}>
-      <p className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-tight">{children}</p>
-      {caption && <p className="mt-2.5 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-2xl mx-auto">{caption}</p>}
-    </div>
-  );
-}
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { Check, Copy, Download, Lock } from 'lucide-react';
 
 // ─── Copiar ──────────────────────────────────────────────────────────────────
 
+/**
+ * Copia con respaldo: `navigator.clipboard` exige contexto seguro y permiso.
+ * Cuando no está disponible se usa la selección oculta, que funciona en los
+ * navegadores móviles antiguos que todavía aparecen en sala.
+ */
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Se intenta el respaldo.
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 export function CopyButton({
-  text, label = 'Copiar', className = '',
-}: { text: string; label?: string; className?: string }) {
-  const [done, setDone] = useState(false);
+  text, label = 'Copiar', disabled = false, variant = 'ghost', className = '',
+}: {
+  text: string;
+  label?: string;
+  disabled?: boolean;
+  variant?: 'ghost' | 'primary';
+  className?: string;
+}) {
+  const [state, setState] = useState<'idle' | 'done' | 'failed'>('idle');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      // Sin permiso de portapapeles: selección manual como alternativa.
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); } catch { /* nada más que hacer */ }
-      document.body.removeChild(ta);
-    }
-    setDone(true);
+  const onClick = useCallback(async () => {
+    const ok = await copyText(text);
+    setState(ok ? 'done' : 'failed');
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setDone(false), 2000);
-  }
+    timer.current = setTimeout(() => setState('idle'), 2200);
+  }, [text]);
+
+  const base =
+    variant === 'primary'
+      ? 'border-cyan-500/45 bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25'
+      : 'border-white/[0.14] bg-white/[0.04] text-zinc-200 hover:border-cyan-500/40 hover:text-cyan-300';
 
   return (
     <button
       type="button"
-      onClick={copy}
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-300 transition-colors hover:border-cyan-500/40 hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 ${className}`}
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.02] disabled:text-zinc-600 ${base} ${className}`}
     >
-      {done ? <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden /> : <Copy className="w-3.5 h-3.5" aria-hidden />}
-      <span>{done ? 'Copiado' : label}</span>
+      {state === 'done' ? (
+        <Check className="h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
+      ) : (
+        <Copy className="h-4 w-4 shrink-0" aria-hidden />
+      )}
+      <span>
+        {state === 'done' ? 'Copiado ✓' : state === 'failed' ? 'Selecciona y copia' : label}
+      </span>
     </button>
   );
 }
 
-/** Bloque de prompt copiable, en monoespaciada, con etiqueta. */
-export function PromptBlock({
-  label, text, footer,
-}: { label: string; text: string; footer?: ReactNode }) {
+/** Descarga un texto como archivo, sin depender de ningún servicio. */
+export function downloadText(text: string, filename: string): void {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  // El objeto se libera en el siguiente turno: Safari lo necesita vivo cuando
+  // se dispara la descarga.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function DownloadButton({
+  onClick, label = 'Descargar', disabled = false,
+}: { onClick: () => void; label?: string; disabled?: boolean }) {
   return (
-    <div className="rounded-xl border border-white/[0.12] overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] bg-white/[0.03] px-3.5 py-2">
-        <span className="mono text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-400">{label}</span>
-        <CopyButton text={text} />
-      </div>
-      <pre className="mono overflow-x-auto whitespace-pre-wrap break-words bg-[oklch(0.06_0.014_250)] px-3.5 py-3.5 text-[12.5px] leading-relaxed text-zinc-300">
-        {text}
-      </pre>
-      {footer && <div className="border-t border-white/[0.08] bg-white/[0.02] px-3.5 py-2.5 text-xs text-zinc-400">{footer}</div>}
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.14] bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-zinc-200 transition-colors hover:border-cyan-500/40 hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:cursor-not-allowed disabled:text-zinc-600"
+    >
+      <Download className="h-4 w-4 shrink-0" aria-hidden />
+      {label}
+    </button>
   );
 }
 
-// ─── Elección accesible ──────────────────────────────────────────────────────
+// ─── Elecciones por botón ────────────────────────────────────────────────────
 
-export interface ChoiceOption {
+export interface ChipOption {
   id: string;
   label: string;
   hint?: string;
+  badge?: string;
 }
 
-/**
- * Grupo de opciones exclusivas. Radios reales: navegable con flechas y
- * anunciable por lector de pantalla.
- */
-export function ChoiceGroup({
-  legend, options, value, onChange, disabled = false, columns = 1, mark,
+/** Selección única. Radios reales bajo la piel: teclado y lector de pantalla. */
+export function ChipRadio({
+  legend, options, value, onChange, columns = 2, disabled = false,
 }: {
   legend: string;
-  options: readonly ChoiceOption[];
+  options: readonly ChipOption[];
   value: string | null;
   onChange: (id: string) => void;
-  disabled?: boolean;
   columns?: 1 | 2 | 3;
-  /** Marca por opción tras el commit: acierto, error o neutro. */
-  mark?: (id: string) => 'ok' | 'bad' | null;
+  disabled?: boolean;
 }) {
   const name = useId();
   const cols = columns === 3 ? 'sm:grid-cols-3' : columns === 2 ? 'sm:grid-cols-2' : '';
   return (
     <fieldset disabled={disabled} className="min-w-0">
-      <legend className="mb-2.5 text-sm font-medium text-zinc-200">{legend}</legend>
+      <legend className="mb-2.5 text-sm font-semibold text-zinc-100">{legend}</legend>
       <div className={`grid gap-2 ${cols}`}>
         {options.map(o => {
-          const selected = value === o.id;
-          const m = mark?.(o.id) ?? null;
-          const tone =
-            m === 'ok'
-              ? 'border-emerald-500/50 bg-emerald-500/[0.08]'
-              : m === 'bad'
-                ? 'border-rose-500/50 bg-rose-500/[0.08]'
-                : selected
-                  ? 'border-cyan-500/50 bg-cyan-500/[0.08]'
-                  : 'border-white/[0.10] bg-white/[0.02] hover:border-white/25';
+          const on = value === o.id;
           return (
             <label
               key={o.id}
-              className={`flex cursor-pointer items-start gap-2.5 rounded-lg border px-3.5 py-3 transition-colors ${tone} ${disabled ? 'cursor-default' : ''} has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cyan-400`}
+              className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl border px-3.5 py-2.5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cyan-400 ${
+                on
+                  ? 'border-cyan-500/55 bg-cyan-500/[0.12] text-white'
+                  : 'border-white/[0.10] bg-white/[0.02] text-zinc-300 hover:border-white/25'
+              } ${disabled ? 'cursor-default opacity-60' : ''}`}
             >
               <input
                 type="radio"
                 name={name}
                 value={o.id}
-                checked={selected}
+                checked={on}
                 onChange={() => onChange(o.id)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-cyan-400"
+                className="h-4 w-4 shrink-0 accent-cyan-400"
               />
               <span className="min-w-0">
-                <span className="block text-sm text-zinc-200 leading-snug">{o.label}</span>
-                {o.hint && <span className="mt-0.5 block text-xs text-zinc-500 leading-snug">{o.hint}</span>}
-                {m === 'ok' && <span className="mt-1 block mono text-[10px] font-bold uppercase tracking-widest text-emerald-400">Respuesta correcta</span>}
-                {m === 'bad' && selected && <span className="mt-1 block mono text-[10px] font-bold uppercase tracking-widest text-rose-400">Tu respuesta</span>}
+                <span className="block text-sm font-medium leading-snug">
+                  {o.label}
+                  {o.badge && (
+                    <span className="mono ml-2 rounded border border-cyan-500/35 bg-cyan-500/10 px-1.5 py-0.5 align-middle text-[9px] font-bold uppercase tracking-wider text-cyan-300">
+                      {o.badge}
+                    </span>
+                  )}
+                </span>
+                {o.hint && <span className="mt-0.5 block text-xs leading-snug text-zinc-500">{o.hint}</span>}
               </span>
             </label>
           );
@@ -209,145 +186,85 @@ export function ChoiceGroup({
   );
 }
 
-/** Casillas múltiples accesibles. */
-export function CheckGroup({
-  legend, options, values, onToggle, note,
+/** Selección múltiple. Botones reales con `aria-pressed`. */
+export function ChipToggles({
+  legend, hint, options, values, onToggle,
 }: {
   legend: string;
-  options: readonly ChoiceOption[];
-  values: string[];
+  hint?: string;
+  options: readonly ChipOption[];
+  values: readonly string[];
   onToggle: (id: string) => void;
-  note?: string;
 }) {
   return (
-    <fieldset className="min-w-0">
-      <legend className="mb-1 text-sm font-medium text-zinc-200">{legend}</legend>
-      {note && <p className="mb-2.5 text-xs text-zinc-500">{note}</p>}
-      <div className="grid gap-2 sm:grid-cols-2">
+    <div className="min-w-0">
+      <div className="mb-1 text-sm font-semibold text-zinc-100">{legend}</div>
+      {hint && <p className="mb-2.5 text-xs leading-snug text-zinc-500">{hint}</p>}
+      <div className="flex flex-wrap gap-2">
         {options.map(o => {
           const on = values.includes(o.id);
           return (
-            <label
+            <button
               key={o.id}
-              className={`flex cursor-pointer items-start gap-2.5 rounded-lg border px-3.5 py-2.5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cyan-400 ${
-                on ? 'border-cyan-500/50 bg-cyan-500/[0.08]' : 'border-white/[0.10] bg-white/[0.02] hover:border-white/25'
+              type="button"
+              aria-pressed={on}
+              onClick={() => onToggle(o.id)}
+              className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 ${
+                on
+                  ? 'border-cyan-500/55 bg-cyan-500/[0.12] text-white'
+                  : 'border-white/[0.10] bg-white/[0.02] text-zinc-400 hover:border-white/25 hover:text-zinc-200'
               }`}
             >
-              <input
-                type="checkbox"
-                checked={on}
-                onChange={() => onToggle(o.id)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-cyan-400"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm text-zinc-200 leading-snug">{o.label}</span>
-                {o.hint && <span className="mt-0.5 block text-xs text-zinc-500 leading-snug">{o.hint}</span>}
+              <span
+                aria-hidden
+                className={`mono flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
+                  on ? 'border-cyan-400/60 bg-cyan-500/25 text-cyan-200' : 'border-white/20 text-transparent'
+                }`}
+              >
+                ✓
               </span>
-            </label>
+              {o.label}
+            </button>
           );
         })}
       </div>
-    </fieldset>
-  );
-}
-
-// ─── Commit before feedback ──────────────────────────────────────────────────
-
-/**
- * Barrera deliberada: el feedback no aparece hasta que el estudiante confirma.
- * Una vez confirmado, la respuesta queda bloqueada — comparar la intuición
- * inicial con la comprensión posterior exige que la primera no se pueda editar.
- */
-export function CommitGate({
-  committed, canCommit, onCommit, children, label = 'Confirmar respuesta',
-  lockedNote = 'Respuesta registrada. No se puede modificar: es el punto de comparación.',
-}: {
-  committed: boolean;
-  canCommit: boolean;
-  onCommit: () => void;
-  children?: ReactNode;
-  label?: string;
-  lockedNote?: string;
-}) {
-  if (committed) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-start gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
-          <Lock className="mt-0.5 w-3.5 h-3.5 shrink-0 text-zinc-500" aria-hidden />
-          <p className="text-xs text-zinc-500 leading-relaxed">{lockedNote}</p>
-        </div>
-        {children}
-      </div>
-    );
-  }
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={onCommit}
-        disabled={!canCommit}
-        className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-cyan-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-zinc-600"
-      >
-        {label}
-      </button>
-      {!canCommit && (
-        <p className="mt-2 text-xs text-zinc-600">Elige una opción para poder confirmar.</p>
-      )}
-    </div>
-  );
-}
-
-/** Panel de feedback explicativo: respuesta, por qué y principio. */
-export function Feedback({
-  correct, answer, explanation, principle, manualRef, onOpenConcept,
-}: {
-  correct?: boolean;
-  answer?: string;
-  explanation: string;
-  principle?: string;
-  manualRef?: string;
-  onOpenConcept?: () => void;
-}) {
-  const tone =
-    correct === undefined
-      ? 'border-white/[0.12] bg-white/[0.03]'
-      : correct
-        ? 'border-emerald-500/30 bg-emerald-500/[0.07]'
-        : 'border-amber-500/30 bg-amber-500/[0.07]';
-  const head =
-    correct === undefined ? null : correct ? 'Correcto' : 'Revisa esto';
-  return (
-    <div role="status" className={`rounded-xl border ${tone} px-4 py-3.5`}>
-      {head && (
-        <div className={`mono text-[10px] font-bold uppercase tracking-[0.14em] mb-1.5 ${correct ? 'text-emerald-400' : 'text-amber-400'}`}>
-          {head}
-        </div>
-      )}
-      {answer && <p className="text-sm font-semibold text-white mb-1.5">{answer}</p>}
-      <p className="text-sm text-zinc-300 leading-relaxed">{explanation}</p>
-      {principle && (
-        <p className="mt-2.5 border-t border-white/[0.08] pt-2.5 text-xs text-zinc-400">
-          <span className="mono font-bold uppercase tracking-widest text-zinc-500">Principio · </span>
-          {principle}
-        </p>
-      )}
-      {manualRef && onOpenConcept && (
-        <button
-          type="button"
-          onClick={onOpenConcept}
-          className="mt-2 text-xs font-medium text-cyan-400 underline underline-offset-2 hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
-        >
-          Ver concepto · {manualRef}
-        </button>
-      )}
     </div>
   );
 }
 
 // ─── Campos ──────────────────────────────────────────────────────────────────
 
+export function TextField({
+  label, value, onChange, placeholder, type = 'text', hint, id,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: 'text' | 'email';
+  hint?: string;
+  id?: string;
+}) {
+  const auto = useId();
+  const fieldId = id ?? auto;
+  return (
+    <div className="min-w-0">
+      <label htmlFor={fieldId} className="mb-1 block text-sm font-medium text-zinc-200">{label}</label>
+      {hint && <p className="mb-1.5 text-xs leading-snug text-zinc-500">{hint}</p>}
+      <input
+        id={fieldId}
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="min-h-11 w-full rounded-xl border border-white/[0.12] bg-[oklch(0.09_0.016_250)] px-3.5 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-2 focus:outline-offset-0 focus:outline-cyan-500/40"
+      />
+    </div>
+  );
+}
+
 export function Field({
-  label, hint, value, onChange, placeholder, rows = 3, maxLength, id,
+  label, hint, value, onChange, placeholder, rows = 3, maxLength, mono = false, id,
 }: {
   label: string;
   hint?: string;
@@ -356,6 +273,7 @@ export function Field({
   placeholder?: string;
   rows?: number;
   maxLength?: number;
+  mono?: boolean;
   id?: string;
 }) {
   const auto = useId();
@@ -363,7 +281,7 @@ export function Field({
   return (
     <div className="min-w-0">
       <label htmlFor={fieldId} className="mb-1 block text-sm font-medium text-zinc-200">{label}</label>
-      {hint && <p className="mb-1.5 text-xs text-zinc-500 leading-snug">{hint}</p>}
+      {hint && <p className="mb-1.5 text-xs leading-snug text-zinc-500">{hint}</p>}
       <textarea
         id={fieldId}
         rows={rows}
@@ -371,157 +289,121 @@ export function Field({
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full resize-y rounded-lg border border-white/[0.12] bg-[oklch(0.09_0.016_250)] px-3 py-2.5 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-2 focus:outline-offset-0 focus:outline-cyan-500/40"
+        className={`w-full resize-y rounded-xl border border-white/[0.12] bg-[oklch(0.09_0.016_250)] px-3.5 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-2 focus:outline-offset-0 focus:outline-cyan-500/40 ${
+          mono ? 'mono text-[12.5px] leading-relaxed' : ''
+        }`}
       />
     </div>
   );
 }
 
-export function TextField({
-  label, value, onChange, placeholder, type = 'text', id, hint,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: 'text' | 'email' | 'date';
-  id?: string;
-  hint?: string;
-}) {
-  const auto = useId();
-  const fieldId = id ?? auto;
-  return (
-    <div className="min-w-0">
-      <label htmlFor={fieldId} className="mb-1 block text-sm font-medium text-zinc-200">{label}</label>
-      {hint && <p className="mb-1.5 text-xs text-zinc-500 leading-snug">{hint}</p>}
-      <input
-        id={fieldId}
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-lg border border-white/[0.12] bg-[oklch(0.09_0.016_250)] px-3 py-2.5 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-2 focus:outline-offset-0 focus:outline-cyan-500/40"
-      />
-    </div>
-  );
-}
+// ─── Prompt ──────────────────────────────────────────────────────────────────
 
-export function SelectField<T extends string>({
-  label, value, onChange, options, placeholder = 'Selecciona…', id,
-}: {
-  label: string;
-  value: T | null;
-  onChange: (v: T | null) => void;
-  options: readonly { id: T; label: string }[];
-  placeholder?: string;
-  id?: string;
-}) {
-  const auto = useId();
-  const fieldId = id ?? auto;
+/** Bloque de prompt: monoespaciada, sin scroll horizontal, con acciones arriba. */
+export function PromptBlock({
+  label, text, actions, note,
+}: { label: string; text: string; actions?: ReactNode; note?: ReactNode }) {
   return (
-    <div className="min-w-0">
-      <label htmlFor={fieldId} className="mb-1 block text-xs font-medium text-zinc-400">{label}</label>
-      <select
-        id={fieldId}
-        value={value ?? ''}
-        onChange={e => onChange((e.target.value || null) as T | null)}
-        className="w-full rounded-lg border border-white/[0.12] bg-[oklch(0.09_0.016_250)] px-2.5 py-2 text-sm text-zinc-200 focus:border-cyan-500/50 focus:outline-2 focus:outline-offset-0 focus:outline-cyan-500/40"
-      >
-        <option value="">{placeholder}</option>
-        {options.map(o => (
-          <option key={o.id} value={o.id}>{o.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-// ─── EVA ─────────────────────────────────────────────────────────────────────
-
-/**
- * EVA como provocadora cognitiva, no como asistente. Aparece cuando una
- * intuición errónea merece enunciarse en voz alta antes de refutarla.
- */
-export function EvaNote({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex items-start gap-3 rounded-xl border border-indigo-500/25 bg-indigo-500/[0.06] px-4 py-3">
-      <span
-        aria-hidden
-        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-indigo-400/40 bg-indigo-500/20 mono text-[10px] font-bold text-indigo-300"
-      >
-        EVA
-      </span>
-      <p className="text-sm italic text-indigo-100/90 leading-relaxed">{children}</p>
+    <div className="overflow-hidden rounded-xl border border-white/[0.12]">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5">
+        <span className="mono text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-400">{label}</span>
+        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      </div>
+      <pre className="mono max-h-[26rem] overflow-y-auto whitespace-pre-wrap break-words bg-[oklch(0.06_0.014_250)] px-3.5 py-3.5 text-[12.5px] leading-relaxed text-zinc-300">
+        {text}
+      </pre>
+      {note && (
+        <div className="border-t border-white/[0.08] bg-white/[0.02] px-3.5 py-2.5 text-xs text-zinc-400">
+          {note}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── Varios ──────────────────────────────────────────────────────────────────
 
-export function Kicker({ children }: { children: ReactNode }) {
-  return (
-    <div className="mono text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400">{children}</div>
-  );
-}
-
-export function Prose({ children }: { children: ReactNode }) {
-  return <div className="space-y-3 text-sm text-zinc-300 leading-relaxed">{children}</div>;
+/** Consigna de la pantalla. Una línea, nunca un párrafo. */
+export function Brief({ children }: { children: ReactNode }) {
+  return <p className="text-sm leading-relaxed text-zinc-400">{children}</p>;
 }
 
 export function StepHeading({ n, children }: { n: number | string; children: ReactNode }) {
   return (
-    <h3 className="flex items-center gap-2.5 text-base font-semibold text-white">
+    <h2 className="flex items-center gap-2.5 text-base font-semibold text-white">
       <span className="mono flex h-6 w-6 shrink-0 items-center justify-center rounded border border-cyan-500/30 bg-cyan-500/10 text-[11px] font-bold text-cyan-400">
         {n}
       </span>
       {children}
-    </h3>
+    </h2>
   );
 }
 
-/** Tabla que en móvil se convierte en tarjetas verticales. */
-export function ResponsiveRows({
-  head, rows,
+export function Notice({
+  tone = 'neutral', children,
+}: { tone?: 'neutral' | 'warn'; children: ReactNode }) {
+  const box =
+    tone === 'warn'
+      ? 'border-amber-500/30 bg-amber-500/[0.07] text-amber-200/90'
+      : 'border-white/[0.10] bg-white/[0.02] text-zinc-400';
+  return (
+    <p role="status" className={`rounded-xl border px-3.5 py-2.5 text-xs leading-relaxed ${box}`}>
+      {children}
+    </p>
+  );
+}
+
+/** Respuesta registrada: se bloquea porque es el punto de comparación. */
+export function LockedNote({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex items-start gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3.5 py-2.5">
+      <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+      <p className="text-xs leading-relaxed text-zinc-500">{children}</p>
+    </div>
+  );
+}
+
+export function PrimaryButton({
+  children, onClick, disabled = false, type = 'button',
 }: {
-  head: readonly string[];
-  rows: readonly (readonly ReactNode[])[];
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: 'button' | 'submit';
 }) {
   return (
-    <>
-      <div className="hidden overflow-x-auto rounded-xl border border-white/[0.08] md:block">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-white/[0.08] bg-white/[0.03]">
-              {head.map(h => (
-                <th key={h} scope="col" className="px-3 py-2.5 mono text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-b border-white/[0.05] last:border-0">
-                {r.map((cell, j) => (
-                  <td key={j} className="px-3 py-2.5 align-top text-zinc-300">{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="space-y-2.5 md:hidden">
-        {rows.map((r, i) => (
-          <div key={i} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5">
-            {r.map((cell, j) => (
-              <div key={j} className="border-b border-white/[0.05] py-1.5 last:border-0 last:pb-0 first:pt-0">
-                <div className="mono text-[9px] font-bold uppercase tracking-wider text-zinc-500">{head[j]}</div>
-                <div className="mt-0.5 text-sm text-zinc-300">{cell}</div>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </>
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-cyan-500/45 bg-cyan-500/15 px-5 py-3 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-zinc-600"
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Contenedor de sección: separa sin decorar. */
+export function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <section className={`rounded-2xl border border-white/[0.10] bg-white/[0.02] p-4 sm:p-5 ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+/** Detalles colapsados. Cerrado por defecto: lo opcional no ocupa pantalla. */
+export function Collapsible({
+  summary, children, defaultOpen = false,
+}: { summary: string; children: ReactNode; defaultOpen?: boolean }) {
+  return (
+    <details open={defaultOpen} className="group rounded-xl border border-white/[0.10] bg-white/[0.02]">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 py-3 text-sm font-medium text-zinc-300 transition-colors hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400">
+        <span aria-hidden className="mono text-base leading-none text-cyan-400 group-open:hidden">+</span>
+        <span aria-hidden className="mono hidden text-base leading-none text-cyan-400 group-open:inline">−</span>
+        {summary}
+      </summary>
+      <div className="space-y-4 border-t border-white/[0.08] px-3.5 py-4">{children}</div>
+    </details>
   );
 }

@@ -44,134 +44,151 @@ export const ownerTags: Record<BlockOwner, string> = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SESIÓN 1 · 27 de agosto — Del prompt aislado al razonamiento jurídico asistido
+//
+// CANON v1.0. Los diez bloques B00–B09, sus títulos, sus minutos y su secuencia
+// provienen de DIAT_C1_CANON_03_MATRIZ_EJECUCION_v1.0 (15:00–16:30) y coinciden
+// exactamente con src/content/class1/manifest.ts, que es lo que se ejecuta en
+// /clase-1. No se reinterpretan aquí: si cambia el canon, cambia primero allí.
+//
+// Metodología: el profesor enmarca → el estudiante trabaja individualmente en
+// plataforma → la plataforma guía y retroalimenta → el profesor interpreta y
+// sintetiza. No hay trabajo en parejas ni en grupos.
+//
+// Sobre `owner`. La matriz reparte cada bloque en minutos docentes (D) y minutos
+// de estudiante (E); aquí solo cabe un responsable por bloque, así que se marca
+// quién lo conduce y el reparto D/E de la matriz queda anotado bloque a bloque.
+// El resultado —32 minutos de conducción y 58 de trabajo del estudiante— es el
+// reparto 35/65 de la Clase 1 fijado en el canon.
 // ─────────────────────────────────────────────────────────────────────────────
 const session1: SessionPlan = {
   sessionId: 1,
-  spine: 'Una respuesta puede sonar impecable y estar equivocada. Aprender a formular la tarea es aprender a poder revisarla.',
+  spine:
+    'Una buena instrucción mejora la pertinencia; una buena fuente mejora el fundamento; ninguna de las dos elimina el deber de verificar.',
   successCriterion:
-    'Sé cómo estructurar una tarea y comprobar qué partes de la respuesta necesitan verificación.',
+    'Sé transformar una instrucción vaga en un prompt estructurado y verificar sus afirmaciones con el protocolo ICJR, dejando registro de qué comprobé, contra qué fuente y con qué resultado.',
   blocks: [
     {
-      from: 0, to: 5,
-      title: 'Apertura y pregunta inicial',
+      // D 4 / E 3
+      from: 0, to: 7,
+      title: 'B00 · Una cita perfecta que no existe',
+      owner: 'diego', mode: 'Actividad',
+      detail:
+        'Regla de aula sobre datos, que el profesor cumple en pantalla, y ficha bibliográfica falsa proyectada: cinco segundos de silencio y «¿hay algo aquí que les parezca sospechoso?». Cada estudiante decide en plataforma quién falló y declara su nivel de confianza. La respuesta queda registrada para recuperarla en B09.',
+      needs: ['Slides 01–05', 'Ficha bibliográfica falsa', 'Proyector'],
+      tool: '/clase-1',
+    },
+    {
+      // D 5.5 / E 4.5
+      from: 7, to: 17,
+      title: 'B01 · Qué hace un modelo de lenguaje',
       owner: 'diego', mode: 'Exposición',
       detail:
-        'Bienvenida, encuadre de las tres sesiones y pregunta al grupo: ¿qué hace que una respuesta de IA parezca correcta aunque no lo sea? Se levanta el microdiagnóstico de entrada por votación a mano alzada.',
-      needs: ['Microdiagnóstico de entrada', 'Proyector'],
-      tool: '/sesiones/1',
+        'Se revela el caso —Corte Suprema, Rol 23.322-2025— con la tabla de las cuatro resoluciones y la frase ancla. Tres distinciones: IA frente a IA generativa, el modelo no es el producto, y por qué varían las respuestas. Demostración de 60 segundos sin adjuntar nada: «¿cómo sabemos de dónde salió cada afirmación?». El estudiante explora el diagrama modelo/producto y resuelve dos comprobaciones.',
+      needs: ['Slides 06–08', 'Herramienta de IA proyectada', 'Capturas de respaldo'],
+      tool: '/clase-1',
     },
     {
-      from: 5, to: 12,
-      title: 'Qué hace y qué no hace un modelo de lenguaje',
-      owner: 'diego', mode: 'Exposición',
-      detail:
-        'Explicación mínima y sin jerga: el modelo produce lenguaje a partir de patrones; no consulta un registro de verdad, no garantiza vigencia y no responde por el resultado. Una sola visual técnica.',
-      needs: ['Presentación sesión 1'],
-    },
-    {
-      from: 12, to: 20,
-      title: 'Demostración: el prompt insuficiente',
-      owner: 'diego', mode: 'Demostración',
-      detail:
-        '«¿Es válida esta cláusula?» produce una respuesta competente en apariencia. Se muestra en vivo qué falta: jurisdicción, hechos, finalidad, fuente, fecha, restricciones, nivel de certeza y formato.',
-      needs: ['Caso troncal CT-01', 'Herramienta de IA proyectada'],
-      tool: '/sesiones/1',
-    },
-    {
-      from: 20, to: 27,
-      title: 'La estructura DIAT, construida en pantalla',
-      owner: 'diego', mode: 'Demostración',
-      detail:
-        'El mismo prompt se reescribe capa por capa —contexto, rol, tarea, fuentes, restricciones, formato, control— hasta que la diferencia es visible. Transición: «desde ahora ustedes trabajan como revisores, no como consumidores de respuestas».',
-      needs: ['Prompt Lab proyectado'],
-      tool: '/prompt-lab',
-    },
-    {
-      from: 27, to: 35,
-      title: 'Autopsia de un mal prompt',
-      owner: 'relatores', mode: 'Actividad',
-      detail:
-        'En grupos de tres, cada equipo recibe un prompt defectuoso y marca las siete capas ausentes. Puesta en común de 2 minutos: qué falta con más frecuencia.',
-      needs: ['Ficha 01 · Estructura del prompt', 'Prompts defectuosos impresos'],
-      tool: '/sesiones/1',
-    },
-    {
-      from: 35, to: 50,
-      title: 'Laboratorio guiado: construir el prompt',
-      owner: 'equipos', mode: 'Laboratorio',
-      detail:
-        'Cada equipo toma el caso troncal y completa las siete capas en el Prompt Lab. Los relatores circulan por las mesas; se corrige capa a capa, no al final.',
-      needs: ['Computador por equipo', 'Caso troncal CT-01'],
-      tool: '/prompt-lab',
-    },
-    {
-      from: 50, to: 62,
-      title: 'Ejecutar y registrar la respuesta',
-      owner: 'equipos', mode: 'Laboratorio',
-      detail:
-        'Se ejecuta el prompt en la herramienta disponible y se pega la respuesta en el registro. Nadie corrige todavía: primero se recoge el material en bruto.',
-      needs: ['Herramienta de IA', 'Registro de la sesión'],
-    },
-    {
-      from: 62, to: 72,
-      title: 'Cazador de alucinaciones',
+      // D 1.5 / E 3.5
+      from: 17, to: 22,
+      title: 'B02 · Cinco mitos',
       owner: 'equipos', mode: 'Actividad',
       detail:
-        'Cada equipo clasifica las afirmaciones de su respuesta: verificada, no verificada, dudosa, sin fuente o inferencia. Regla del ejercicio: no se verifica el estilo, se verifican las afirmaciones.',
-      needs: ['Ficha 03 · Checklist anti-alucinaciones'],
-      tool: '/verificacion',
+        'Consigna de los cinco mitos: «confirmen antes de ver la explicación; equivocarse aquí es gratis». Cada estudiante responde las cinco afirmaciones una a una y confirma antes del feedback. El profesor observa el ritmo del curso y cierra con el mito 3 y el patrón común a los cinco.',
+      needs: ['Slide 09'],
+      tool: '/clase-1',
     },
     {
-      from: 72, to: 82,
-      title: 'Matriz de verificación',
+      // D 6 / E 9
+      from: 22, to: 37,
+      title: 'B03 · Diagnóstico DIAT',
+      owner: 'equipos', mode: 'Actividad',
+      detail:
+        'Los siete componentes se presentan como preguntas de diseño, no como casillas, junto con la proporcionalidad al riesgo y las siete instrucciones de control. Cada estudiante diagnostica en plataforma un prompt de riesgo medio: estado de los siete componentes y decisión implícita. Puesta en común de tres respuestas: «¿cuál eliminarían primero si escribieran el prompt en un ascensor?».',
+      needs: ['Slides 10–12'],
+      tool: '/clase-1/prompt',
+    },
+    {
+      // D 2 / E 8
+      from: 37, to: 47,
+      title: 'B04 · Prompt Lab · Producto A',
       owner: 'equipos', mode: 'Laboratorio',
       detail:
-        'Se completa la matriz: afirmación, fuente indicada por la IA, fuente real, coincidencia, nivel de confianza y corrección. Al menos tres filas contrastadas contra fuente oficial.',
-      needs: ['Ficha 02 · Matriz de verificación', 'Acceso a BCN/LeyChile'],
-      tool: '/verificacion',
+        'Consigna del Producto A: «no lo hagan más largo: háganlo menos ambiguo». Cada estudiante construye su encargo en el Prompt Lab —tarea, riesgo, decisiones que no delega, componentes pertinentes, prompt y tres justificaciones—. El profesor circula con intervenciones tipo, ninguna explicativa, y solo al final se revela el Prompt DIAT de referencia, que no lleva Rol.',
+      needs: ['Slides 13–14', 'Documento de trabajo de la sesión'],
+      tool: '/clase-1/prompt',
     },
     {
-      from: 82, to: 88,
-      title: 'Revisión entre pares',
-      owner: 'relatores', mode: 'Revisión',
+      // D 3 / E 5
+      from: 47, to: 55,
+      title: 'B05 · Metaprompting',
+      owner: 'equipos', mode: 'Laboratorio',
       detail:
-        'El equipo A revisa la matriz del equipo B con cinco preguntas fijas. Se devuelve una observación concreta, no una impresión general.',
-      needs: ['Checklist de cinco preguntas'],
+        'Tres modalidades de metaprompting y el orden no negociable; se señalan solo las dos líneas que hacen la diferencia, sin leer el metaprompt entero. Cada estudiante lo copia junto a su Producto A, lo ejecuta en su propia herramienta, vuelve y registra una sugerencia aceptada y una rechazada. Cinco límites y la regla: auditar no es verificar.',
+      needs: ['Slides 15–16', 'Herramienta de IA propia', 'Regla de aula sobre datos'],
+      tool: '/clase-1/auditoria',
     },
     {
-      from: 88, to: 90,
-      title: 'Exit ticket',
-      owner: 'equipos', mode: 'Cierre',
+      // D 5 / E 5
+      from: 55, to: 65,
+      title: 'B06 · Error Lab',
+      owner: 'diego', mode: 'Actividad',
       detail:
-        'Cada participante escribe tres líneas: algo que ahora verificará siempre, un error que detectó y una regla que añadirá a su próximo prompt.',
-      needs: ['Exit ticket sesión 1'],
-      tool: '/sesiones/1',
+        'Definición funcional de alucinación y los cuatro tipos de error jurídico generativo, con el tipo 2 —fuente real, proposición falsa— como núcleo. El estudiante clasifica cinco casos y atraviesa la revelación progresiva del tipo 2. Síntesis: tipo 2 frente a tipo 4, las siete señales de alerta, las tres fuentes de deber y la regla de la segunda IA.',
+      needs: ['Slides 17–19'],
+      tool: '/clase-1/verificacion',
+    },
+    {
+      // D 4 / E 6 — la demostración cuenta como tiempo de estudiante: decide en
+      // plataforma mientras ocurre.
+      from: 65, to: 75,
+      title: 'B07 · Grounding Lab',
+      owner: 'equipos', mode: 'Demostración',
+      detail:
+        'Tres modos de trabajo y qué es grounding, dicho antes de la demostración: procedencia ≠ interpretación. Demostración principal en seis movimientos sobre corpus cerrado —el movimiento 5 no se sacrifica nunca— mientras el estudiante decide en plataforma si un localizador que abre basta para dar por verificada una conclusión, y confirma dos decisiones guiadas. Cierre: confidencialidad en 90 segundos, Ley 21.719 y estado del Boletín 16821-19.',
+      needs: ['Slides 20–24', 'Corpus cerrado', 'Documento de trabajo de la sesión', 'Capturas de respaldo'],
+      tool: '/clase-1/verificacion',
+    },
+    {
+      // D 2 / E 8
+      from: 75, to: 85,
+      title: 'B08 · ICJR Studio · Producto B',
+      owner: 'equipos', mode: 'Laboratorio',
+      detail:
+        'ICJR en cuatro operaciones, con una fila resuelta proyectada: control ex ante, ICJR ex post. Cada estudiante ejecuta el protocolo sobre dos afirmaciones —estatus, fuente, localizador, estado y acción— mientras el profesor circula con una sola pregunta: «¿leíste el considerando o solo comprobaste que existe?». Se recogen dos o tres cifras de cuánto tardaron en verificar la primera.',
+      needs: ['Slides 25–27', 'Documento de trabajo de la sesión'],
+      tool: '/clase-1/verificacion',
+    },
+    {
+      // D 2 / E 3
+      from: 85, to: 90,
+      title: 'B09 · Cierre en espejo · Producto C',
+      owner: 'diego', mode: 'Cierre',
+      detail:
+        '«Volvamos a la primera pregunta de la clase»: votación en espejo y la plataforma muestra el antes y el ahora. Respuesta integrada —las cinco cosas son verdad al mismo tiempo y la quinta no se distribuye—, consigna del Producto C y cierre de la Bitácora, y las tres reglas para salir de la sala.',
+      needs: ['Slides 28–30'],
+      tool: '/clase-1/cierre',
     },
   ],
   contingencies: [
     {
-      when: 'No hay internet en la sala',
-      then: 'Se trabaja con las respuestas precalculadas del caso troncal (incluidas en el PDF del caso guiado) y la matriz se completa en papel. El laboratorio no depende de conexión.',
+      when: 'Falla la conexión a internet',
+      then: 'Se usan las capturas de respaldo previstas para B01 y B07. La plataforma guarda el trabajo en el dispositivo, de modo que B00, B02, B03, B04, B08 y B09 siguen funcionando y sincronizan después.',
     },
     {
-      when: 'La herramienta de IA no responde o exige cuenta',
-      then: 'Se usa la respuesta precalculada CT-01/R1 y se anuncia explícitamente que se trabaja sobre un output registrado. El objetivo de la sesión —verificar— no cambia.',
+      when: 'La plataforma no carga',
+      then: 'Plan B en papel para B04 y B08 —el Producto A y el Producto B se escriben a mano— y B02, B03, B06 y B07 se resuelven en voz alta con el curso. Se pierde la evidencia individual registrada; la clase avanza igual.',
     },
     {
-      when: 'Asisten menos de 8 personas',
-      then: 'Se trabaja en duplas en vez de tríos y la revisión entre pares pasa a ser plenaria conducida por un relator.',
+      when: 'La clase se atrasa',
+      then: 'Se poda en este orden exacto: 1) la comparación conceptual de Proyectos, Gems y Claude en B07, ya prevista como ficha de plataforma; 2) el caso comparado de B06, que el Documento Maestro marca como opcional; 3) la exposición de los siete componentes en B03, de 3 a 2 minutos; 4) la demostración en vivo de B07, sustituida por capturas, narrando igual el movimiento 5.',
     },
     {
-      when: 'Asisten más de 40 personas',
-      then: 'Mesas de cinco, un facilitador cada tres mesas, y la puesta en común del minuto 33 se reduce a dos intervenciones.',
+      when: 'Hay que recortar todavía más',
+      then: 'Nunca se corta: el movimiento 5 de la demostración, el protocolo ICJR y el Producto B, el flujo completo de seis pasos, la regla «fluidez ≠ verdad» y el cierre en espejo con las tres reglas.',
     },
     {
-      when: 'El nivel del grupo es más bajo de lo previsto',
-      then: 'Se entrega el prompt del caso troncal ya escrito hasta la capa «tarea» y el equipo solo completa fuentes, restricciones, formato y control.',
-    },
-    {
-      when: 'El nivel del grupo es más alto de lo previsto',
-      then: 'Desafío opcional: pedir a la IA que se autoevalúe distinguiendo afirmación textual, inferencia y recomendación, y contrastar esa autoevaluación con la matriz del equipo.',
+      when: 'Un estudiante llega sin dispositivo',
+      then: 'Trabaja sobre el Manual del Estudiante v2.0, que reserva espacio de registro para los tres productos, y traspasa sus respuestas a la plataforma al terminar. La secuencia individual se conserva: no se le empareja con nadie.',
     },
   ],
 };

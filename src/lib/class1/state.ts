@@ -4,134 +4,99 @@
 // Todo el trabajo del estudiante vive en un único objeto serializable,
 // persistido en localStorage bajo una clave versionada. Sin backend, sin
 // cuenta, sin datos sensibles: solo lo que el propio estudiante escribe.
+//
+// El estado está centralizado a propósito: la entrega, la descarga y la vista
+// final se construyen todas desde aquí con una sola función
+// (`buildClass1Submission`), de modo que ningún canal pueda entregar una
+// versión distinta del mismo trabajo.
 // ─────────────────────────────────────────────────────────────────────────────
-import type { BlockId } from '@/content/class1/manifest';
-import type {
-  BlameOption, ConfidenceLevel, ComponentId, ComponentState, MythAnswer,
-  ErrorType, EpistemicStatus, ClaimState, ClaimAction,
-} from '@/content/class1/activities';
-import type { RiskLevel } from '@/content/class1/prompts';
+import type { BlameOption, ConfidenceLevel, ClaimAction } from '@/content/class1/activities';
+import { emptyDraft, type PromptDraft } from '@/content/class1/lab';
+import type { StageId } from '@/content/class1/stages';
 
 export const STORAGE_KEY = 'diat.class1';
 export const SCHEMA_VERSION = 2;
 
-// ─── Sub-estados por bloque ──────────────────────────────────────────────────
+// ─── Sub-estados ─────────────────────────────────────────────────────────────
 
 export interface StudentIdentity {
-  firstName: string;
-  lastName: string;
+  /** Nombre o identificador. No se pide RUT. */
+  name: string;
+  /** Opcional: sirve como remitente de la entrega. */
   email: string;
 }
 
 /** Respuesta comprometida: no se puede editar una vez confirmada. */
-export interface CommittedAnswer<T> {
-  value: T | null;
-  committed: boolean;
-  at: string | null;
-}
-
-export function emptyAnswer<T>(): CommittedAnswer<T> {
-  return { value: null, committed: false, at: null };
-}
-
-export interface B00State {
-  /** Respuesta inicial a «¿quién falló?». */
+export interface QuestionAnswer {
   blame: BlameOption | null;
   confidence: ConfidenceLevel | null;
   committed: boolean;
   at: string | null;
 }
 
-export interface B01State {
-  /** Nodos del diagrama modelo/producto ya explorados. */
-  explored: string[];
-  /** id del check → opción elegida. */
-  checks: Record<string, string>;
-  /** id del check → confirmado. */
-  committed: Record<string, boolean>;
+export function emptyAnswer(): QuestionAnswer {
+  return { blame: null, confidence: null, committed: false, at: null };
 }
 
-export interface B02State {
-  /** id del mito → respuesta. */
-  answers: Record<string, MythAnswer>;
-  committed: Record<string, boolean>;
+export interface PromptV1State {
+  draft: PromptDraft;
+  /**
+   * Edición manual del estudiante sobre el prompt compilado. Cuando tiene
+   * contenido, manda sobre el compilador: el botón «Editar» del laboratorio
+   * escribe aquí y el compilador deja de pisar el texto.
+   */
+  manual: string;
+  /** Texto vigente del Prompt V1: la edición manual si la hay, el compilado si no. */
+  text: string;
+  at: string | null;
 }
 
-export interface B03State {
-  /** componente → estado diagnosticado. */
-  states: Partial<Record<ComponentId, ComponentState>>;
-  /** Decisiones implícitas que el estudiante detecta, en sus palabras. */
-  implicitDecisions: string;
-  committed: boolean;
-}
-
-export interface ProductA {
-  task: string;
-  risk: RiskLevel | null;
-  notDelegating: string;
-  /** Componentes que el estudiante considera pertinentes para SU tarea. */
-  components: ComponentId[];
-  prompt: string;
-  decisions: [string, string, string];
-  reasons: [string, string, string];
-}
-
-export interface B05State {
+export interface AuditState {
   /** Herramienta externa utilizada (id de AI_TOOLS). */
   tool: string | null;
   accepted: string;
-  acceptedWhy: string;
   rejected: string;
-  rejectedWhy: string;
-  /** Auditoría devuelta por la herramienta externa. */
-  audit: string;
+  why: string;
 }
 
-export interface B06State {
-  /** id del caso → tipo elegido. */
-  cases: Record<string, ErrorType>;
-  committed: Record<string, boolean>;
-  /** Revelación progresiva: respuesta al paso previo a la revelación. */
-  revealAnswer: string | null;
-  revealCommitted: boolean;
-  revealConfidence: ConfidenceLevel | null;
-  /** Qué se lleva el estudiante del contraste tipo 2 / tipo 4. */
-  takeaway: string;
+export interface PromptV2State {
+  text: string;
+  at: string | null;
+  /** El editor se sembró con el Prompt V1: no volver a pisarlo. */
+  seeded: boolean;
 }
 
-export interface B07State {
-  decisions: Record<string, string>;
-  committed: Record<string, boolean>;
-  /** Nota libre sobre la demostración. */
-  note: string;
-}
-
-export interface IcjrClaim {
+export interface VerifiedClaim {
   id: string;
   claim: string;
-  status: EpistemicStatus | null;
   source: string;
   locator: string;
-  state: ClaimState | null;
   action: ClaimAction | null;
 }
 
-export interface B08State {
-  claims: IcjrClaim[];
-  /** Registro del paso R. */
-  verifiedBy: string;
-  verifiedAt: string;
-  notes: string;
+export function emptyClaim(id: string): VerifiedClaim {
+  return { id, claim: '', source: '', locator: '', action: null };
 }
 
-export interface B09State {
-  blame: BlameOption | null;
-  confidence: ConfidenceLevel | null;
-  committed: boolean;
-  at: string | null;
+export interface VerificationState {
+  claims: VerifiedClaim[];
+}
+
+export interface ReflectionState {
   before: string;
   after: string;
-  doubt: string;
+}
+
+export interface SubmissionState {
+  /** Última entrega confirmada por el servidor. */
+  sentAt: string | null;
+  downloadedAt: string | null;
+}
+
+/** Cronómetro por ejercicio. El instante de arranque vive en el estado. */
+export interface TimerState {
+  startedAt: string;
+  durationSec: number;
 }
 
 // ─── Estado raíz ─────────────────────────────────────────────────────────────
@@ -140,23 +105,16 @@ export interface Class1State {
   schemaVersion: number;
   startedAt: string | null;
   updatedAt: string | null;
-  student: StudentIdentity;
-  b00: B00State;
-  b01: B01State;
-  b02: B02State;
-  b03: B03State;
-  productA: ProductA;
-  b05: B05State;
-  b06: B06State;
-  b07: B07State;
-  b08: B08State;
-  b09: B09State;
-  /** Bloques que el estudiante marcó como vistos (para la navegación). */
-  visited: BlockId[];
-}
-
-export function emptyClaim(id: string): IcjrClaim {
-  return { id, claim: '', status: null, source: '', locator: '', state: null, action: null };
+  identity: StudentIdentity;
+  initialQuestion: QuestionAnswer;
+  promptV1: PromptV1State;
+  audit: AuditState;
+  promptV2: PromptV2State;
+  verification: VerificationState;
+  finalQuestion: QuestionAnswer;
+  reflection: ReflectionState;
+  submission: SubmissionState;
+  timers: Partial<Record<StageId, TimerState>>;
 }
 
 export function createInitialState(): Class1State {
@@ -164,92 +122,128 @@ export function createInitialState(): Class1State {
     schemaVersion: SCHEMA_VERSION,
     startedAt: null,
     updatedAt: null,
-    student: { firstName: '', lastName: '', email: '' },
-    b00: { blame: null, confidence: null, committed: false, at: null },
-    b01: { explored: [], checks: {}, committed: {} },
-    b02: { answers: {}, committed: {} },
-    b03: { states: {}, implicitDecisions: '', committed: false },
-    productA: {
-      task: '',
-      risk: null,
-      notDelegating: '',
-      components: [],
-      prompt: '',
-      decisions: ['', '', ''],
-      reasons: ['', '', ''],
-    },
-    b05: { tool: null, accepted: '', acceptedWhy: '', rejected: '', rejectedWhy: '', audit: '' },
-    b06: {
-      cases: {},
-      committed: {},
-      revealAnswer: null,
-      revealCommitted: false,
-      revealConfidence: null,
-      takeaway: '',
-    },
-    b07: { decisions: {}, committed: {}, note: '' },
-    b08: { claims: [emptyClaim('c1'), emptyClaim('c2')], verifiedBy: '', verifiedAt: '', notes: '' },
-    b09: { blame: null, confidence: null, committed: false, at: null, before: '', after: '', doubt: '' },
-    visited: [],
+    identity: { name: '', email: '' },
+    initialQuestion: emptyAnswer(),
+    promptV1: { draft: emptyDraft(), manual: '', text: '', at: null },
+    audit: { tool: null, accepted: '', rejected: '', why: '' },
+    promptV2: { text: '', at: null, seeded: false },
+    verification: { claims: [emptyClaim('c1')] },
+    finalQuestion: emptyAnswer(),
+    reflection: { before: '', after: '' },
+    submission: { sentAt: null, downloadedAt: null },
+    timers: {},
   };
 }
 
 // ─── Persistencia ────────────────────────────────────────────────────────────
 
+interface LegacyV1Shape {
+  schemaVersion?: number;
+  student?: { firstName?: string; lastName?: string; email?: string };
+  b00?: Partial<QuestionAnswer>;
+  productA?: { prompt?: string; task?: string };
+  b05?: { tool?: string | null; accepted?: string; acceptedWhy?: string; rejected?: string; rejectedWhy?: string };
+  b08?: { claims?: { claim?: string; source?: string; locator?: string; action?: ClaimAction | null }[] };
+  b09?: Partial<QuestionAnswer> & { before?: string; after?: string };
+}
+
 /**
- * Rellena huecos de un estado leído del disco contra la forma actual. Evita que
- * un schema antiguo rompa la aplicación: los campos nuevos aparecen vacíos en
- * lugar de `undefined`.
+ * Rescata lo que un estado de la arquitectura anterior (bloques B00–B09) sí
+ * tiene equivalente en la nueva. Nadie pierde su trabajo por una recarga a
+ * mitad de sesión: lo que no tiene equivalente simplemente no viaja.
+ */
+function fromLegacy(raw: LegacyV1Shape): Class1State {
+  const base = createInitialState();
+  const name = [raw.student?.firstName, raw.student?.lastName].filter(Boolean).join(' ').trim();
+  const promptText = raw.productA?.prompt?.trim() ?? '';
+  const legacyClaim = raw.b08?.claims?.find(c => c.claim?.trim());
+
+  return {
+    ...base,
+    identity: { name, email: raw.student?.email ?? '' },
+    initialQuestion: {
+      blame: raw.b00?.blame ?? null,
+      confidence: raw.b00?.confidence ?? null,
+      committed: Boolean(raw.b00?.committed),
+      at: raw.b00?.at ?? null,
+    },
+    promptV1: promptText
+      ? {
+          draft: { ...emptyDraft(), taskDetail: raw.productA?.task ?? '' },
+          manual: promptText,
+          text: promptText,
+          at: null,
+        }
+      : base.promptV1,
+    audit: {
+      tool: raw.b05?.tool ?? null,
+      accepted: raw.b05?.accepted ?? '',
+      rejected: raw.b05?.rejected ?? '',
+      why: [raw.b05?.acceptedWhy, raw.b05?.rejectedWhy].filter(Boolean).join(' · '),
+    },
+    verification: legacyClaim
+      ? {
+          claims: [
+            {
+              id: 'c1',
+              claim: legacyClaim.claim ?? '',
+              source: legacyClaim.source ?? '',
+              locator: legacyClaim.locator ?? '',
+              action: legacyClaim.action ?? null,
+            },
+          ],
+        }
+      : base.verification,
+    finalQuestion: {
+      blame: raw.b09?.blame ?? null,
+      confidence: raw.b09?.confidence ?? null,
+      committed: Boolean(raw.b09?.committed),
+      at: raw.b09?.at ?? null,
+    },
+    reflection: { before: raw.b09?.before ?? '', after: raw.b09?.after ?? '' },
+  };
+}
+
+/**
+ * Rellena huecos de un estado leído del disco contra la forma actual. Un schema
+ * antiguo nunca rompe la aplicación: los campos nuevos aparecen vacíos en lugar
+ * de `undefined`.
  */
 export function migrate(raw: unknown): Class1State {
   const base = createInitialState();
   if (!raw || typeof raw !== 'object') return base;
-  const parsed = raw as Partial<Class1State>;
 
-  // v0/v1 → v2: cualquier objeto sin versión o con la forma previa se trata
-  // como parcial y se fusiona campo a campo, sin borrar trabajo del estudiante.
-  const legacyB05 = (parsed.b05 ?? {}) as Partial<B05State> & { excerpt?: unknown };
+  const version = (raw as { schemaVersion?: number }).schemaVersion ?? 1;
+  if (version < SCHEMA_VERSION) return fromLegacy(raw as LegacyV1Shape);
+
+  const parsed = raw as Partial<Class1State>;
   const merged: Class1State = {
     ...base,
     ...parsed,
     schemaVersion: SCHEMA_VERSION,
-    student: { ...base.student, ...(parsed.student ?? {}) },
-    b00: { ...base.b00, ...(parsed.b00 ?? {}) },
-    b01: { ...base.b01, ...(parsed.b01 ?? {}) },
-    b02: { ...base.b02, ...(parsed.b02 ?? {}) },
-    b03: { ...base.b03, ...(parsed.b03 ?? {}) },
-    productA: { ...base.productA, ...(parsed.productA ?? {}) },
-    b05: {
-      ...base.b05,
-      ...legacyB05,
-      audit:
-        typeof legacyB05.audit === 'string'
-          ? legacyB05.audit
-          : typeof legacyB05.excerpt === 'string'
-            ? legacyB05.excerpt
-            : '',
+    identity: { ...base.identity, ...(parsed.identity ?? {}) },
+    initialQuestion: { ...base.initialQuestion, ...(parsed.initialQuestion ?? {}) },
+    promptV1: {
+      ...base.promptV1,
+      ...(parsed.promptV1 ?? {}),
+      draft: { ...emptyDraft(), ...(parsed.promptV1?.draft ?? {}) },
     },
-    b06: { ...base.b06, ...(parsed.b06 ?? {}) },
-    b07: { ...base.b07, ...(parsed.b07 ?? {}) },
-    b08: { ...base.b08, ...(parsed.b08 ?? {}) },
-    b09: { ...base.b09, ...(parsed.b09 ?? {}) },
-    visited: Array.isArray(parsed.visited) ? parsed.visited : [],
+    audit: { ...base.audit, ...(parsed.audit ?? {}) },
+    promptV2: { ...base.promptV2, ...(parsed.promptV2 ?? {}) },
+    verification: { ...base.verification, ...(parsed.verification ?? {}) },
+    finalQuestion: { ...base.finalQuestion, ...(parsed.finalQuestion ?? {}) },
+    reflection: { ...base.reflection, ...(parsed.reflection ?? {}) },
+    submission: { ...base.submission, ...(parsed.submission ?? {}) },
+    timers: { ...(parsed.timers ?? {}) },
   };
 
   // Invariantes de forma que el resto del código da por supuestos.
-  if (!Array.isArray(merged.productA.decisions) || merged.productA.decisions.length !== 3) {
-    merged.productA.decisions = ['', '', ''];
-  }
-  if (!Array.isArray(merged.productA.reasons) || merged.productA.reasons.length !== 3) {
-    merged.productA.reasons = ['', '', ''];
-  }
-  if (!Array.isArray(merged.productA.components)) merged.productA.components = [];
-  if (!Array.isArray(merged.b01.explored)) merged.b01.explored = [];
-  if (!Array.isArray(merged.b08.claims)) {
-    merged.b08.claims = [emptyClaim('c1'), emptyClaim('c2')];
-  }
-  while (merged.b08.claims.length < 2) {
-    merged.b08.claims.push(emptyClaim(`c${merged.b08.claims.length + 1}`));
+  const draft = merged.promptV1.draft;
+  if (!Array.isArray(draft.constraints)) draft.constraints = [];
+  if (!Array.isArray(draft.controls)) draft.controls = [];
+  if (!draft.extras || typeof draft.extras !== 'object') draft.extras = emptyDraft().extras;
+  if (!Array.isArray(merged.verification.claims) || merged.verification.claims.length === 0) {
+    merged.verification.claims = [emptyClaim('c1')];
   }
   return merged;
 }
@@ -283,6 +277,11 @@ export function clearState(): void {
   }
 }
 
-export function fullName(s: StudentIdentity): string {
-  return [s.firstName, s.lastName].filter(Boolean).join(' ').trim();
+/** El prompt que el estudiante lleva a la IA: V2 si existe, V1 si no. */
+export function currentPrompt(state: Class1State): string {
+  return state.promptV2.text.trim() || state.promptV1.text.trim();
+}
+
+export function displayName(identity: StudentIdentity): string {
+  return identity.name.trim();
 }

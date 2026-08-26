@@ -1,3 +1,4 @@
+/* eslint-disable */
 // ─────────────────────────────────────────────────────────────────────────────
 // Service worker de sala · Taller DIAT
 //
@@ -13,6 +14,9 @@
 // Nunca intercepta métodos distintos de GET ni peticiones a otros orígenes: las
 // herramientas de IA externas quedan siempre fuera.
 // ─────────────────────────────────────────────────────────────────────────────
+// Al cambiar de versión, el 'activate' borra las cachés anteriores. Se sube cuando
+// cambia la estructura de rutas de la clase, para que ninguna página de la
+// arquitectura retirada sobreviva en el dispositivo de un estudiante.
 const VERSION = 'diat-clase1-v2';
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;

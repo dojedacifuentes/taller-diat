@@ -28,13 +28,15 @@ Este archivo separa los conflictos editoriales de los defectos de software. No d
 
 ## PEDAGOGICAL_MIGRATION
 
-- **C1-11 · Individualización guiada.** Los documentos fuente describen momentos en parejas, grupos, votación y formularios externos. `/clase-1` los traduce a un recorrido individual B00–B09, con compromiso antes del feedback, persistencia local y productos A/B/C. Esta migración es deliberada; los documentos fuente no se modifican en esta entrega.
-- **C1-12 · Dependencias externas.** B05 permite elegir una herramienta externa y ofrece un puente copiar/abrir/pegar. Ninguna respuesta del modelo externo se considera verificada ni se guarda fuera del navegador.
-- **C1-13 · Sin puntuación engañosa.** La cobertura DIAT se presenta como mapa de decisiones. Un componente ausente puede ser correcto si el riesgo y la tarea no lo requieren.
+- **C1-11 · De manual interactivo a superficie de ejecución.** La plataforma dejó de recorrer diez bloques y pasó a cinco etapas: pregunta, prompt, auditoría, verificación y cierre. Los ejercicios que solo pedían leer y responder —modelo/producto, cinco mitos, diagnóstico DIAT, clasificación de errores, decisiones sobre la demostración— volvieron a la conducción docente. Los documentos fuente (Documento Maestro, Manual del Estudiante) conservan la estructura B00–B09 y no se modifican aquí; el canon sigue vivo en `manifest.ts` para el deck y el guion.
+- **C1-12 · Dependencias externas.** La auditoría y la verificación se ejecutan en la herramienta del estudiante. El botón copia el paquete completo —metaprompt más su prompt real, con delimitadores— para que pegar baste. Ninguna respuesta del modelo externo se considera verificada ni se guarda fuera del navegador.
+- **C1-13 · Sin puntuación engañosa.** El prompt no se puntúa. No hay porcentaje de calidad ni «prompt perfecto»: hay decisiones tomadas y decisiones pendientes. Un componente ausente puede ser correcto si la tarea no lo requiere; por eso Rol vive en «Agregar extras».
+- **C1-18 · Clasificación epistémica A–E.** Se explica en el PPT y permanece como material avanzado, pero la plataforma dejó de pedirla: en una sesión introductoria el objetivo es que el estudiante ejecute el procedimiento de verificación, no que memorice cinco códigos.
 
 ## TIMING_UX
 
-- **C1-14 · B04 (10 min).** Es el bloque de mayor densidad de escritura. La progresión modelo y la rúbrica quedan bajo divulgación opcional para que el foco sea producir el encargo y justificar tres decisiones. El docente debe anunciar un corte temporal intermedio.
-- **C1-15 · B05 (8 min).** Depende de la disponibilidad de una herramienta externa. El puente reduce fricción, pero debe existir demostración docente de respaldo si no hay acceso o conectividad.
-- **C1-16 · B08 (15 min).** Dos afirmaciones con fuente, localizador, estado y acción constituyen el mínimo de completitud. Agregar más filas es opcional y no debe desplazar el cierre B09.
-- **C1-17 · Carga global.** El ajuste es estructural, no una medición con usuarios. Antes de la sesión final se requiere ensayo cronometrado de punta a punta en móvil y notebook.
+- **C1-14 · Prompt Lab (14 min de plataforma).** Es el corazón de la clase y absorbió el diagnóstico que antes era un ejercicio aparte. El estudiante decide con botones y escribe poco; el docente circula y no explica. Corte temporal intermedio anunciado por el docente.
+- **C1-15 · Auditoría (8 min de plataforma).** Depende de que el estudiante tenga acceso a una IA. El paquete copiable reduce la fricción, pero debe existir demostración docente de respaldo si no hay acceso o conectividad.
+- **C1-16 · Verificación (8 min de plataforma).** Una afirmación con fuente, localizador y acción es el mínimo de completitud; la segunda es opcional. Una fila honesta produce más aprendizaje que dos a medias, y nunca desplaza el cierre.
+- **C1-17 · Carga global.** El reparto es 51 minutos de conducción y 39 de plataforma, cuadrado en `runofshow.ts` con un invariante que impide que las etapas no quepan en su tramo. Antes de la sesión se requiere ensayo cronometrado de punta a punta en móvil y notebook.
+- **C1-19 · Cronómetro.** Cuenta regresiva por ejercicio, persistente ante recarga y navegación. Al llegar a `00:00` no bloquea ni borra: avisa. Las duraciones viven en `timers.ts`, en un solo objeto, para poder ajustarlas tras el ensayo.
