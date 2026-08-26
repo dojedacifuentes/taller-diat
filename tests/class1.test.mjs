@@ -8,8 +8,8 @@
 // el estado del estudiante, el reparto de los 90 minutos y el documento de
 // entrega, que es lo único que sale de la sesión.
 //
-// La regla dura —«lo que se copia, se ejecuta»— vive en el compilador de
-// prompts y se comprueba aparte, en scripts/class1/check-class1.mjs.
+// Incluye la regla dura del compilador —«lo que se copia, se ejecuta»— para que
+// el build remoto no dependa de flags experimentales de Node.
 // ─────────────────────────────────────────────────────────────────────────────
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,7 +25,7 @@ const { BLOCKS } = await jiti.import('../src/content/class1/manifest.ts');
 const { STAGES, STAGE_IDS, getStage } = await jiti.import('../src/content/class1/stages.ts');
 const { RUN_OF_SHOW, runOfShowErrors, timeSplit } = await jiti.import('../src/content/class1/runofshow.ts');
 const { class1ActivityDurations } = await jiti.import('../src/content/class1/timers.ts');
-const { compilePrompt, emptyDraft, applyTaskDefaults } = await jiti.import('../src/content/class1/lab.ts');
+const { compilePrompt, emptyDraft, applyTaskDefaults, taskPresets } = await jiti.import('../src/content/class1/lab.ts');
 const {
   clearState, createInitialState, currentPrompt, loadState, migrate, saveState,
   SCHEMA_VERSION, STORAGE_KEY,
@@ -92,6 +92,78 @@ test('cada etapa de plataforma se abre en un solo tramo y con su cronómetro rea
       `${segment.stage} no cabe en su tramo`,
     );
   }
+});
+
+// ─── La regla dura: lo que se copia, se ejecuta ──────────────────────────────
+
+// Marcador = corchete por rellenar. `[INFERENCIA]` es una etiqueta que la IA
+// debe escribir, no un hueco que el estudiante deba completar.
+const PLACEHOLDER = /\[(?!INFERENCIA\])[^\]]*\]/;
+
+test('sin las decisiones esenciales no se exporta nada, y se dice qué falta', () => {
+  const compiled = compilePrompt(emptyDraft());
+  assert.equal(compiled.ready, false);
+  assert.equal(compiled.text, '');
+  assert.equal(compiled.missing.length, 3);
+});
+
+test('toda tarea del catálogo produce un prompt ejecutable y sin marcadores', () => {
+  for (const preset of taskPresets) {
+    let draft = applyTaskDefaults(emptyDraft(), preset.id);
+    draft = { ...draft, taskDetail: 'Detalle concreto.', purpose: 'Para un informe interno.' };
+    if (draft.source === 'pegar') draft = { ...draft, material: 'TEXTO DE PRUEBA' };
+    const compiled = compilePrompt(draft);
+    assert.equal(compiled.ready, true, `${preset.id} no exporta: ${compiled.missing.join(', ')}`);
+    assert.doesNotMatch(compiled.text, PLACEHOLDER, `${preset.id} exporta un marcador`);
+  }
+});
+
+test('el material pegado viaja dentro del prompt, entre delimitadores', () => {
+  const draft = { ...applyTaskDefaults(emptyDraft(), 'resumir'), taskDetail: 'x', material: 'CONTENIDO REAL' };
+  const compiled = compilePrompt(draft);
+  assert.match(compiled.text, /CONTENIDO REAL/);
+  assert.match(compiled.text, /<<<INICIO DEL MATERIAL>>>/);
+  assert.match(compiled.text, /<<<FIN DEL MATERIAL>>>/);
+  assert.match(compiled.text, /Trabaja exclusivamente con el material delimitado/);
+  assert.equal(compiled.warning, undefined);
+});
+
+test('sin material pegado no se exporta', () => {
+  const compiled = compilePrompt({ ...applyTaskDefaults(emptyDraft(), 'resumir'), taskDetail: 'x' });
+  assert.equal(compiled.ready, false);
+  assert.ok(compiled.missing.includes('el contenido sobre el que trabajará la IA'));
+});
+
+test('el modo adjunto advierte en pantalla y lo dice dentro del prompt', () => {
+  const compiled = compilePrompt({
+    ...applyTaskDefaults(emptyDraft(), 'analizar-sentencia'),
+    taskDetail: 'x',
+    source: 'adjuntar',
+  });
+  assert.equal(compiled.ready, true);
+  assert.match(compiled.warning, /adjuntar el documento/);
+  assert.match(compiled.text, /documento que adjunto en este mismo mensaje/);
+  assert.match(compiled.text, /no continúes/);
+});
+
+test('el rol solo aparece si el estudiante lo pide, y va primero', () => {
+  const draft = { ...applyTaskDefaults(emptyDraft(), 'resumir'), taskDetail: 'x', material: 'X' };
+  assert.doesNotMatch(compilePrompt(draft).text, /Actúa como/);
+  const conRol = compilePrompt({ ...draft, extras: { ...draft.extras, role: 'ayudante de Derecho civil' } });
+  assert.match(conRol.text, /^Actúa como ayudante de Derecho civil\./);
+});
+
+test('sin restricciones ni control no se imprimen secciones vacías', () => {
+  const compiled = compilePrompt({
+    ...applyTaskDefaults(emptyDraft(), 'resumir'),
+    taskDetail: 'x',
+    material: 'X',
+    constraints: [],
+    controls: [],
+  });
+  assert.equal(compiled.ready, true);
+  assert.doesNotMatch(compiled.text, /RESTRICCIONES/);
+  assert.doesNotMatch(compiled.text, /CONTROL/);
 });
 
 // ─── Estado del estudiante ───────────────────────────────────────────────────

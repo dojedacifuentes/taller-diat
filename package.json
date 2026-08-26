@@ -14,7 +14,7 @@
     "test:class1": "node --test tests/class1.test.mjs",
     "test:class1:compiler": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/check-class1.mjs",
     "test": "npm run test:class1 && npm run test:class1:compiler",
-    "vercel:build": "npm run test && npm run lint && next build",
+    "vercel:build": "npm run test:class1 && npm run lint && next build",
     "build:class1-ppt": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/build-class1-deck.mjs && powershell -ExecutionPolicy Bypass -File scripts/class1/render-deck.ps1 && node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/audit-class1-deck.mjs",
     "build:class1-ppt:only": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/build-class1-deck.mjs",
     "render:class1-ppt": "powershell -ExecutionPolicy Bypass -File scripts/class1/render-deck.ps1",
