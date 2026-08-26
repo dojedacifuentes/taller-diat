@@ -1,0 +1,418 @@
+{
+  "filename": "Sesion_1_Prompting_Juridico_DIAT_2026.pptx",
+  "title": "Sesión 1 · Del prompt aislado al razonamiento jurídico asistido",
+  "subject": "Taller de Prompting Jurídico 3.0 — DIAT PUCV 2026",
+  "creator": "Programa DIAT PUCV",
+  "keywords": "prompting jurídico, verificación, alucinaciones, DIAT, PUCV",
+  "footer": "Taller de Prompting Jurídico 3.0 · DIAT PUCV · Sesión 1 · 27 AGO 2026",
+  "slides": [
+    {
+      "type": "cover",
+      "kicker": "Sesión 1 de 3 · Programa DIAT PUCV",
+      "title": "Del prompt aislado al razonamiento jurídico asistido",
+      "lead": "De la pregunta jurídica al resultado verificable",
+      "meta": [
+        "Jueves 27 de agosto de 2026 · 15:00–16:30 hrs.",
+        "Facultad y Escuela de Derecho PUCV · Valparaíso",
+        "Producto de la jornada: prompt estructurado + matriz de verificación"
+      ],
+      "notes": "[DIEGO] 0–5 min.\nSaludar, presentar al equipo y encuadrar las tres sesiones en una frase: hoy aprendemos a formular, la próxima a organizar el trabajo en pasos, y la última a explicárselo a otra disciplina.\nNo prometer que van a salir usando IA mejor: prometer que van a salir revisando mejor.\nTransición: «empecemos por una pregunta»."
+    },
+    {
+      "kicker": "Activación",
+      "title": "¿Qué hace que una respuesta de IA parezca correcta aunque no lo sea?",
+      "accent": "cyan",
+      "blocks": [
+        { "type": "lead", "text": "Treinta segundos para pensarlo. Dos o tres respuestas en voz alta. No hay respuesta mala: la pregunta se contesta sola al final de la sesión." },
+        { "type": "chips", "items": ["Está bien escrita", "Suena segura", "Cita algo", "Tiene estructura", "Coincide con lo que yo esperaba"] }
+      ],
+      "notes": "[DIEGO] 0–5 min (continúa).\nRecoger dos o tres respuestas y anotarlas en la pizarra. Volveremos a ellas en el minuto 62.\nAquí mismo se aplica el microdiagnóstico a mano alzada: cinco preguntas, respuesta levantando la mano. Anotar los conteos aproximados en la hoja de coordinación.\nError frecuente: dedicarle ocho minutos. Son cinco, contados."
+    },
+    {
+      "kicker": "Diagnóstico de entrada",
+      "title": "Cinco preguntas, a mano alzada",
+      "accent": "cyan",
+      "blocks": [
+        {
+          "type": "bullets",
+          "items": [
+            "¿Con qué frecuencia usas IA para algo de tus estudios de Derecho?",
+            "Cuando una respuesta te parece bien escrita, ¿cuánto confías en que además es correcta?",
+            "¿Has comprobado alguna vez en la fuente oficial una norma que te citó una IA?",
+            "¿Has pegado alguna vez un documento con nombres o RUT de una persona real?",
+            "¿Para qué la has usado con más frecuencia?"
+          ]
+        },
+        { "type": "lead", "text": "Anónimo. No se registran nombres ni correos. Se repite al final de la sesión 3 para ver qué cambió." }
+      ],
+      "notes": "[DIEGO] Dentro del bloque 0–5.\nLeer las preguntas rápido. La cuarta suele producir silencio incómodo: no comentarla todavía, se retoma en el bloque de privacidad.\nCoordinación pedagógica anota los conteos."
+    },
+    {
+      "kicker": "Teoría mínima · 1 de 3",
+      "title": "Qué hace realmente un modelo de lenguaje",
+      "accent": "cyan",
+      "blocks": [
+        { "type": "quote", "text": "Genera lenguaje de forma probabilística, condicionado por el contexto que recibe.", "cite": "Y eso es todo lo técnico que necesitamos hoy." },
+        {
+          "type": "cards",
+          "cols": 3,
+          "items": [
+            { "n": "01", "t": "Aprende patrones", "d": "De enormes cantidades de texto. No de una base de datos de verdades." },
+            { "n": "02", "t": "Predice", "d": "Qué texto sigue al texto que le diste. Nada más." },
+            { "n": "03", "t": "No consulta", "d": "No abre la ley ni el expediente, salvo que se los des tú." }
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 5–12 min.\nUna sola visual técnica en toda la sesión, y es esta. No hablar de transformers, embeddings ni redes neuronales: no aportan nada a lo que van a hacer en dos horas.\nEjemplo útil: es como alguien que ha leído muchísimo y responde de memoria, con mucha soltura, sin volver a abrir el libro.\nError frecuente del relator: antropomorfizar. No decir «piensa» ni «entiende» sin matizar."
+    },
+    {
+      "kicker": "Teoría mínima · 2 de 3",
+      "title": "Qué NO implica que responda bien",
+      "accent": "rose",
+      "blocks": [
+        { "type": "chips", "items": ["Verdad", "Vigencia jurídica", "Fuente real", "Interpretación correcta", "Intención", "Responsabilidad"] },
+        { "type": "lead", "text": "Ninguna de estas seis cosas viene incluida. Todas hay que ponerlas nosotros: unas al formular la tarea y otras al revisar el resultado." }
+      ],
+      "notes": "[DIEGO] 5–12 min (continúa).\nDetenerse en «responsabilidad»: quien firma responde, aunque el borrador lo haya escrito una herramienta. Es el punto que más les importa profesionalmente.\nY en «vigencia»: una norma publicada no es una norma vigente. Se volverá sobre esto en el caso."
+    },
+    {
+      "kicker": "Teoría mínima · 3 de 3",
+      "title": "La fluidez es una propiedad del lenguaje generado. La corrección jurídica exige verificación externa.",
+      "accent": "cyan",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 3,
+          "items": [
+            { "n": "A", "t": "Plausible", "d": "Suena bien, está bien escrita, es coherente. No basta." },
+            { "n": "B", "t": "Correcta", "d": "Afirma cosas que efectivamente son así. Sigue sin bastar." },
+            { "n": "C", "t": "Jurídicamente fundada", "d": "Es correcta, indica su fuente vigente y muestra cómo conecta hecho y norma." }
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 5–12 min (cierre del bloque).\nEsta es la diapositiva que hay que dejar en pantalla mientras se hace la demostración.\nPregunta al grupo: «¿cuántas de las respuestas que han usado este semestre llegaban a la columna C?». No hace falta que contesten.\nTransición: «veámoslo con un caso»."
+    },
+    {
+      "type": "divider",
+      "kicker": "Demostración en vivo",
+      "title": "El prompt insuficiente",
+      "lead": "Caso CT-01 · La cláusula que se modifica sola",
+      "accent": "indigo",
+      "notes": "[DIEGO] 12–20 min.\nAbrir la herramienta proyectada. Si no hay internet, usar la respuesta precalculada de la ficha 09: el objetivo del bloque no cambia."
+    },
+    {
+      "kicker": "Caso CT-01",
+      "title": "La cláusula que se modifica sola",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "code",
+          "label": "Cláusula (caso ficticio)",
+          "lines": [
+            "El proveedor podrá modificar unilateralmente las tarifas, los plazos",
+            "y las condiciones del servicio en cualquier momento, sin necesidad de",
+            "aviso previo. El uso continuado de la aplicación constituye aceptación",
+            "de las modificaciones. El usuario autoriza a recopilar, tratar y",
+            "comunicar a terceros sus datos de geolocalización, contactos y hábitos",
+            "de desplazamiento, con fines comerciales presentes o futuros."
+          ]
+        },
+        { "type": "lead", "text": "VeloUrbano SpA, empresa ficticia de arriendo de bicicletas por aplicación. Una usuaria reclama porque la tarifa por minuto subió un 40 % sin aviso." }
+      ],
+      "notes": "[DIEGO] 12–20 min.\nLeer la cláusula en voz alta, despacio. Que la escuchen entera.\nPreguntar: «¿qué le preguntarían ustedes a una IA sobre esto?». Van a decir «si es válida». Perfecto: eso es exactamente lo que vamos a probar."
+    },
+    {
+      "kicker": "Demostración",
+      "title": "Le preguntamos lo obvio",
+      "accent": "rose",
+      "blocks": [
+        { "type": "code", "label": "El prompt", "lines": ["¿Es válida esta cláusula?"] },
+        { "type": "lead", "text": "La respuesta llega en segundos. Está bien escrita, tiene estructura, cita artículos y concluye con seguridad. Y no sirve." },
+        {
+          "type": "cards",
+          "cols": 4,
+          "items": [
+            { "n": "?", "t": "Jurisdicción", "d": "No dijimos que era Chile." },
+            { "n": "?", "t": "Hechos", "d": "No dijimos qué pasó." },
+            { "n": "?", "t": "Finalidad", "d": "No dijimos para qué la queremos." },
+            { "n": "?", "t": "Fuentes", "d": "No dijimos de dónde puede sacarla." }
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 12–20 min.\nEjecutar en vivo. Mientras responde, ir señalando en pantalla lo que va apareciendo con tono de certeza.\nLuego pedir al grupo que levante la mano cuando detecte una afirmación que nadie ha comprobado. Suelen tardar.\nSi la respuesta sale demasiado buena, no forzarla: preguntar «¿de dónde sale esto?» y buscar el artículo en vivo. Ahí se cae."
+    },
+    {
+      "kicker": "Demostración",
+      "title": "Lo que faltaba no era información: era especificación",
+      "accent": "amber",
+      "blocks": [
+        { "type": "chips", "items": ["Jurisdicción", "Hechos", "Finalidad", "Fuente", "Fecha y vigencia", "Restricciones", "Nivel de certeza", "Formato"] },
+        { "type": "lead", "text": "Ocho cosas que no dijimos. La respuesta las inventó todas, y lo hizo bien: era lo único que podía hacer." }
+      ],
+      "notes": "[DIEGO] 12–20 min (cierre).\nFrase clave: «el modelo no falló. Nosotros no le dijimos qué trabajo queríamos».\nTransición: «vamos a decírselo bien»."
+    },
+    {
+      "type": "divider",
+      "kicker": "El método",
+      "title": "La estructura DIAT del prompt jurídico",
+      "lead": "Siete capas. Ninguna es un truco.",
+      "accent": "cyan",
+      "notes": "[DIEGO] 20–27 min.\nConstruir el prompt en pantalla, capa por capa, sobre el mismo caso. No mostrarlo terminado."
+    },
+    {
+      "kicker": "Las siete capas · 1 de 2",
+      "title": "Contexto, rol y tarea",
+      "accent": "cyan",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 3,
+          "items": [
+            { "n": "01", "t": "Contexto", "d": "¿Quién pregunta, sobre qué hechos y en qué jurisdicción?" },
+            { "n": "02", "t": "Rol (opcional)", "d": "¿Desde qué punto de vista conviene que trabaje?" },
+            { "n": "03", "t": "Tarea", "d": "¿Qué debe producir exactamente?" }
+          ]
+        },
+        {
+          "type": "code",
+          "label": "Así se ve",
+          "lines": [
+            "Estudiante de Derecho en Chile. Contrato de adhesión de una app de",
+            "arriendo de bicicletas. Los hechos son los del caso CT-01.",
+            "Actúa como analista que prepara material para revisión de un abogado,",
+            "no como abogado que decide.",
+            "Identifica qué elementos de la cláusula podrían discutirse a la luz de",
+            "la Ley 19.496 y explica por qué."
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 20–27 min.\nEscribirlo en vivo en el Prompt Lab proyectado, no leerlo de la diapositiva.\nSobre el rol: advertir que no es magia. Un rol ajusta el nivel de detalle; no vuelve correcta una respuesta falsa.\nSobre la tarea: «identifica qué podría discutirse» es revisable; «analiza» no lo es."
+    },
+    {
+      "kicker": "Las siete capas · 2 de 2",
+      "title": "Fuentes, restricciones, formato y control",
+      "accent": "cyan",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 4,
+          "items": [
+            { "n": "04", "t": "Fuentes", "d": "¿De dónde puede y de dónde no puede sacar el fundamento?" },
+            { "n": "05", "t": "Restricciones", "d": "¿Qué no debe hacer?" },
+            { "n": "06", "t": "Formato", "d": "¿Cómo quiero recibirlo para poder revisarlo?" },
+            { "n": "07", "t": "Control", "d": "¿Cómo debe declarar lo que no sabe?" }
+          ]
+        },
+        {
+          "type": "code",
+          "label": "Las cuatro capas que cambian todo",
+          "lines": [
+            "Usa exclusivamente la Ley 19.496 y la Ley 19.628 vigentes en BCN.",
+            "No inventes números de artículo. No cites jurisprudencia.",
+            "Devuélvelo como tabla: afirmación · norma · artículo · certeza.",
+            "Distingue afirmación textual, inferencia y recomendación.",
+            "Si no puedes verificar un punto, indícalo expresamente."
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 20–27 min.\nLa capa de fuentes es la que más reduce las citas inventadas: decirlo explícitamente.\nLa capa de formato es la que hace visible el vacío: una columna «fuente» deja a la vista las celdas sin respaldo.\nLa capa de control es la que convierte la respuesta en material de trabajo y no en veredicto."
+    },
+    {
+      "kicker": "Progresión",
+      "title": "La misma consulta, seis veces",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "table",
+          "head": ["Nivel", "Qué se añade", "Qué sigue fallando"],
+          "rows": [
+            ["0", "Nada. «Analiza este contrato»", "No hay forma de decir si está bien"],
+            ["1", "Tarea nombrada", "¿Problemáticas según qué Derecho?"],
+            ["2", "Contexto, jurisdicción, finalidad", "Puede inventar la norma que cita"],
+            ["3", "Fuentes autorizadas y restricciones", "Texto corrido difícil de auditar"],
+            ["4", "Formato revisable", "No declara qué es inferencia suya"],
+            ["5", "Control y trazabilidad", "Ya se puede revisar línea por línea"]
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 20–27 min (cierre).\nInsistir: no existe el prompt mágico de dos mil palabras. Existe una tarea cada vez mejor especificada.\nTRANSICIÓN AL BLOQUE ESTUDIANTIL, literal: «desde ahora ustedes trabajan como revisores, no como consumidores de respuestas».\nEntregar la palabra al relator o relatora A."
+    },
+    {
+      "type": "divider",
+      "kicker": "Actividad · 27–35 min",
+      "title": "Autopsia de un mal prompt",
+      "lead": "Grupos de tres. Ocho minutos.",
+      "accent": "emerald",
+      "notes": "[RELATOR A] 27–35 min.\nRepartir los prompts defectuosos impresos y la ficha 01.\nConsigna exacta: «este prompt tiene siete capas posibles. Marquen cuáles faltan y escriban qué pregunta habría respondido cada capa ausente».\nA los 6 minutos: puesta en común de 2 minutos, dos equipos máximo."
+    },
+    {
+      "kicker": "Actividad",
+      "title": "Qué hace cada grupo",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Leer", "d": "El prompt defectuoso que recibió el grupo." },
+            { "t": "Marcar", "d": "Cuáles de las siete capas faltan." },
+            { "t": "Escribir", "d": "Qué pregunta habría respondido cada capa ausente." },
+            { "t": "Elegir", "d": "La ausencia más grave y por qué." }
+          ]
+        },
+        { "type": "lead", "text": "Seis minutos de trabajo. Dos de puesta en común. No se corrige el prompt todavía: solo se diagnostica." }
+      ],
+      "notes": "[RELATOR A] 27–35 min.\nCirculando por las mesas: la ausencia que casi nadie marca es «control». Preguntarles «¿y cómo sabrían qué parte se la inventó?».\nSi un grupo termina antes: pedirle que escriba la versión corregida de una sola capa."
+    },
+    {
+      "type": "divider",
+      "kicker": "Laboratorio · 35–62 min",
+      "title": "Construir y ejecutar",
+      "lead": "Cada equipo, sobre el caso CT-01",
+      "accent": "emerald",
+      "notes": "[RELATOR A / RELATOR B] 35–62 min.\nDos bloques seguidos: construir (15 min) y ejecutar y registrar (12 min).\nLos facilitadores se reparten las mesas. Corregir capa a capa, no al final."
+    },
+    {
+      "kicker": "Laboratorio · 35–50 min",
+      "title": "Las siete capas, en el Prompt Lab",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Abrir", "d": "taller-diat.vercel.app → Prompt Lab" },
+            { "t": "Completar", "d": "Las siete capas sobre el caso CT-01" },
+            { "t": "Revisar", "d": "Con la ficha 01 al lado" },
+            { "t": "Copiar", "d": "El prompt terminado" }
+          ]
+        },
+        { "type": "lead", "text": "Quince minutos. Si un equipo se atasca en «fuentes», el facilitador entrega la Ley 19.496 y la Ley 19.628 y sigue adelante: el objetivo no es investigar, es especificar." }
+      ],
+      "notes": "[RELATOR A] 35–50 min.\nAviso obligatorio antes de que abran nada: no pegar información confidencial ni datos de personas reales. El caso es ficticio y así se queda.\nA los 12 minutos avisar: «quedan tres».\nContingencia: si la plataforma no carga, se trabaja en papel con la ficha 01."
+    },
+    {
+      "kicker": "Laboratorio · 50–62 min",
+      "title": "Ejecutar y registrar, sin corregir todavía",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "Ahora sí", "items": ["Ejecutar el prompt", "Pegar la respuesta completa en el registro", "Anotar herramienta y hora"] },
+          "right": { "label": "Todavía no", "items": ["Corregir el texto", "Borrar lo que suene mal", "Decidir si la cláusula es válida"] }
+        },
+        { "type": "lead", "text": "Primero se recoge el material en bruto. Si se corrige mientras se lee, se pierde el rastro de qué había antes." }
+      ],
+      "notes": "[RELATOR B] 50–62 min.\nEsta es la regla que más cuesta: quieren limpiar la respuesta de inmediato. Insistir en que el material en bruto es la evidencia.\nSi alguien no tiene acceso a una herramienta, usar la respuesta precalculada de la ficha 09."
+    },
+    {
+      "type": "divider",
+      "kicker": "Actividad · 62–72 min",
+      "title": "Cazador de alucinaciones",
+      "lead": "No verificar el estilo. Verificar las afirmaciones.",
+      "accent": "rose",
+      "notes": "[RELATOR B] 62–72 min.\nAquí es donde se retoman las respuestas que el grupo dio en el minuto 3.\nAbrir taller-diat.vercel.app → Verificación."
+    },
+    {
+      "kicker": "Cazador de alucinaciones",
+      "title": "Cinco estados posibles de una afirmación",
+      "accent": "rose",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 5,
+          "items": [
+            { "n": "1", "t": "Verificada", "d": "La encontré en la fuente y dice eso." },
+            { "n": "2", "t": "Falsa", "d": "La busqué y no existe, o dice otra cosa." },
+            { "n": "3", "t": "Dudosa", "d": "Demasiado categórica; le falta un matiz." },
+            { "n": "4", "t": "Sin fuente", "d": "No dice de dónde sale y no la localicé." },
+            { "n": "5", "t": "Inferencia", "d": "El modelo la dedujo y la presenta como dato." }
+          ]
+        }
+      ],
+      "notes": "[RELATOR B] 62–72 min.\nEl estado que más cuesta distinguir es «inferencia»: no está mal razonado, está mal etiquetado.\nEl error más común del grupo: marcar «falsa» todo lo que no encuentran en dos minutos. Recordar que «sin fuente» y «falsa» son cosas distintas."
+    },
+    {
+      "kicker": "Cazador de alucinaciones",
+      "title": "Las trampas que este caso esconde",
+      "accent": "rose",
+      "blocks": [
+        {
+          "type": "bullets",
+          "items": [
+            "Un «artículo 16 bis letra h)» con numeración verosímil y contenido inventado.",
+            "La Ley 21.719 aplicada como si estuviera vigente: rige desde el 1 de diciembre de 2026.",
+            "Un plazo de 72 horas importado del reglamento europeo, no del Derecho chileno.",
+            "Una sentencia con rol y año que no aparece en el buscador del Poder Judicial.",
+            "Un plazo afirmado sin artículo. Un plazo sin artículo es solo una cifra."
+          ]
+        }
+      ],
+      "notes": "[RELATOR B] 62–72 min.\nNo adelantar esta diapositiva: mostrarla DESPUÉS de que los equipos hayan clasificado.\nLa trampa de la vigencia es la más valiosa de toda la sesión. Si un equipo la detectó solo, pedirle que cuente cómo."
+    },
+    {
+      "kicker": "Producto · 72–82 min",
+      "title": "Matriz de verificación",
+      "accent": "cyan",
+      "blocks": [
+        {
+          "type": "table",
+          "head": ["Afirmación", "Fuente según la IA", "Fuente real", "¿Coincide?", "Confianza", "Corrección"],
+          "rows": [
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", ""]
+          ]
+        },
+        { "type": "lead", "text": "Mínimo tres filas contrastadas contra fuente oficial. La columna «fuente real» es la que decide: si al buscarla no aparece, la afirmación no está verificada." }
+      ],
+      "notes": "[RELATOR B / TODOS] 72–82 min.\nEste es el producto que se llevan de la sesión.\nSe puede completar en la plataforma o en la ficha 02 impresa.\nRecordar: registrar también la fecha de consulta. Sin fecha, la verificación no es trazable."
+    },
+    {
+      "kicker": "Revisión entre pares · 82–88 min",
+      "title": "Cinco preguntas al trabajo del otro equipo",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "bullets",
+          "items": [
+            "¿El prompt dice en qué jurisdicción y sobre qué hechos se pregunta?",
+            "¿La tarea es lo bastante concreta como para saber si se cumplió?",
+            "¿Se indican fuentes autorizadas y se prohíbe expresamente inventarlas?",
+            "¿El formato obliga a mostrar de dónde sale cada afirmación?",
+            "¿Hay alguna afirmación marcada como no verificada? Si no la hay, ¿es porque se verificó todo o porque no se revisó?"
+          ]
+        }
+      ],
+      "notes": "[RELATOR A] 82–88 min.\nEquipo A revisa a equipo B y viceversa. Seis minutos.\nSe devuelve UNA observación concreta y escrita, no una impresión general. «Está bien» no es una observación.\nLa quinta pregunta es la que más incomoda y la más útil."
+    },
+    {
+      "kicker": "Privacidad",
+      "title": "No pegar información confidencial en herramientas públicas de IA",
+      "accent": "amber",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "No", "items": ["Nombre completo de una parte", "RUT, domicilio, teléfono", "Informes de salud", "El expediente entero por comodidad"] },
+          "right": { "label": "Sí", "items": ["«La usuaria», «la empresa A»", "«RUT omitido»", "El hecho descrito en abstracto", "Casos ficticios"] }
+        }
+      ],
+      "notes": "[DIEGO] Se intercala aquí, en menos de un minuto, o al abrir el laboratorio.\nRetomar la cuarta pregunta del diagnóstico, ahora sí. Sin culpabilizar a nadie: casi todo el mundo lo ha hecho alguna vez.\nRegla del taller: solo casos simulados o anonimizados."
+    },
+    {
+      "kicker": "Cierre · 88–90 min",
+      "title": "Exit ticket",
+      "accent": "cyan",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Verificaré siempre", "d": "Algo que a partir de hoy comprobarás sin excepción." },
+            { "t": "Detecté", "d": "Un error concreto que encontraste hoy." },
+            { "t": "Añadiré", "d": "Una regla para tu próximo prompt." }
+          ]
+        },
+        { "type": "quote", "text": "Sé cómo estructurar una tarea y comprobar qué partes de la respuesta necesitan verificación.", "cite": "Lo que deberías poder decir al salir de esta sala." }
+      ],
+      "notes": "[DIEGO] 88–90 min.\nDos minutos exactos. Tres líneas por persona, en papel.\nCoordinación pedagógica recoge los tickets: alimentan el ajuste de la sesión 2.\nAnuncio de cierre: la próxima sesión no empieza de cero. Trabajaremos sobre este mismo caso, pero convertido en un proceso con pasos."
+    }
+  ]
+}

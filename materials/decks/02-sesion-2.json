@@ -1,0 +1,308 @@
+{
+  "filename": "Sesion_2_Flujo_Verificable_DIAT_2026.pptx",
+  "title": "Sesión 2 · Laboratorio jurídico: del prompt al flujo verificable",
+  "subject": "Taller de Prompting Jurídico 3.0 — DIAT PUCV 2026",
+  "creator": "Programa DIAT PUCV",
+  "keywords": "flujo jurídico, prompting encadenado, control humano, trazabilidad, DIAT, PUCV",
+  "footer": "Taller de Prompting Jurídico 3.0 · DIAT PUCV · Sesión 2 · 03 SEP 2026",
+  "slides": [
+    {
+      "type": "cover",
+      "kicker": "Sesión 2 de 3 · Programa DIAT PUCV",
+      "title": "Laboratorio jurídico: del prompt al flujo verificable",
+      "lead": "De la respuesta aislada al procedimiento que se puede revisar",
+      "meta": [
+        "Jueves 3 de septiembre de 2026 · 15:00–16:30 hrs.",
+        "Facultad y Escuela de Derecho PUCV · Valparaíso",
+        "Producto de la jornada: flujo preliminar + registro de validación"
+      ],
+      "notes": "[DIEGO] 0–5 min.\nNo repetir la bienvenida completa. Entrar directo: «la semana pasada aprendimos a pedir bien. Hoy, qué hacer con lo que llega»."
+    },
+    {
+      "kicker": "Recuperación activa",
+      "title": "¿Qué ocurre después de obtener una respuesta?",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "code",
+          "label": "Prompt de la sesión anterior",
+          "lines": [
+            "Estudiante de Derecho en Chile. Contrato de adhesión de una app de",
+            "arriendo de bicicletas. Identifica qué elementos podrían discutirse",
+            "a la luz de la Ley 19.496. Usa solo esa ley en su versión vigente.",
+            "No inventes artículos. Devuélvelo como tabla con columna de certeza."
+          ]
+        },
+        { "type": "lead", "text": "Un buen prompt. Y sin embargo: ¿quién revisa lo que devuelve? ¿contra qué? ¿en qué momento? ¿y si nadie lo hace?" }
+      ],
+      "notes": "[DIEGO] 0–5 min.\nProyectar un prompt real producido por un equipo la semana anterior, si se conserva. Si no, este.\nRecoger dos o tres respuestas. Suelen decir «lo reviso yo». Repreguntar: «¿siempre? ¿y si son cuarenta cláusulas?».\nAhí aparece solo el problema del día."
+    },
+    {
+      "kicker": "La idea de hoy",
+      "title": "No se trata de preguntarle todo a la IA de una vez. Se trata de organizar el trabajo en pasos que puedan revisarse.",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "Prompt aislado", "items": ["Una pregunta larga", "Una respuesta larga", "Se revisa entera o no se revisa", "Si falla, no se sabe dónde"] },
+          "right": { "label": "Flujo", "items": ["Varios pasos delimitados", "Cada paso con su entrada y su salida", "Se revisa por separado", "Si falla, se sabe en qué paso"] }
+        }
+      ],
+      "notes": "[DIEGO] 5–15 min.\nAnalogía útil y jurídica: nadie redacta una demanda de una sola vez. Se ordenan hechos, se identifican pretensiones, se buscan fundamentos, se redacta, se revisa.\nEl flujo con IA no inventa nada nuevo: aplica al trabajo asistido la misma división que ya existe en el trabajo jurídico."
+    },
+    {
+      "kicker": "El trabajo, por partes",
+      "title": "Ocho pasos que ya hacen, aunque no los nombren",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Identificar", "d": "El problema" },
+            { "t": "Ordenar", "d": "Los hechos" },
+            { "t": "Identificar", "d": "Las preguntas jurídicas" },
+            { "t": "Identificar", "d": "Las fuentes" }
+          ]
+        },
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Analizar", "d": "Con fuentes acotadas" },
+            { "t": "Verificar", "d": "Cada afirmación" },
+            { "t": "Redactar", "d": "La salida" },
+            { "t": "Revisar", "d": "Una persona decide" }
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 5–15 min.\nPreguntar: «¿en cuáles de estos ocho pasos ayudaría una IA, y en cuáles no?».\nRespuesta que conviene que aparezca: en los pasos 2, 3 y 7 ayuda bastante; en el 6 ayuda poco; en el 8 no puede sustituir a nadie.\nNo dar la respuesta antes de que la discutan."
+    },
+    {
+      "type": "divider",
+      "kicker": "Demostración en vivo",
+      "title": "El paso que sale mal",
+      "lead": "Caso CT-01, recorrido por etapas",
+      "accent": "rose",
+      "notes": "[DIEGO] 15–23 min.\nMostrar el flujo funcionando, incluido un paso que falla. No maquillarlo.\nSi no hay internet: usar los outputs precalculados de la ficha 10."
+    },
+    {
+      "kicker": "Demostración",
+      "title": "Cuando el paso 5 entrega basura al paso 6",
+      "accent": "rose",
+      "blocks": [
+        {
+          "type": "timeline",
+          "items": [
+            { "time": "Paso 3", "who": "IA", "what": "Identifica dos preguntas jurídicas. Correcto." },
+            { "time": "Paso 4", "who": "PERSONA", "what": "Acota las fuentes: Ley 19.496 y Ley 19.628 vigentes." },
+            { "time": "Paso 5", "who": "IA", "what": "Analiza… y cita un artículo 16 bis letra h) que no existe." },
+            { "time": "Paso 6", "who": "PERSONA", "what": "Busca el artículo. No aparece. El flujo se detiene aquí." }
+          ]
+        },
+        { "type": "lead", "text": "El error no es la sorpresa. La sorpresa sería que llegara al documento final sin que nadie lo hubiera mirado." }
+      ],
+      "notes": "[DIEGO] 15–23 min.\nHacer la búsqueda del artículo en vivo, en BCN. Que vean el resultado vacío.\nFrase clave: «este flujo funciona no porque la IA acierte, sino porque el error tiene dónde detenerse»."
+    },
+    {
+      "kicker": "El método",
+      "title": "El canvas del flujo jurídico",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Entrada", "d": "Qué información entra y de dónde sale" },
+            { "t": "IA", "d": "Qué parte hace la herramienta" },
+            { "t": "Fuente", "d": "Contra qué se contrasta" }
+          ]
+        },
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Control humano", "d": "Quién decide antes de continuar" },
+            { "t": "Salida", "d": "Qué produce y para quién" },
+            { "t": "Registro", "d": "Qué queda anotado y dónde" }
+          ]
+        },
+        { "type": "lead", "text": "Seis casillas. Ninguna opcional. Un flujo sin fuente y sin control humano no es un flujo: es una respuesta larga partida en trozos." }
+      ],
+      "notes": "[DIEGO] 23–27 min.\nEntregar la ficha 04 impresa aquí.\nSubrayar la casilla «control humano»: no basta con decir «lo reviso yo». Hay que decir quién, en qué momento y con qué criterio.\nTransición al bloque estudiantil: entregar la palabra al relator o relatora A."
+    },
+    {
+      "type": "divider",
+      "kicker": "Actividad · 27–37 min",
+      "title": "Reconstrucción de un flujo defectuoso",
+      "lead": "Diez minutos. Y una trampa.",
+      "accent": "emerald",
+      "notes": "[RELATOR A] 27–37 min.\nRepartir las tarjetas del flujo desordenado, o abrir taller-diat.vercel.app → Flujo → Flujo defectuoso.\nConsigna: «ordénenlos, y después respondan qué dos cosas seguirían mal aunque el orden fuera correcto»."
+    },
+    {
+      "kicker": "Actividad",
+      "title": "Siete pasos de un flujo real, desordenados",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "bullets",
+          "items": [
+            "Se envía la minuta al cliente.",
+            "Se pega el contrato completo, con nombre y RUT de las partes, en la herramienta.",
+            "Se pide a la IA un análisis general del contrato.",
+            "Se copia la respuesta a un documento y se le da formato.",
+            "Se buscan en Google los artículos citados para ver si existen.",
+            "Se corrigen las citas que no aparecieron.",
+            "Un abogado lee la minuta cuando el cliente pregunta por ella."
+          ]
+        }
+      ],
+      "notes": "[RELATOR A] 27–37 min.\nDejar que ordenen primero. Casi todos los equipos aciertan el orden en cuatro minutos.\nLo interesante viene después: la mayoría no ve los dos defectos de fondo hasta que se les pregunta explícitamente."
+    },
+    {
+      "kicker": "Actividad · lo que el orden no arregla",
+      "title": "Dos defectos que ningún reordenamiento corrige",
+      "accent": "rose",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 2,
+          "items": [
+            { "n": "01", "t": "Datos personales reales", "d": "El primer paso entrega nombre y RUT a una herramienta pública. Ese paso hay que cambiarlo, no moverlo de lugar." },
+            { "n": "02", "t": "El control llega tarde", "d": "La revisión humana ocurre después del envío. Un control que llega cuando el documento ya salió no es un control: es una explicación." }
+          ]
+        },
+        { "type": "quote", "text": "¿En qué punto de este flujo una persona debería haber decidido antes de continuar?" }
+      ],
+      "notes": "[RELATOR A] 27–37 min (cierre).\nMostrar esta diapositiva DESPUÉS de que lo hayan intentado.\nLa pregunta del final se deja en el aire y se retoma en la auditoría cruzada del minuto 78."
+    },
+    {
+      "kicker": "Criterios",
+      "title": "Cuatro preguntas a cualquier resultado",
+      "accent": "amber",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 4,
+          "items": [
+            { "n": "01", "t": "Utilidad", "d": "¿Le sirve a alguien concreto para hacer algo concreto?" },
+            { "n": "02", "t": "Fundamento", "d": "¿Cada afirmación relevante tiene norma, artículo y versión?" },
+            { "n": "03", "t": "Trazabilidad", "d": "¿Puedo reconstruir de dónde salió y quién decidió qué?" },
+            { "n": "04", "t": "Riesgos", "d": "¿Qué pasa si esto se usa mal, y quién lo notaría?" }
+          ]
+        },
+        { "type": "lead", "text": "Sirven para evaluar el propio flujo y, en la sesión 3, para evaluar el de otro equipo. Son las mismas cuatro preguntas que hay detrás de la rúbrica del taller." }
+      ],
+      "notes": "[DIEGO] Se intercala al final del bloque 23–27, o lo abre el relator antes del laboratorio.\nEl criterio que más cuesta es «trazabilidad»: lo confunden con «tener las fuentes». Trazabilidad es poder reconstruir el camino, incluidas las correcciones.\nPregunta al grupo: «si mañana alguien les pregunta por qué su informe dice esto, ¿qué le muestran?»."
+    },
+    {
+      "kicker": "Antes de abrir cualquier herramienta",
+      "title": "No pegar información confidencial en herramientas públicas de IA",
+      "accent": "amber",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "No entra", "items": ["Nombres completos de las partes", "RUT, domicilio, teléfono", "Datos de salud o situación socioeconómica", "El expediente entero por comodidad"] },
+          "right": { "label": "Sí entra", "items": ["«La usuaria», «la empresa A»", "El hecho descrito en abstracto", "Texto de la cláusula, sin partes", "Casos ficticios"] }
+        },
+        { "type": "lead", "text": "En el flujo, esto no es una advertencia: es la casilla de entrada. Un flujo que empieza con datos personales reales está mal diseñado desde el primer paso." }
+      ],
+      "notes": "[RELATOR A] Abre el laboratorio, antes de que nadie escriba nada.\nConectar con el ejercicio anterior: el primer defecto del flujo defectuoso era exactamente este.\nRegla del taller: solo casos simulados o anonimizados."
+    },
+    {
+      "type": "divider",
+      "kicker": "Laboratorio · 37–67 min",
+      "title": "Tu problema, convertido en flujo",
+      "lead": "Y después, dos variantes comparadas",
+      "accent": "emerald",
+      "notes": "[RELATOR A / RELATOR B] 37–67 min.\nDos bloques: construir el flujo (18 min) y comparación crítica (12 min).\nFacilitadores repartidos por mesas."
+    },
+    {
+      "kicker": "Laboratorio · 37–55 min",
+      "title": "Seis casillas, dos controles",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Recuperar", "d": "El problema con el que trabajaron en la sesión 1" },
+            { "t": "Partir", "d": "En pasos que puedan revisarse por separado" },
+            { "t": "Marcar", "d": "Al menos dos puntos de control humano explícitos" },
+            { "t": "Nombrar", "d": "Quién ejerce cada control y con qué criterio" }
+          ]
+        },
+        { "type": "lead", "text": "Dieciocho minutos. La plataforma avisa si falta la casilla de fuente, la de control o la de registro." }
+      ],
+      "notes": "[RELATOR A] 37–55 min.\nEl error más frecuente: escribir «revisión humana» sin decir quién. Preguntar siempre «¿quién, concretamente?».\nA los 14 minutos avisar: «quedan cuatro».\nSi un equipo no estuvo en la sesión 1, entregarle el punto de partida de la ficha 10."
+    },
+    {
+      "kicker": "Laboratorio · 55–67 min",
+      "title": "Comparación crítica",
+      "accent": "amber",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "Variante A", "items": ["Sin fuentes acotadas", "Sin formato pedido", "Sin declaración de incertidumbre"] },
+          "right": { "label": "Variante B", "items": ["Fuentes explícitas y vigentes", "Tabla con columna de respaldo", "Obligación de marcar lo no verificable"] }
+        },
+        { "type": "quote", "text": "¿Cuál es más verificable y por qué?", "cite": "La pregunta NO es cuál escribe mejor." }
+      ],
+      "notes": "[RELATOR B] 55–67 min.\nSe pueden comparar dos herramientas, dos configuraciones o dos variantes de instrucción. Si solo hay una herramienta disponible, se comparan las dos variantes de esta diapositiva: el aprendizaje se conserva íntegro.\nADVERTENCIA para el relator: no convertir esto en competencia de marcas. No hay ganador. Los productos cambian cada pocos meses; lo que se enseña aquí es transferible.\nPregunta de cierre del bloque: «¿cuál de las dos les daría más trabajo revisar, y por qué eso puede ser una buena señal?»."
+    },
+    {
+      "kicker": "Producto · 67–78 min",
+      "title": "Registro de validación",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "table",
+          "head": ["Campo", "Qué se anota"],
+          "rows": [
+            ["Fecha · Herramienta", "Cuándo y con qué, incluida la configuración si se conoce"],
+            ["Tarea · Input", "Qué se pidió y qué información entró, anonimizada"],
+            ["Fuente", "Contra qué se contrastó y en qué fecha"],
+            ["Output · Error", "Qué produjo y qué salió mal. Si no hubo error, decirlo"],
+            ["Corrección · Decisión humana", "Qué se hizo y quién lo decidió"],
+            ["Estado final", "Verificado, pendiente o descartado"]
+          ]
+        }
+      ],
+      "notes": "[TODOS] 67–78 min.\nEste es el producto que se llevan de la sesión. Insistir: el registro es el entregable, no la respuesta.\nEl campo que más cuesta es «decisión humana»: quieren dejarlo vacío. Preguntar «¿alguien decidió algo aquí? Si nadie decidió, ¿por qué no?»."
+    },
+    {
+      "kicker": "Auditoría cruzada · 78–86 min",
+      "title": "Busquen una sola cosa",
+      "accent": "emerald",
+      "blocks": [
+        { "type": "quote", "text": "Un punto donde la salida podría publicarse sin que ninguna persona la haya revisado." },
+        {
+          "type": "bullets",
+          "items": [
+            "¿Cuál es la entrada exacta de cada paso y de dónde sale?",
+            "¿Qué fuente autoriza el fundamento en el paso de análisis?",
+            "¿Dónde está el control humano y quién lo ejerce?",
+            "¿Qué pasa si ese control no se hace? ¿El flujo se detiene o sigue?",
+            "¿Qué queda registrado y dónde?"
+          ]
+        }
+      ],
+      "notes": "[RELATOR B] 78–86 min.\nEquipo A audita a equipo B. Ocho minutos.\nSe devuelve una observación concreta y escrita sobre un punto del flujo. No una impresión general.\nLa cuarta pregunta es la que descubre los flujos que solo funcionan si todo el mundo se porta bien."
+    },
+    {
+      "kicker": "Cierre · 86–90 min",
+      "title": "El límite, declarado en voz alta",
+      "accent": "indigo",
+      "blocks": [
+        {
+          "type": "code",
+          "label": "Cada equipo completa y lee",
+          "lines": [
+            "Nuestra IA puede hacer ______________________________,",
+            "",
+            "pero no puede decidir __________________________________",
+            "",
+            "sin revisión humana."
+          ]
+        },
+        { "type": "quote", "text": "Sé dividir un trabajo en etapas con fuentes y revisión humana.", "cite": "Lo que deberías poder decir al salir de esta sala." }
+      ],
+      "notes": "[TODOS] 86–90 min.\nCada equipo lee su frase en voz alta. Son cuatro minutos y funcionan mejor de lo que parece: escuchar cinco versiones distintas del mismo límite fija la idea.\nAnuncio: la próxima sesión llegan estudiantes de otras disciplinas. Traer el flujo y el problema; no hace falta traerlo terminado, hace falta traerlo entendido."
+    }
+  ]
+}

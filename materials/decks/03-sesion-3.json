@@ -1,0 +1,256 @@
+{
+  "filename": "Sesion_3_Match_Making_DIAT_2026.pptx",
+  "title": "Sesión 3 · Match Making: Derecho conversa con otras disciplinas",
+  "subject": "Taller de Prompting Jurídico 3.0 — DIAT PUCV 2026",
+  "creator": "Programa DIAT PUCV",
+  "keywords": "match making, interdisciplina, ficha de desafío, pitch, DIAT, PUCV",
+  "footer": "Taller de Prompting Jurídico 3.0 · DIAT PUCV · Sesión 3 · 10 SEP 2026",
+  "slides": [
+    {
+      "type": "cover",
+      "kicker": "Sesión 3 de 3 · Programa DIAT PUCV",
+      "title": "Match Making: Derecho conversa con otras disciplinas",
+      "lead": "El aprendizaje está en la traducción, no en la herramienta",
+      "meta": [
+        "Jueves 10 de septiembre de 2026 · 15:00–16:30 hrs.",
+        "Facultad y Escuela de Derecho PUCV · con unidades invitadas",
+        "Producto de la jornada: ficha de desafío + pitch de 4 minutos"
+      ],
+      "notes": "[DIEGO] 0–8 min.\nHay gente nueva en la sala: presentar el taller en tres frases para quienes llegan hoy.\nEncuadre explícito y necesario: nadie viene a sustituir el criterio del otro. Derecho no viene a programar; la contraparte técnica no viene a decidir qué es jurídicamente correcto."
+    },
+    {
+      "kicker": "Dónde estamos",
+      "title": "Prompt → Flujo → Solución",
+      "accent": "purple",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "Sesión 1 · PROMPT", "d": "Aprendimos a formular la tarea y a comprobar qué necesitaba verificación." },
+            { "t": "Sesión 2 · FLUJO", "d": "Convertimos la respuesta aislada en un procedimiento con fuentes y control humano." },
+            { "t": "Sesión 3 · MATCH", "d": "Hoy explicamos el problema a otra disciplina y mejoramos la solución juntos." }
+          ]
+        },
+        { "type": "lead", "text": "El taller no persigue que sepan usar una herramienta. Persigue que sepan formular la tarea, controlar el proceso, verificar el resultado y asumir la decisión final." }
+      ],
+      "notes": "[DIEGO] 0–8 min.\nPara quienes llegan hoy: basta con esta diapositiva. No repasar el contenido de las dos sesiones anteriores.\nPedir a dos equipos que digan en una frase cuál es su problema. Sirve de presentación y de calentamiento."
+    },
+    {
+      "type": "divider",
+      "kicker": "El aprendizaje central",
+      "title": "Cómo se traduce un problema jurídico",
+      "lead": "De «quiero una IA que…» a una especificación",
+      "accent": "purple",
+      "notes": "[DIEGO] 8–17 min."
+    },
+    {
+      "kicker": "Traducción",
+      "title": "La frase que no permite construir nada",
+      "accent": "rose",
+      "blocks": [
+        { "type": "quote", "text": "Quiero una IA que revise contratos." },
+        {
+          "type": "bullets",
+          "items": [
+            "¿Qué contratos? ¿De adhesión, laborales, de arriendo?",
+            "¿Qué se busca en ellos? ¿Cláusulas de qué tipo?",
+            "¿Contra qué se contrasta? ¿Qué norma, en qué versión?",
+            "¿Qué produce? ¿Un informe, una marca, una alerta?",
+            "¿Quién responde si se equivoca?"
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 8–17 min.\nDecirlo sin ironía: esta frase la dice todo el mundo, incluidos los profesionales. No es un error de principiante.\nEl problema no es que sea ambiciosa: es que no contiene ninguna decisión. No hay nada que construir ni nada que evaluar."
+    },
+    {
+      "kicker": "Traducción",
+      "title": "La misma idea, ya especificada",
+      "accent": "emerald",
+      "blocks": [
+        { "type": "quote", "text": "Necesitamos detectar determinadas cláusulas, mostrar el texto relevante, contrastarlo con fuentes autorizadas, indicar el nivel de incertidumbre y derivar la decisión final a revisión humana." },
+        { "type": "chips", "items": ["qué se detecta", "qué se muestra", "contra qué se contrasta", "cómo se declara la duda", "dónde entra la persona"] }
+      ],
+      "notes": "[DIEGO] 8–17 min.\nDesarmar la frase en pantalla, parte por parte. Cada una es una decisión de diseño.\nFrase clave: «la segunda no es más técnica que la primera. Es más jurídica: dice quién responde y de qué»."
+    },
+    {
+      "kicker": "El instrumento",
+      "title": "Ficha de desafío: doce campos",
+      "accent": "purple",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 4,
+          "items": [
+            { "n": "01", "t": "Nombre", "d": "¿Cómo lo llamamos?" },
+            { "n": "02", "t": "Problema", "d": "¿Cuál es, en una frase?" },
+            { "n": "03", "t": "Persona usuaria", "d": "¿Para quién?" },
+            { "n": "04", "t": "Necesidad", "d": "¿Qué necesita conseguir?" }
+          ]
+        },
+        {
+          "type": "cards",
+          "cols": 4,
+          "items": [
+            { "n": "05", "t": "Tarea", "d": "¿Qué tarea concreta apoya la IA?" },
+            { "n": "06", "t": "Input", "d": "¿Qué información ingresa?" },
+            { "n": "07", "t": "Fuente", "d": "¿De dónde sale el fundamento?" },
+            { "n": "08", "t": "Resultado", "d": "¿Qué debe producir?" }
+          ]
+        },
+        {
+          "type": "cards",
+          "cols": 4,
+          "items": [
+            { "n": "09", "t": "Riesgos", "d": "¿Qué puede salir mal?" },
+            { "n": "10", "t": "Supervisión", "d": "¿Quién revisa y cuándo?" },
+            { "n": "11", "t": "Éxito", "d": "¿Cómo sabremos si sirve?" },
+            { "n": "12", "t": "Lo que NO debe hacer", "d": "¿Qué límites declaramos?" }
+          ]
+        }
+      ],
+      "notes": "[DIEGO] 17–26 min.\nCompletar un desafío de ejemplo en vivo, en pantalla, con la plataforma abierta en /match.\nNo pasar rápido por el campo 3: «los abogados» no es una persona usuaria. Una persona usuaria es alguien con un trabajo concreto y un momento concreto."
+    },
+    {
+      "kicker": "El campo que decide",
+      "title": "12 · Lo que la solución NO debe hacer",
+      "accent": "purple",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "Sin este campo", "items": ["El equipo promete de más", "Nadie sabe dónde termina la herramienta", "La responsabilidad queda difusa"] },
+          "right": { "label": "Con este campo", "items": ["Los límites son explícitos", "Se sabe qué decisiones no se delegan", "El pitch se puede defender"] }
+        },
+        { "type": "lead", "text": "Si el campo 12 está vacío, la ficha no está terminada. Es el campo que impide prometer más de lo que se puede sostener." }
+      ],
+      "notes": "[DIEGO] 17–26 min (cierre).\nEjemplo del caso troncal: «no concluir sobre la validez de una cláusula ni comunicarse con la contraparte».\nTransición al bloque facilitado: entregar la palabra al relator o relatora A."
+    },
+    {
+      "type": "divider",
+      "kicker": "Match Making · 26–35 min",
+      "title": "Formación de equipos",
+      "lead": "Por afinidad de problema, no por amistad",
+      "accent": "emerald",
+      "notes": "[RELATOR A] 26–35 min.\nCronómetro en mano. 45 segundos por persona de Derecho, sin excepción."
+    },
+    {
+      "kicker": "Match Making",
+      "title": "Cómo se forman los equipos",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            { "t": "45 segundos", "d": "Cada estudiante de Derecho presenta su problema: qué pasa, a quién y qué hay que decidir." },
+            { "t": "Afinidad", "d": "Los equipos se forman por problema, no por conocidos." },
+            { "t": "Mesa", "d": "Cada equipo mixto recibe un canvas y un facilitador asignado." }
+          ]
+        },
+        { "type": "quote", "text": "Si la persona de otra disciplina no entiende el problema, el problema todavía no está bien enunciado.", "cite": "Se corrige la ficha, no se explica de viva voz." }
+      ],
+      "notes": "[RELATOR A] 26–35 min.\nSi hay más gente de Derecho que de otras disciplinas: estaciones rotativas, 9 minutos por mesa.\nSi no llegó nadie de otras disciplinas: dos personas de cada equipo asumen ese rol y SOLO pueden hacer preguntas, no proponer soluciones jurídicas. El ejercicio de traducción se conserva."
+    },
+    {
+      "type": "divider",
+      "kicker": "Trabajo interdisciplinario · 35–53 min",
+      "title": "Completar los doce campos",
+      "lead": "Dieciocho minutos",
+      "accent": "emerald",
+      "notes": "[TODOS] 35–53 min.\nUn facilitador por mesa cuando sea posible.\nAviso a los 14 minutos: «quedan cuatro»."
+    },
+    {
+      "kicker": "Regla de mesa",
+      "title": "Quién aporta qué",
+      "accent": "emerald",
+      "blocks": [
+        {
+          "type": "split",
+          "left": { "label": "Derecho aporta", "items": ["El problema y a quién afecta", "Qué fuente es autorizada y cuál no", "Qué decisión no puede delegarse", "Qué riesgo es jurídicamente relevante"] },
+          "right": { "label": "Las otras disciplinas aportan", "items": ["Qué es factible con qué esfuerzo", "Qué información hace falta de verdad", "Dónde la solución se rompe en la práctica", "Cómo se mediría el éxito"] }
+        },
+        { "type": "lead", "text": "Nadie decide por el otro. La ficha solo avanza cuando ambas partes entienden la misma frase." }
+      ],
+      "notes": "[TODOS] 35–53 min.\nEl fallo típico: Derecho se calla cuando aparece vocabulario técnico. Instrucción a los facilitadores: si alguien de Derecho lleva tres minutos sin hablar, preguntar directamente «¿esto responde a tu problema?».\nEl otro fallo típico: la mesa empieza por la solución. Devolverlos al campo 2."
+    },
+    {
+      "type": "divider",
+      "kicker": "Pitch · 53–87 min",
+      "title": "Cuatro minutos por equipo",
+      "lead": "Preparación 10 min · presentaciones 24 min",
+      "accent": "purple",
+      "notes": "[RELATOR B] 53–87 min.\nAbrir el temporizador de la plataforma: /match → Temporizador de pitch."
+    },
+    {
+      "kicker": "Preparación · 53–63 min",
+      "title": "Cuatro minutos, cuatro cosas",
+      "accent": "purple",
+      "blocks": [
+        {
+          "type": "timeline",
+          "items": [
+            { "time": "0:00–1:00", "who": "PROBLEMA", "what": "Problema y persona usuaria. Qué le pasa hoy a esa persona." },
+            { "time": "1:00–2:15", "who": "SOLUCIÓN", "what": "Qué hace: la tarea concreta, el input y la salida." },
+            { "time": "2:15–3:15", "who": "CONTROLES", "what": "Contra qué se contrasta y quién revisa antes de que salga." },
+            { "time": "3:15–4:00", "who": "LÍMITES", "what": "Qué NO debe hacer, y el criterio de éxito." }
+          ]
+        },
+        { "type": "lead", "text": "Se ensaya una vez con el temporizador. Un pitch que se pasa de tiempo es un pitch que no eligió qué era importante." }
+      ],
+      "notes": "[RELATOR B] 53–63 min.\nDiez minutos de preparación, con un ensayo cronometrado obligatorio.\nError frecuente: gastar dos minutos describiendo la herramienta. Cortar eso en el ensayo, no en el pitch."
+    },
+    {
+      "kicker": "Pitch · 63–87 min",
+      "title": "Cómo se evalúa",
+      "accent": "purple",
+      "blocks": [
+        {
+          "type": "table",
+          "head": ["%", "Criterio", "Qué se mira"],
+          "rows": [
+            ["20", "Problema jurídico", "Hechos, jurisdicción, finalidad y a quién afecta"],
+            ["20", "Flujo y prompts", "Pasos revisables por separado; al menos una iteración"],
+            ["25", "Fuentes y verificación", "Fuente real, vigencia, fecha de consulta, error documentado"],
+            ["15", "Utilidad", "Persona usuaria concreta y criterio comprobable"],
+            ["10", "Ética y supervisión", "Anonimización y punto exacto de control humano"],
+            ["10", "Demostración", "Cuatro minutos con problema, controles y límites"]
+          ]
+        }
+      ],
+      "notes": "[RELATOR B] 63–87 min.\nLa rúbrica completa, con los cuatro niveles y descriptores observables, está en la ficha 07.\nRetroalimentación externa: una observación por equipo, en treinta segundos, entre pitch y pitch.\nCONTROL DE TIEMPO: cuatro minutos, sin excepción. Es el único bloque del taller donde el reloj manda sobre el contenido."
+    },
+    {
+      "kicker": "Formato de sala",
+      "title": "Según cuántos equipos haya",
+      "accent": "amber",
+      "blocks": [
+        {
+          "type": "cards",
+          "cols": 3,
+          "items": [
+            { "n": "≤ 6", "t": "Plenaria completa", "d": "6 × 4 = 24 minutos, exactamente el bloque previsto." },
+            { "n": "7–12", "t": "Dos estaciones", "d": "Un facilitador por estación; 6 pitches de 4 minutos en cada una." },
+            { "n": "> 12", "t": "Rondas y síntesis", "d": "Tres estaciones paralelas y tres proyectos por estación a la síntesis plenaria." }
+          ]
+        },
+        { "type": "lead", "text": "Lo que cambia es cómo se reparte la sala. El pitch individual sigue siendo de cuatro minutos." }
+      ],
+      "notes": "[RELATOR B / COORDINACIÓN OPERATIVA] 63–87 min.\nDecidir el formato al inicio de la sesión, cuando se sepa cuántos equipos hay. No improvisarlo a las 16:00.\nSi se usan estaciones: dos facilitadores con cronómetro propio y una hoja de rúbrica por estación."
+    },
+    {
+      "kicker": "Cierre · 87–90 min",
+      "title": "Qué se llevan",
+      "accent": "emerald",
+      "blocks": [
+        { "type": "quote", "text": "Sé explicar un problema jurídico a otra disciplina, establecer límites y defender una solución.", "cite": "Lo que deberías poder decir al salir de esta sala." },
+        {
+          "type": "bullets",
+          "items": [
+            "Una frase por equipo sobre qué aprendieron al explicar su problema a otra disciplina.",
+            "Instrumento de salida: seis afirmaciones, escala de 1 a 4, anónimo.",
+            "Los proyectos con mayor potencial podrán vincularse con el LMIL PUCV y con Innova Day 2026."
+          ]
+        }
+      ],
+      "notes": "[TODOS 87–89] · [DIEGO 89–90]\nLos equipos entregan su frase y responden el instrumento de salida: dos minutos.\nDiego cierra en un minuto: agradecimiento, continuidad LMIL e Innova Day, y la frase final del taller.\nFRASE DE CIERRE: «la competencia profesional no consiste en conseguir que una IA responda. Consiste en saber formular la tarea, controlar el proceso, verificar el resultado y asumir responsablemente la decisión final»."
+    }
+  ]
+}
