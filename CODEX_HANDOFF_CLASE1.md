@@ -164,3 +164,51 @@ Comportamiento verificado en producción:
 2. **Imprime una copia** de la Ruta y de la Ficha en blanco y negro. Si los renglones quedan justos, sube `.line { min-height }` en `theme.mjs` y la altura de `matrixRow` en `ruta-analogica.mjs`.
 3. **Ensayo cronometrado de punta a punta**, en móvil y en notebook. Los minutos viven en `src/content/class1/timers.ts`, en un solo objeto; si hay que ajustarlos, `runofshow.ts` tiene un invariante que impide que una etapa deje de caber en su tramo.
 4. **Realinea el Documento Maestro** cuando haya tiempo. Es el único artefacto que sigue describiendo la arquitectura de diez bloques como si fuera la de la plataforma.
+
+---
+
+## ADENDA · 27 ago 2026, cierre de sesión
+
+Tres fallos reportados como «no funciona el botón / no arranca el cronómetro».
+Los tres reproducidos y corregidos. Commit final: `5b5488a` en `main` y en
+`feat/taller-prompting-2026`, ambas sincronizadas.
+
+### 1 · El botón de la pregunta guía no explicaba por qué estaba gris
+
+Eliges una opción, se guarda bien, y el botón sigue deshabilitado: falta el
+nivel de confianza, que es una segunda pregunta situada debajo de cinco
+opciones largas — o sea, fuera de pantalla en un teléfono. Nada lo decía.
+
+Arreglado en la primitiva, no en las dos pantallas: `PrimaryButton` acepta
+`missing` y lo imprime debajo mientras está deshabilitado, con `role="status"`.
+El grupo de confianza pasa a titularse «también hace falta para continuar».
+Dos pruebas lo blindan (`ningún botón principal…`, `la confianza se anuncia…`).
+
+### 2 · El cronómetro llegaba a 00:00 al volver a entrar
+
+Con `localStorage` limpio arrancaba bien. El problema era volver: la marca de
+arranque de una visita anterior seguía guardada y la etapa se abría en 00:00.
+`esDeOtraSesion()` en `state.ts` descarta marcas anteriores a los 90 minutos de
+la sesión. Recargar en mitad del ejercicio sigue conservando el cronómetro.
+
+### 3 · El envío de correo no abría nada
+
+Ya corregido antes: sin proveedor configurado se descarga el archivo y se abre
+el cliente de correo en el acto, sin segundo clic.
+
+### Lo que NO era un fallo
+
+- El scroll funciona (los screenshots del panel de pruebas venían obsoletos).
+- Los chips de alternativas registran el clic y persisten.
+- El service worker cachea con red-primero para navegaciones: no sirve HTML viejo.
+
+### Estado final verificado
+
+`npm run test:class1` → **29/29** · `npm run lint` → **0 errores** · build OK.
+En producción: aviso «Falta indicar qué tan seguro estás.» visible, cronómetro
+en 03:00 al abrir con estado limpio, los cuatro PDF sirven con `application/pdf`.
+
+### Único pendiente
+
+Configurar SMTP en Vercel (bloque ENV más arriba) y volver a desplegar. Sin eso
+el correo abre el cliente del alumno, que funciona; con eso envía solo.
