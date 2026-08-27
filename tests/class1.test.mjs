@@ -28,9 +28,10 @@ const { class1ActivityDurations } = await jiti.import('../src/content/class1/tim
 const { compilePrompt, emptyDraft, applyTaskDefaults, taskPresets } = await jiti.import('../src/content/class1/lab.ts');
 const {
   clearState, createInitialState, currentPrompt, loadState, migrate, saveState,
-  SCHEMA_VERSION, STORAGE_KEY,
+  SCHEMA_VERSION, STORAGE_KEY, esDeOtraSesion,
 } = await jiti.import('../src/lib/class1/state.ts');
 const { computeProgress, stageProgress } = await jiti.import('../src/lib/class1/progress.ts');
+
 const {
   buildClass1Submission, renderSubmissionMarkdown, submissionFilename,
 } = await jiti.import('../src/lib/class1/submission.ts');
@@ -88,6 +89,16 @@ test('la confianza se anuncia como requisito, no como pregunta suelta', () => {
     );
     assert.match(src, /qué tan seguro[^"]*hace falta para continuar/i, `${etapa}: confianza sin marcar`);
   }
+});
+
+test('un cronómetro de otra sentada no se arrastra a la clase de hoy', () => {
+  const ahora = Date.parse('2026-08-27T15:05:00.000Z');
+  // Arrancado hace dos minutos: es el de ahora, se conserva.
+  assert.equal(esDeOtraSesion('2026-08-27T15:03:00.000Z', ahora), false);
+  // Arrancado ayer: llegaría a 00:00 y parecería que no arranca.
+  assert.equal(esDeOtraSesion('2026-08-26T15:03:00.000Z', ahora), true);
+  // Marca ilegible: se trata como vieja antes que dejar la etapa en 00:00.
+  assert.equal(esDeOtraSesion('no-es-una-fecha', ahora), true);
 });
 
 // ─── Reparto de los 90 minutos ───────────────────────────────────────────────

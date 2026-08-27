@@ -285,3 +285,23 @@ export function currentPrompt(state: Class1State): string {
 export function displayName(identity: StudentIdentity): string {
   return identity.name.trim();
 }
+
+/**
+ * Duración de la sesión. Un cronómetro arrancado antes de esta ventana no
+ * pertenece a la clase que está ocurriendo ahora.
+ */
+const SESION_MS = 90 * 60 * 1000;
+
+/**
+ * ¿La marca de arranque viene de otra sentada?
+ *
+ * Un cronómetro arrancado ayer —el profesor probando la clase, un estudiante
+ * que abrió la página antes de tiempo— llega a hoy en 00:00, y desde fuera eso
+ * es indistinguible de un cronómetro que no arranca. Vive aquí y no en el
+ * store para que sea código plano y se pueda probar sin montar React.
+ */
+export function esDeOtraSesion(startedAt: string, ahora: number = Date.now()): boolean {
+  const t = Date.parse(startedAt);
+  if (Number.isNaN(t)) return true;
+  return ahora - t > SESION_MS;
+}

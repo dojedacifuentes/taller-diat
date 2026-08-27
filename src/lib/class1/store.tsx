@@ -18,7 +18,7 @@ import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, 
 import { class1ActivityDurations } from '@/content/class1/timers';
 import type { StageId } from '@/content/class1/stages';
 import {
-  createInitialState, loadState, saveState, clearState, type Class1State,
+  createInitialState, esDeOtraSesion, loadState, saveState, clearState, type Class1State,
 } from './state';
 import { computeProgress, type Class1Progress } from './progress';
 
@@ -96,8 +96,15 @@ export function Class1Provider({ children }: { children: ReactNode }) {
 
   // El cronómetro no se reinicia por un rerender ni por volver a la etapa: si
   // ya hay marca de arranque, esta llamada no hace nada.
+  //
+  // Salvo que la marca sea de otra sentada. Un cronómetro arrancado ayer —el
+  // profesor probando la clase, un estudiante que abrió la página antes de
+  // tiempo— llega a hoy en 00:00, y desde fuera eso es indistinguible de un
+  // cronómetro que no arranca. Pasada la duración de la sesión, la marca se
+  // considera vieja y el ejercicio empieza con su tiempo completo.
   const startTimer = useCallback((id: StageId) => {
-    if (getSnapshot().timers[id]) return;
+    const previo = getSnapshot().timers[id];
+    if (previo && !esDeOtraSesion(previo.startedAt)) return;
     apply(prev => ({
       ...prev,
       timers: {
