@@ -12,9 +12,13 @@ import { useClass1 } from '@/lib/class1/store';
 import {
   buildClass1Submission, renderSubmissionMarkdown, submissionFilename,
 } from '@/lib/class1/submission';
-import { downloadSubmission, fallbackMailto, sendSubmission, type SendStatus } from '@/lib/class1/delivery';
+import {
+  downloadSubmission, fallbackMailto, manualDelivery, sendSubmission, type SendStatus,
+  SUBMISSION_SUBJECT, delivery,
+} from '@/lib/class1/delivery';
 import { generateClass1PDF } from '@/lib/class1/bitacoraPdf';
 import { DownloadButton, Notice, Panel, TextField } from './ui';
+import { ReiniciarClase } from './ReiniciarClase';
 
 export function Entrega() {
   const { state, progress, update, hydrated } = useClass1();
@@ -34,10 +38,19 @@ export function Entrega() {
     if (result.ok) {
       setStatus('sent');
       update(s => ({ ...s, submission: { ...s.submission, sentAt: new Date().toISOString() } }));
-    } else {
-      setStatus('error');
-      setError(result.message);
+      return;
     }
+    // Que el servidor no tenga correo configurado no es un error del estudiante
+    // ni algo que se arregle reintentando: se le ofrece la vía manual, que
+    // siempre funciona.
+    setStatus(result.configured ? 'error' : 'manual');
+    setError(result.message);
+  }
+
+  function onManual() {
+    const file = manualDelivery(submission);
+    setDownloaded(file);
+    update(s => ({ ...s, submission: { ...s.submission, downloadedAt: new Date().toISOString() } }));
   }
 
   function onDownload() {
@@ -130,6 +143,27 @@ export function Entrega() {
       )}
       {pdfError && <p className="mt-3 text-xs text-rose-300">{pdfError}</p>}
 
+      {status === 'manual' && (
+        <div className="mt-4 space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/[0.07] px-3.5 py-3">
+          <p className="text-xs leading-relaxed text-amber-100">
+            El envío automático no está disponible en este servidor. Entrega en un paso: descargamos
+            tu archivo y abrimos tu correo con el destinatario y el asunto ya puestos. Solo tienes
+            que adjuntar el archivo descargado y enviar.
+          </p>
+          <button
+            type="button"
+            onClick={onManual}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-amber-400/50 bg-amber-400/15 px-4 py-2.5 text-sm font-semibold text-amber-100 transition-colors hover:bg-amber-400/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+          >
+            <Mail className="h-4 w-4 shrink-0" aria-hidden />
+            Descargar y abrir mi correo
+          </button>
+          <p className="text-[11px] leading-relaxed text-amber-200/70">
+            Destinatario: {delivery.to} · Asunto: «{SUBMISSION_SUBJECT}»
+          </p>
+        </div>
+      )}
+
       {status === 'error' && error && (
         <div className="mt-4 space-y-2 rounded-xl border border-rose-500/30 bg-rose-500/[0.07] px-3.5 py-3">
           <p className="text-xs leading-relaxed text-rose-200">{error}</p>
@@ -142,6 +176,18 @@ export function Entrega() {
           </p>
         </div>
       )}
+
+      {/* Reinicio. Ver ReiniciarClase: sin esta salida la clase queda en un
+          callejón, porque la pregunta guía se bloquea al confirmarla. */}
+      <div className="mt-5 border-t border-white/[0.08] pt-4">
+        <ReiniciarClase
+          onReset={() => {
+            setStatus('idle');
+            setError(null);
+            setDownloaded(null);
+          }}
+        />
+      </div>
 
       <details className="mt-5 rounded-xl border border-white/[0.10] bg-[oklch(0.06_0.014_250)]">
         <summary className="mono min-h-11 cursor-pointer list-none px-3.5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-400">

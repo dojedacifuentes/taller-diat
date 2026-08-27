@@ -13,6 +13,7 @@ import {
 import { useClass1 } from '@/lib/class1/store';
 import { ChipRadio, LockedNote, Panel, PrimaryButton } from '../ui';
 import { Impresos } from '../Impresos';
+import { ReiniciarClase } from '../ReiniciarClase';
 
 export function Pregunta() {
   const { state, update, hydrated } = useClass1();
@@ -60,10 +61,15 @@ export function Pregunta() {
           />
 
           {q.committed ? (
-            <LockedNote>
-              Respuesta registrada. No se puede modificar: es el punto de comparación con el que
-              volverás a encontrarte al cerrar la sesión.
-            </LockedNote>
+            <>
+              <LockedNote>
+                Respuesta registrada. No se puede modificar: es el punto de comparación con el que
+                volverás a encontrarte al cerrar la sesión.
+              </LockedNote>
+              {/* La salida tiene que estar aquí, no solo al final: es en esta
+                  pantalla donde el bloqueo parece un botón roto. */}
+              <ReiniciarClase />
+            </>
           ) : (
             <PrimaryButton
               disabled={!hydrated || !q.blame || !q.confidence}
