@@ -26,6 +26,7 @@ import QRCode from 'qrcode';
 
 import { rutaAnalogicaHTML } from './printables/ruta-analogica.mjs';
 import { fichaHTML } from './printables/ficha.mjs';
+import { guionHTML } from './printables/guion.mjs';
 
 import {
   diatComponents, controlInstructions, icjrPhases, epistemicStatuses,
@@ -193,6 +194,15 @@ const PIECES = [
     file: 'DIAT_Clase1_Ficha_Imprimible.pdf',
     html: () => fichaHTML({ canon, logoDiat, logoEscuela, qr }),
   },
+  {
+    id: 'guion',
+    name: 'Guion docente de sala',
+    file: 'DIAT_C1_Guion_Docente_Sala_v2.2.pdf',
+    // El guion no son dos páginas: es el documento que el profesor lleva en la
+    // mano y crece con la clase. Se exime del control de dos páginas.
+    pages: null,
+    html: () => guionHTML({ canon, logoDiat, logoEscuela }),
+  },
 ];
 
 const results = PIECES
@@ -201,7 +211,7 @@ const results = PIECES
 
 // ─── 5 · Control de salida ───────────────────────────────────────────────────
 
-const bad = results.filter(r => r.pages !== 2);
+const bad = results.filter(r => r.pages !== 2 && r.pages !== undefined && PIECES.find(p => p.id === r.id)?.pages !== null);
 if (bad.length) {
   console.error(
     `\n✗ ${bad.map(b => `${b.name} tiene ${b.pages} páginas`).join('; ')}. Deben ser exactamente 2.\n` +
@@ -210,4 +220,4 @@ if (bad.length) {
   process.exit(1);
 }
 
-log('\n✓ Dos piezas, dos páginas cada una. Listas para imprimir.');
+log('\n✓ Listo para imprimir.');

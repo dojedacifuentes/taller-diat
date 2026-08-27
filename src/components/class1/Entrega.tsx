@@ -41,9 +41,17 @@ export function Entrega() {
       return;
     }
     // Que el servidor no tenga correo configurado no es un error del estudiante
-    // ni algo que se arregle reintentando: se le ofrece la vía manual, que
-    // siempre funciona.
-    setStatus(result.configured ? 'error' : 'manual');
+    // ni algo que se arregle reintentando. En ese caso no se le pide un segundo
+    // clic: se descarga el archivo y se le abre el correo en el acto, que es lo
+    // que iba a tener que hacer de todos modos. El botón de la vía manual queda
+    // igualmente visible por si el navegador bloqueó la apertura.
+    if (!result.configured) {
+      setStatus('manual');
+      setError(result.message);
+      onManual();
+      return;
+    }
+    setStatus('error');
     setError(result.message);
   }
 
@@ -146,9 +154,8 @@ export function Entrega() {
       {status === 'manual' && (
         <div className="mt-4 space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/[0.07] px-3.5 py-3">
           <p className="text-xs leading-relaxed text-amber-100">
-            El envío automático no está disponible en este servidor. Entrega en un paso: descargamos
-            tu archivo y abrimos tu correo con el destinatario y el asunto ya puestos. Solo tienes
-            que adjuntar el archivo descargado y enviar.
+            Descargamos tu archivo y abrimos tu correo con el destinatario y el asunto ya puestos.
+            <strong> Adjunta el archivo descargado y envía.</strong>
           </p>
           <button
             type="button"
@@ -156,7 +163,7 @@ export function Entrega() {
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-amber-400/50 bg-amber-400/15 px-4 py-2.5 text-sm font-semibold text-amber-100 transition-colors hover:bg-amber-400/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
           >
             <Mail className="h-4 w-4 shrink-0" aria-hidden />
-            Descargar y abrir mi correo
+            Volver a abrir mi correo
           </button>
           <p className="text-[11px] leading-relaxed text-amber-200/70">
             Destinatario: {delivery.to} · Asunto: «{SUBMISSION_SUBJECT}»
