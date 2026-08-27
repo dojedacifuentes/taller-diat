@@ -363,23 +363,53 @@ export function LockedNote({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Botón principal de una etapa.
+ *
+ * `missing` es obligatorio en cuanto el botón puede aparecer deshabilitado: un
+ * botón gris que no dice por qué está gris es indistinguible de un botón roto.
+ * Es exactamente lo que pasaba en la pregunta guía —se elegía una opción, la
+ * confianza quedaba sin marcar más abajo y el botón no se encendía— y desde
+ * fuera parecía que la pregunta no se podía responder.
+ */
 export function PrimaryButton({
-  children, onClick, disabled = false, type = 'button',
+  children, onClick, disabled = false, type = 'button', missing,
 }: {
   children: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   type?: 'button' | 'submit';
+  /** Qué falta para poder pulsar. Se muestra solo cuando está deshabilitado. */
+  missing?: string[];
 }) {
+  const pendientes = disabled ? (missing ?? []).filter(Boolean) : [];
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-cyan-500/45 bg-cyan-500/15 px-5 py-3 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-zinc-600"
-    >
-      {children}
-    </button>
+    <div>
+      <button
+        type={type}
+        onClick={onClick}
+        disabled={disabled}
+        aria-describedby={pendientes.length ? 'falta-para-continuar' : undefined}
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-cyan-500/45 bg-cyan-500/15 px-5 py-3 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-zinc-600"
+      >
+        {children}
+      </button>
+      {pendientes.length > 0 && (
+        <p
+          id="falta-para-continuar"
+          role="status"
+          className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-amber-300/90"
+        >
+          <span aria-hidden className="mt-px shrink-0 font-bold">↑</span>
+          <span>
+            Falta {pendientes.length === 1
+              ? pendientes[0]
+              : `${pendientes.slice(0, -1).join(', ')} y ${pendientes.at(-1)}`}
+            .
+          </span>
+        </p>
+      )}
+    </div>
   );
 }
 

@@ -47,7 +47,7 @@ export function Cierre() {
           />
 
           <ChipRadio
-            legend="¿Qué tan seguro estás ahora?"
+            legend="Y ¿qué tan seguro estás ahora? · también hace falta para continuar"
             options={confidenceLevels.map(c => ({ id: c.id, label: c.label }))}
             value={now.confidence}
             onChange={id =>
@@ -62,6 +62,10 @@ export function Cierre() {
           ) : (
             <PrimaryButton
               disabled={!hydrated || !now.blame || !now.confidence}
+              missing={[
+                !now.blame && 'elegir dónde está el fallo',
+                !now.confidence && 'indicar qué tan seguro estás ahora',
+              ].filter((x): x is string => typeof x === 'string')}
               onClick={() =>
                 update(d => ({
                   ...d,

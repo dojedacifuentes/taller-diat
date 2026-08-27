@@ -62,6 +62,34 @@ test('ninguna etapa muestra al estudiante la nomenclatura interna de bloques', (
   }
 });
 
+test('ningún botón principal puede quedar deshabilitado sin decir qué falta', () => {
+  // Un botón gris que no explica por qué es indistinguible de uno roto: es
+  // exactamente lo que hacía parecer que la pregunta guía no se podía responder.
+  for (const etapa of ['Pregunta', 'Cierre']) {
+    const src = readFileSync(
+      path.resolve(process.cwd(), `src/components/class1/stages/${etapa}.tsx`),
+      'utf8',
+    );
+    const bloques = src.split('<PrimaryButton').slice(1);
+    assert.ok(bloques.length > 0, `${etapa} no tiene PrimaryButton`);
+    for (const b of bloques) {
+      const cabecera = b.slice(0, b.indexOf('>'));
+      if (!cabecera.includes('disabled=')) continue;
+      assert.match(cabecera, /missing=/, `${etapa}: botón deshabilitable sin prop missing`);
+    }
+  }
+});
+
+test('la confianza se anuncia como requisito, no como pregunta suelta', () => {
+  for (const etapa of ['Pregunta', 'Cierre']) {
+    const src = readFileSync(
+      path.resolve(process.cwd(), `src/components/class1/stages/${etapa}.tsx`),
+      'utf8',
+    );
+    assert.match(src, /qué tan seguro[^"]*hace falta para continuar/i, `${etapa}: confianza sin marcar`);
+  }
+});
+
 // ─── Reparto de los 90 minutos ───────────────────────────────────────────────
 
 test('el manifest define B00–B09 una sola vez y cubre 90 minutos', () => {

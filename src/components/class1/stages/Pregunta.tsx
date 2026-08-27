@@ -50,7 +50,7 @@ export function Pregunta() {
           />
 
           <ChipRadio
-            legend="¿Qué tan seguro estás?"
+            legend="Y ¿qué tan seguro estás? · también hace falta para continuar"
             options={confidenceLevels.map(c => ({ id: c.id, label: c.label }))}
             value={q.confidence}
             onChange={id =>
@@ -73,6 +73,10 @@ export function Pregunta() {
           ) : (
             <PrimaryButton
               disabled={!hydrated || !q.blame || !q.confidence}
+              missing={[
+                !q.blame && 'elegir dónde está el fallo',
+                !q.confidence && 'indicar qué tan seguro estás',
+              ].filter((x): x is string => typeof x === 'string')}
               onClick={() =>
                 update(d => ({
                   ...d,
