@@ -12,6 +12,7 @@ import {
 } from '@/content/class1/activities';
 import { useClass1 } from '@/lib/class1/store';
 import { ChipRadio, LockedNote, Panel, PrimaryButton } from '../ui';
+import { Impresos } from '../Impresos';
 
 export function Pregunta() {
   const { state, update, hydrated } = useClass1();
@@ -78,6 +79,8 @@ export function Pregunta() {
           )}
         </div>
       </Panel>
+
+      <Impresos />
     </>
   );
 }

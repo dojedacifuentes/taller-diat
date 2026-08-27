@@ -18,7 +18,8 @@
     "build:class1-ppt": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/build-class1-deck.mjs && powershell -ExecutionPolicy Bypass -File scripts/class1/render-deck.ps1 && node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/audit-class1-deck.mjs",
     "build:class1-ppt:only": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/build-class1-deck.mjs",
     "render:class1-ppt": "powershell -ExecutionPolicy Bypass -File scripts/class1/render-deck.ps1",
-    "audit:class1-ppt": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/audit-class1-deck.mjs"
+    "audit:class1-ppt": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/audit-class1-deck.mjs",
+    "build:class1-print": "node --experimental-strip-types --import ./scripts/class1/ts-resolve.mjs scripts/class1/build-printables.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

@@ -13,7 +13,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { createJiti } from 'jiti';
 
@@ -164,6 +164,33 @@ test('sin restricciones ni control no se imprimen secciones vacías', () => {
   assert.equal(compiled.ready, true);
   assert.doesNotMatch(compiled.text, /RESTRICCIONES/);
   assert.doesNotMatch(compiled.text, /CONTROL/);
+});
+
+// ─── Impresos ────────────────────────────────────────────────────────────────
+
+test('las dos piezas imprimibles existen, tienen 2 páginas y se ofrecen desde la clase', () => {
+  const dir = path.resolve(process.cwd(), 'public/descargas');
+  const piezas = ['DIAT_Clase1_Ruta_Analogica.pdf', 'DIAT_Clase1_Ficha_Imprimible.pdf'];
+
+  for (const pieza of piezas) {
+    const file = path.join(dir, pieza);
+    const pdf = readFileSync(file);
+    assert.equal(pdf.subarray(0, 5).toString('latin1'), '%PDF-', `${pieza} no es un PDF`);
+
+    // Exactamente dos páginas: la consigna es una hoja doble faz, no un folleto.
+    const paginas = [...pdf.toString('latin1').matchAll(/\/Type\s*\/Page[^s]/g)].length;
+    assert.equal(paginas, 2, `${pieza} tiene ${paginas} páginas`);
+
+    // La fuente editable viaja junto al PDF.
+    assert.ok(existsSync(file.replace(/\.pdf$/, '.html')), `${pieza} sin fuente HTML`);
+  }
+
+  // Y la clase las enlaza de verdad, con la ruta exacta.
+  const impresos = readFileSync(path.resolve(process.cwd(), 'src/components/class1/Impresos.tsx'), 'utf8');
+  for (const pieza of piezas) assert.match(impresos, new RegExp(`/descargas/${pieza}`));
+
+  const entrada = readFileSync(path.resolve(process.cwd(), 'src/components/class1/stages/Pregunta.tsx'), 'utf8');
+  assert.match(entrada, /<Impresos \/>/);
 });
 
 // ─── Estado del estudiante ───────────────────────────────────────────────────
