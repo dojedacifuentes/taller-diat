@@ -1,17 +1,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// IMPRESOS DE CLASE 1
+// MATERIALES DE CLASE 1
 //
-// Las dos piezas físicas de la sesión, ofrecidas desde la propia clase.
+// Tres piezas con tres funciones distintas, y por eso las tres existen:
+//
+//   Ruta analógica  → hacer     · las actividades sin dispositivo
+//   Ficha           → recordar  · la arquitectura de la sesión
+//   Manual          → estudiar  · el conocimiento consolidado, después
 //
 // Trabajar en papel no es una excepción que haya que justificar: es otra
 // modalidad de participación. El bloque se redacta en consecuencia —«¿sin
 // dispositivo?», no «si por desgracia no tienes dispositivo»— y va al final de
 // la pantalla de entrada, donde no estorba a quien sí va a trabajar aquí.
 //
-// Los PDF se generan con `npm run build:class1-print` desde el mismo canon que
-// esta plataforma. Ver scripts/class1/printables/.
+// Las dos primeras se generan con `npm run build:class1-print` desde el mismo
+// canon que esta plataforma. El Manual es un artefacto editorial aparte y vive
+// en public/materiales.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Download, PencilLine, BookMarked } from 'lucide-react';
+import { Download, PencilLine, BookMarked, GraduationCap } from 'lucide-react';
 
 interface Impreso {
   href: string;
@@ -38,6 +43,14 @@ const IMPRESOS: readonly Impreso[] = [
     detail:
       'La arquitectura de la sesión en dos páginas: los siete componentes, las siete instrucciones de control, el protocolo ICJR, los cinco estatus y las tres reglas de salida.',
   },
+  {
+    href: '/materiales/DIAT_2026_CLASE_1_MANUAL_DEL_ESTUDIANTE_v1.0.pdf',
+    icon: GraduationCap,
+    title: 'Manual del Estudiante',
+    what: 'El desarrollo completo, para estudiar después.',
+    detail:
+      'Lo que no cabe en una sesión de noventa minutos: los conceptos con sus ejemplos, el banco de prompts canónicos, el protocolo de verificación desarrollado y el glosario. No hace falta para la clase de hoy.',
+  },
 ];
 
 export function Impresos() {
@@ -47,17 +60,18 @@ export function Impresos() {
       className="rounded-xl border border-white/[0.10] bg-white/[0.02] p-4 sm:p-5"
     >
       <div className="mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
-        En papel
+        Materiales
       </div>
       <h2 id="impresos" className="mt-1 text-base font-bold text-white">
-        ¿Sin dispositivo? Trabaja la clase impresa
+        Para hacer, para recordar y para estudiar
       </h2>
       <p className="mt-1.5 max-w-2xl text-sm text-zinc-400">
-        Descarga e imprime las dos páginas para realizar las actividades con lápiz y papel. El
-        profesor puede imprimirlas antes de la sesión.
+        ¿Sin dispositivo? La <strong className="font-semibold text-zinc-300">Ruta analógica</strong> te
+        permite hacer la clase entera con lápiz y papel. El profesor puede imprimirla antes de la
+        sesión.
       </p>
 
-      <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
+      <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {IMPRESOS.map(({ href, icon: Icon, title, what, detail }) => (
           <li key={href}>
             <a

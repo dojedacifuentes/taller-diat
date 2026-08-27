@@ -193,6 +193,16 @@ test('las dos piezas imprimibles existen, tienen 2 páginas y se ofrecen desde l
   assert.match(entrada, /<Impresos \/>/);
 });
 
+test('el Manual del Estudiante está publicado y enlazado desde la clase', () => {
+  const manual = 'DIAT_2026_CLASE_1_MANUAL_DEL_ESTUDIANTE_v1.0.pdf';
+  const file = path.resolve(process.cwd(), 'public/materiales', manual);
+  assert.ok(existsSync(file), 'el Manual no está en public/materiales');
+  assert.equal(readFileSync(file).subarray(0, 5).toString('latin1'), '%PDF-');
+
+  const impresos = readFileSync(path.resolve(process.cwd(), 'src/components/class1/Impresos.tsx'), 'utf8');
+  assert.match(impresos, new RegExp(`/materiales/${manual}`));
+});
+
 // ─── Estado del estudiante ───────────────────────────────────────────────────
 
 test('la migración rescata el trabajo hecho con la arquitectura de bloques', () => {
