@@ -107,13 +107,19 @@ function Protocolo({ clase, acento }: { clase: ClaseFundamentos; acento: (typeof
   const [marcados, setMarcados] = useState<boolean[]>(() => clase.protocolo.items.map(() => false));
 
   useEffect(() => {
-    try {
-      const guardado = localStorage.getItem(clave);
-      if (guardado) {
-        const arr = JSON.parse(guardado) as boolean[];
-        if (Array.isArray(arr)) setMarcados(clase.protocolo.items.map((_, i) => Boolean(arr[i])));
-      }
-    } catch { /* sin almacenamiento, sin memoria: la lista sigue sirviendo */ }
+    // La lectura va en un frame posterior: el estado del servidor y el primer
+    // render del cliente coinciden (todo sin marcar) y recién después se
+    // recuperan las marcas guardadas en este navegador.
+    const id = requestAnimationFrame(() => {
+      try {
+        const guardado = localStorage.getItem(clave);
+        if (guardado) {
+          const arr = JSON.parse(guardado) as boolean[];
+          if (Array.isArray(arr)) setMarcados(clase.protocolo.items.map((_, i) => Boolean(arr[i])));
+        }
+      } catch { /* sin almacenamiento, sin memoria: la lista sigue sirviendo */ }
+    });
+    return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
