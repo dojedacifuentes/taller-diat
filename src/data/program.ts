@@ -339,6 +339,11 @@ export const seo = {
 // No forman parte del programa académico de las tres sesiones.
 export const complementaryResources = [
   {
+    href: '/fundamentos',
+    label: 'Curso Fundamentos de IA · Derecho PUCV',
+    description: 'Material del alumno: 4 clases con prompts para copiar, enlaces directos y protocolos.',
+  },
+  {
     href: '/prompt-lab',
     label: 'Prompt Lab',
     description: 'Constructor guiado de prompts jurídicos estructurados.',

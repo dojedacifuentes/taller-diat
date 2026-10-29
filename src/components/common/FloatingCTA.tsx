@@ -14,7 +14,7 @@ const GMAIL_URL = gmailCompose;
 
 export function FloatingCTA() {
   const pathname = usePathname();
-  const isClass1 = pathname.startsWith('/clase-1');
+  const isClass1 = pathname.startsWith('/clase-1') || pathname.startsWith('/fundamentos');
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
